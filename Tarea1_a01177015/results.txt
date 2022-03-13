@@ -1,0 +1,12 @@
+Este programa va a correr las estructuras de datos y va a probarlos, mostrando sus resultados en esta pantalla
+********************
+***** Stack
+*******************
+- Declaración vacio
+- Declaración con un item
+- Push a una lista vacia
+- Push a una lista con un item
+- Push a una lista que a pasado por una operación exitosa
+- Pop a una lista con 1 item:  
+- Pop a una lista sin items (Size funciono y detecto que estaba vacio)
+- Pop a una lista de multiples items: 79

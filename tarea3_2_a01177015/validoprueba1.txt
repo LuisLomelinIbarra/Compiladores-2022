@@ -1,0 +1,15 @@
+program test : 
+var num1 , num2  : int ;
+{
+    num1 = 10;
+    num2 = 20;
+    if ( num1 < num2 - 5 * ( - 1 ) ) {
+        print ( "num" , num1 );
+    } else {
+        num2 = 1000;
+    };
+
+    if ( num1 < num2 - 5 * ( + 1 ) ) {
+        print ( "num" , num1 + 2 );
+    };
+}
