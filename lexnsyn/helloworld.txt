@@ -1,0 +1,5 @@
+programa helloworld { 
+	principal funcion {} {
+		imprimir("Hola Mundo!!!!");
+	} 
+}
