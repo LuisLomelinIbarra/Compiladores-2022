@@ -1,0 +1,3 @@
+Cambios a los diagramas por lo del avance 2
+- Arreglo textual se quita de expresion (remover del diagrama varcte)
+- Arrgelo textual se puede como argumento como para imprimir, asignación o llamada función

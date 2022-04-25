@@ -1,37 +1,38 @@
 programa helloworld { 
 	
-	entero n;
-	entero r[ 2 ];
-	entero l[ 3 ][ 2 ];
+	entero n, f;
+	entero r[2];
+	entero l[3][2];
 	flotante g[1][1][1];
 	
-	funcion entero factorial (entero num){}{
-		si(num > 0){
-			regresar num * $factorial(num-1);
-		}sino{
-			regresar 1;
-		}
-	}
+	
 
 	
+	funcion flotante tres(){
+		flotante tr;
+	}{
+		tr = 3.0;
+		regresar tr;
+	}
+
 
 	principal funcion
 	{
 		entero aka;
-		
+		flotante akas1;
 
 	}
 	{
-		n = $factorial(3);
+		n = $tres();
+		n = 'a';
 		r = [2,2];
 		l = [[1,1],[1,1],[1,1]];
 		r = [[[1.0]]];
 		aka = 10-n;
-		10 / (-aka) ;
-		"apa" - "aja" ;
-		"coooooooooool" ;
+		10 / aka ;
 		l [1][1] = 3;
-		mientras(aka > 1){
+		aka = l[1][1];
+		mientras(aka > 1 || aka != 0){
 			aka = aka - 1;
 		}
 		por(aka = 10; aka > 1; aka = aka - 1;){
