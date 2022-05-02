@@ -1,0 +1,10 @@
+programa helloworld { 
+	principal funcion {
+	entero x;
+	bool bo;
+	} {
+		x = 10 + 10*30/30*2 + 1;
+		bo = 10 > 2 || 20 - 30*2 != 2 && verdadero;
+		
+	} 
+}

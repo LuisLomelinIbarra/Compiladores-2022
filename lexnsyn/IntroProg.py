@@ -19,7 +19,7 @@ cubosem = {
                           'entero':'entero',
                           'flotante': 'entero',
                           'char':'entero',
-                          'bool': 'char',
+                          'bool': 'entero',
                           'cadena':'error'
                         },
                 'flotante':{
@@ -87,7 +87,8 @@ cubosem = {
                           'char':'error',
                           'bool': 'error',
                           'cadena':'bool'
-                        },},
+                        },
+           },
            '&&':{
                 'entero':{
                           'entero':'bool',
@@ -510,7 +511,45 @@ cubosem = {
                    'cadena': 'error'
                },
 
-           }
+           },
+            'arr':{'entero':{
+                          'entero':'entero',
+                          'flotante': 'flotante',
+                          'char':'entero',
+                          'bool': 'entero',
+                          'cadena':'error'
+                        },
+                'flotante':{
+                          'entero':'flotante',
+                          'flotante': 'flotante',
+                          'char':'flotante',
+                          'bool': 'flotante',
+                          'cadena':'error'
+                        },
+                'char':{
+                          'entero':'entero',
+                          'flotante': 'flotante',
+                          'char':'char',
+                          'bool': 'entero',
+                          'cadena':'error'
+                        },
+                'bool':{
+                          'entero':'entero',
+                          'flotante': 'flotante',
+                          'char':'entero',
+                          'bool': 'bool',
+                          'cadena':'error'
+                        },
+                'cadena':{
+                          'entero':'error',
+                          'flotante': 'error',
+                          'char':'error',
+                          'bool': 'error',
+                          'cadena':'cadena'
+                        },
+            }
+
+
            }
 
 #Pila de Operadores
@@ -650,12 +689,12 @@ lexer = lex.lex()
 
 
 #precedencia
-precedence = (
-    ( 'left', 'PLUS', 'MINUS' ),
-    ( 'left', 'MUL', 'DIV' ),
-    ( 'nonassoc', 'GT', 'LT','AND','OR' ),
-
-)
+#precedence = (
+#    ('right','EQ' ),
+#    ( 'nonassoc', 'GT', 'LT','AND','OR'),
+#    ( 'left', 'PLUS', 'MINUS' ),
+#    ( 'left', 'MUL', 'DIV' ),
+#    )
 
 #Dir de func
 dirfunc = {}
@@ -663,6 +702,12 @@ dirfunc = {}
 currscope = None
 #para saber cuales parametros evualuar en llamada de funcion
 funcallcurr = None
+
+#Para generar los cuadruplos temporalmente asignar un registro de manera acendente al cuadruplo
+regcount = 0
+
+#Cuadruplos
+cuadruplos = []
 
 
 #Estructura del programa
@@ -673,7 +718,7 @@ def p_PROGRAMA(p):
     global dirfunc
 
     #1.- Crear el directorio de funciones
-
+    dirfunc['global'] = {'vartab':{}}
     #2.- Si se encuentran declaraciones globales se debe de crear una tabla de symbolos a nivel global
     # Este es encapsulado en la regla dirfunc
 
@@ -708,19 +753,25 @@ def p_PRINSCOPE(p):
     '''PRINSCOPE : OPENCUR DECLARACIONES CLOSECUR'''
     global currscope
     global dirfunc
-    currscope = 'global'
+    currscope = 'principal'
     print('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
     if (p[2] != None):
         ks = p[2].keys()
-        for k in ks:
-            if k in dirfunc['global']['vartab'].keys():
-                print(
-                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (k, p.lineno(9)))
+        if dirfunc['global']['vartab'] != None:
+            if len(dirfunc['global']['vartab']) > 0 :
+                print('a', p[2], dirfunc['global']['vartab'])
+                for k in ks:
+                    if k in dirfunc['global']['vartab'].keys():
+                        print(
+                            "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
+                            k, p.lineno(9)))
 
-                sem_err = True
-                raise (SyntaxError(
-                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (k, p.lineno(9))))
-    dirfunc['global']['vartab'].update(p[2])
+                        sem_err = True
+                        raise (SyntaxError(
+                            "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
+                            k, p.lineno(9))))
+    dirfunc['principal'] = {'vartab':p[2]}
+    #dirfunc['global']['vartab'].update(p[2])
     p[0] = p[2]
 
 ###########
@@ -1024,48 +1075,69 @@ def p_PRINTABLE(p):
 # Asignacion -------------------
 
 def p_ASIGNACION(p):
-    '''ASIGNACION : ID ADIMS EQ EXPRESION SEMICOLON
-        | ID EQ EXPRESION SEMICOLON
-        | ID EQ ARR_TEX SEMICOLON'''
+    '''ASIGNACION : ID EQ ARR_TEX SEMICOLON
+        | ID ADIMS EQ EXPRESION SEMICOLON
+        | ID EQ EXPRESION SEMICOLON'''
     #print('Lee asignacion')
     #Evaluar que la asignación sea correcta
     global cubosem
     global pilaoperand
     global ptipo
     global sem_err
+    global dirfunc
     #Se checa que el id a asignar exista
     vartipo = None
     print(ptipo)
+    print(p[3])
     if p[2] == '=':
-        if p[3] != 'arrtext':
-            if (p[1] in dirfunc[currscope]['vartab'].keys()):
-                vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
-            elif (p[1] in dirfunc['global']['vartab'].keys()):
-                vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
-            else:
 
-                sem_err = True
-                print('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
-                raise SyntaxError('La variable %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
-            asig = pilaoperand.pop()
 
-            asigt = ptipo.pop()
 
-            print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
 
-            if (cubosem['='][vartipo][asigt] != 'error'):
-                print('Cubo dice: ', cubosem['='][vartipo][asigt])
-                pass
-            else:
+        if (p[1] in dirfunc[currscope]['vartab'].keys()):
+            vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+            if (type(p[3]) is dict):
+                print(p[3])
+                if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
+                    sem_err = True
+                    print('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+                    raise SyntaxError('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando', (p[1], p.lineno(1)))
 
-                sem_err = True
-                print('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
-                vartipo, asigt, p.lineno(1)))
-                raise SyntaxError(
-                    'Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
-                    vartipo, asigt, p.lineno(1)))
+        elif (p[1] in dirfunc['global']['vartab'].keys()):
+            vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+            if (type(p[3]) is dict):
+                print(p[3])
+                if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
+                    sem_err = True
+                    print('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+                    raise SyntaxError('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando', (p[1], p.lineno(1)))
         else:
+
+            sem_err = True
+            print('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+            raise SyntaxError('La variable %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
+
+
+
+        asig = pilaoperand.pop()
+
+        asigt = ptipo.pop()
+
+        print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
+        cuadruplos.append(('=', asig,'',p[1]))
+
+        if (cubosem['='][vartipo][asigt] != 'error'):
+            print('Cubo dice: ', cubosem['='][vartipo][asigt])
             pass
+        else:
+
+            sem_err = True
+            print('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
+            vartipo, asigt, p.lineno(1)))
+            raise SyntaxError(
+                'Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
+                vartipo, asigt, p.lineno(1)))
+
 
     else:
         if (p[1] in dirfunc[currscope]['vartab'].keys()):
@@ -1082,7 +1154,7 @@ def p_ASIGNACION(p):
         asigt = ptipo.pop()
 
         print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
-
+        cuadruplos.append(('=', asig, '', p[1]))
 
         if (cubosem['='][vartipo][asigt] != 'error'):
             print('Cubo dice: ',cubosem['='][vartipo][asigt])
@@ -1095,7 +1167,10 @@ def p_ASIGNACION(p):
                 'Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (vartipo, asigt, p.lineno(1)))
 
 #def p_ASIGNARR(p):
-#    '''ASIGNARR : ID EQ ARR_TEX SEMICOLON'''
+#    '''ASIGNARR : ARR_TEX SEMICOLON'''
+#
+#    #print( "⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄ ")
+#    pass
 
 def p_ADIMS(p):
     '''ADIMS : OPENSQU EXPRESION CLOSESQU ASEGD
@@ -1139,6 +1214,8 @@ def p_FORINIT(p):
 
 def p_RETURNF(p):
     '''RETURNF : REGRESAR EXPRESION SEMICOLON'''
+    global currscope
+
 
 #####
 # Expresion
@@ -1146,81 +1223,102 @@ def p_RETURNF(p):
 
 def p_EXPRESION(p):
     '''EXPRESION : EXPRESIONR EXPRLOG'''
-
-
-def p_EXPRLOG(p):
-    '''EXPRLOG : AND EXPRESIONR EXPRLOG
-               | OR EXPRESIONR EXPRLOG
-               | empty'''
     global dirfunc
     global poper
     global pilaoperand
     global ptipo
-    if (p[1] != None):
-        rop = pilaoperand.pop()
-        ropt = ptipo.pop()
-        lop = pilaoperand.pop()
-        lopt = ptipo.pop()
+    global regcount
 
-        oper = p[1]
-        if (cubosem[oper][ropt][lopt] != 'error'):
-            restipo = cubosem[oper][ropt][lopt]
-            print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
-            # generar cuadruplo
-            # pendiente
-            pilaoperand.append('res')
-            ptipo.append(restipo)
-        else:
-            global sem_err
-            sem_err = True
-            print(
-                'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                    lopt, ropt, p.lineno(1)))
-            raise SyntaxError(
-                'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                    lopt, ropt, p.lineno(1)))
+    if (poper[-1:].pop() != None):
+        if(poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
+            rop = pilaoperand.pop()
+            ropt = ptipo.pop()
+            lop = pilaoperand.pop()
+            lopt = ptipo.pop()
+
+            oper = poper.pop()
+            if (cubosem[oper][ropt][lopt] != 'error'):
+                restipo = cubosem[oper][ropt][lopt]
+                print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+
+                # generar cuadruplo
+                cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
+                pilaoperand.append('res'+str(regcount))
+                regcount = regcount + 1
+                ptipo.append(restipo)
+            else:
+                global sem_err
+                sem_err = True
+                print(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, p.lineno(1)))
+                raise SyntaxError(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, p.lineno(1)))
+    p[0] = 'exp'
+
+def p_EXPRLOG(p):
+    '''EXPRLOG : AND EXPRESION
+               | OR EXPRESION
+               | empty'''
+    global poper
+    if(p[1] != None):
+        poper.append(p[1])
+    print(poper)
 
 def p_EXPRESIONR(p):
     '''EXPRESIONR : EXP EXPR'''
-
-def p_EXPR(p):
-    '''EXPR : GT EXP
-                 | LT EXP
-                 | EXLAM EQ EXP
-                 | EQ EQ EXP
-                 | GT EQ EXP
-                 | LT EQ EXP
-                 | empty
-                 '''
     global dirfunc
     global poper
     global pilaoperand
     global ptipo
-    if (p[1] != None):
-        rop = pilaoperand.pop()
-        ropt = ptipo.pop()
-        lop = pilaoperand.pop()
-        lopt = ptipo.pop()
-        if p[2] == '=':
-            oper = p[1] + p[2]
-        else:
-            oper = p[1]
-        if (cubosem[oper][ropt][lopt] != 'error'):
-            restipo = cubosem[oper][ropt][lopt]
-            print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
-            # generar cuadruplo
-            # pendiente
-            pilaoperand.append('res')
-            ptipo.append(restipo)
-        else:
-            global sem_err
-            sem_err = True
-            print(
-                'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                lopt, ropt, p.lineno(1)))
-            raise SyntaxError(
-                'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                lopt, ropt, p.lineno(1)))
+    global regcount
+    if (poper[-1:].pop() != None):
+        if(poper[-1:].pop() in ['>','<','<=','>=','==','!=']):
+
+
+                rop = pilaoperand.pop()
+                ropt = ptipo.pop()
+                lop = pilaoperand.pop()
+                lopt = ptipo.pop()
+                oper = poper.pop()
+                if (cubosem[oper][ropt][lopt] != 'error'):
+                    restipo = cubosem[oper][ropt][lopt]
+                    print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+
+                    # generar cuadruplo
+                    cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+
+                    pilaoperand.append('res' + str(regcount))
+                    regcount = regcount + 1
+                    ptipo.append(restipo)
+                else:
+                    global sem_err
+                    sem_err = True
+                    print(
+                        'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                            lopt, ropt, p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                            lopt, ropt, p.lineno(1)))
+
+def p_EXPR(p):
+    '''EXPR : GT EXPRESIONR
+                 | LT EXPRESIONR
+                 | EXLAM EQ EXPRESIONR
+                 | EQ EQ EXPRESIONR
+                 | GT EQ EXPRESIONR
+                 | LT EQ EXPRESIONR
+                 | empty
+                 '''
+    global poper
+    if(p[1] != None):
+        op = p[1]
+        if(p[2] == '='):
+            op = op + p[2]
+        if (op in ['>', '<', '<=', '>=', '==', '!=']):
+            poper.append(op)
+
     
 def p_EXP(p):
     '''EXP : TERMINO TERMINOS
@@ -1229,6 +1327,7 @@ def p_EXP(p):
     global poper
     global pilaoperand
     global ptipo
+    global regcount
     #print(poper)
     #print(pilaoperand)
     #print(ptipo)
@@ -1242,23 +1341,27 @@ def p_EXP(p):
         if (cubosem[oper][ropt][lopt] != 'error'):
             restipo = cubosem[oper][ropt][lopt]
             print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+
             # generar cuadruplo
-            # pendiente
-            pilaoperand.append('res')
+            cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
+
+            pilaoperand.append('res'+str(regcount))
+            regcount = regcount + 1
             ptipo.append(restipo)
         else:
             global sem_err
             sem_err = True
             print('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
             raise SyntaxError('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
-    
+
 def p_TERMINOS(p):
-    '''TERMINOS : PLUS TERMINO TERMINOS
-                | MINUS TERMINO TERMINOS
+    '''TERMINOS : PLUS EXP
+                | MINUS EXP
                 | empty'''
     global poper
     if p[1] == '+' or p[1] == '-':
         poper.append(p[1])
+    print(poper)
     
     
 def p_TERMINO(p):
@@ -1269,6 +1372,7 @@ def p_TERMINO(p):
     global poper
     global pilaoperand
     global ptipo
+    global regcount
     #print(poper)
     #print(pilaoperand)
     #print(ptipo)
@@ -1283,8 +1387,10 @@ def p_TERMINO(p):
             restipo = cubosem[oper][ropt][lopt]
             print('La operacion de ',lop,oper,rop,'resulta en '+restipo)
             #generar cuadruplo
-            #pendiente
-            pilaoperand.append('res')
+            cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
+
+            pilaoperand.append('res'+str(regcount))
+            regcount = regcount + 1
             ptipo.append(restipo)
         else:
             global sem_err
@@ -1292,15 +1398,16 @@ def p_TERMINO(p):
             print('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
             raise SyntaxError('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
 
-    
+
     
 def p_FACTORES(p):
-    '''FACTORES : MUL FACTOR FACTORES
-                | DIV FACTOR FACTORES
+    '''FACTORES : MUL TERMINO
+                | DIV TERMINO
                 | empty'''
     global poper
     if p[1] == '*' or p[1] == '/':
         poper.append(p[1])
+    print(poper)
     
     
 def p_FACTOR(p):
@@ -1310,8 +1417,16 @@ def p_FACTOR(p):
         p[0] = p[2]
     else:
         if(p[1] != None):
-            if(cubosem[p[1]]['none'][p[2]] != 'error'):
-                p[0] = p[2]
+            global pilaoperand
+            global ptipo
+            global cuadruplos
+            global regcount
+            lop = pilaoperand.pop()
+            lopt = ptipo.pop()
+            if(cubosem[p[1]]['none'][lopt] != 'error'):
+                cuadruplos.append((p[1],'',p[2],'res'+str(regcount)))
+                pilaoperand.append('res'+str(regcount))
+                ptipo.append(cubosem[p[1]]['none'][lopt])
             else:
                 global sem_err
                 sem_err = True
@@ -1364,10 +1479,10 @@ def p_VARCTE(p):
         ptipo.append('flotante')
     elif p[1] == 'verdadero' or p[1] == 'falso':
         ptipo.append('bool')
-    elif re.match("\"[^\"]+\"",p[1]):
-        print('CASDEAFA',p[1])
+    elif re.fullmatch("\"[^\"]+\"",p[1]):
+
         ptipo.append('cadena')
-    elif re.match("\'[^\']\'",p[1]):
+    elif re.fullmatch("\'[^\']\'",p[1]):
         ptipo.append('char')
     elif re.fullmatch(r"\$[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):
         #llamada func
@@ -1397,6 +1512,7 @@ def p_VARCTE(p):
         ptipo.append(vartipo)
 
     else:
+        print('No se sabe que es')
         pass
 
     print('Pila tipos       ',ptipo,'\n----------------------------------------------------------------------------------------------------------------------------------------------\n')
@@ -1409,8 +1525,51 @@ def p_LLAMADAFUNC(p):
     '''LLAMADAFUNC :  DLR FID OPENPAR CALLPARAMS CLOSEPAR '''
 
     #llamada a funcion
+    global dirfunc
     global funcallcurr
+    global sem_err
+
     funcallcurr = p[2]
+    vartipo = None
+
+    if (p[2] in dirfunc.keys()):
+        if 'params' in dirfunc[p[2]].keys():
+            vartipo = dirfunc[p[2]]['params']
+
+    elif (p[2] in special.keys()):
+        if 'params' in dirfunc[p[2]].keys():
+            vartipo = dirfunc[p[2]]['params']
+    else:
+        sem_err = True
+        print('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+        raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
+
+    #Checar los parametros esten bien llamados
+    if vartipo != None:
+
+        if len(p[4]) != len(vartipo):
+            sem_err = True
+            print('La funcion %r en la linea %r no tiene los parametros correctos' % (p[1], p.lineno(1)))
+            raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos', (p[1], p.lineno(1)))
+        else:
+
+            i = 0
+
+            for param in vartipo.values():
+                print('acpapapapa',param ,p[4][i])
+                if param['tipo'] != p[4][i]['tipo']:
+
+                    sem_err = True
+                    print('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden' % (p[1], p.lineno(1),i+1))
+                    raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden', (p[1], p.lineno(1),i+1))
+                else:
+                    i = i+1
+            print(i)
+
+
+
+
+
     p[0] = p[1]+p[2]
 
 def p_FID(p):
@@ -1427,32 +1586,46 @@ def p_FUNID(p):
 def p_CALLPARAMS(p):
     '''CALLPARAMS : CPARAM
                   | empty '''
+
+    p[0] = p[1]
 def p_CPARAM(p):
-    ''' CPARAM : EXPRESION CPARAMS
-                | ARR_TEX CPARAMS'''
+    ''' CPARAM : ARR_TEX CPARAMS
+                | EXPRESION CPARAMS'''
     #hay que cambiar como identifica si es un arr_tex
-    #if(p[1]!='arrtext'):
-    #    global dirfunc
-    #    global poper
-    #    global pilaoperand
-    #    global ptipo
-    #    callfun = None
-    #    if (p[1][1:] in dirfunc.keys()):
-    #        callfun = dirfunc[p[1][1:]]
-    #    elif (p[1][1:] in special.keys()):
-    #        callfun = special[p[1][1:]]
-    #    else:
-    #        global sem_err
-    #        sem_err = True
-    #        print('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
-    #        raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
+    global ptipo
+    global pilaoperand
+
+
+    cfpar = []
+    if type(p[1]) is dict:
+        cfpar.append(p[1])
+    else:
+        pilaoperand.pop()
+        cfpar.append({'tipo':ptipo.pop()})
+    if p[2] != None:
+        cfpar = cfpar + p[2]
+
+    p[0] = cfpar
+
 
 
 def p_CPARAMS(p):
     ''' CPARAMS : COMMA EXPRESION CPARAMS
                 | COMMA ARR_TEX CPARAMS
                 | empty'''
-
+    if p[1] != None:
+        global ptipo
+        global pilaoperand
+        cfpar = []
+        if type(p[1]) is dict:
+            cfpar.append(p[1])
+        else:
+            pilaoperand.pop()
+            cfpar.append({'tipo': ptipo.pop()})
+        cfpar = cfpar + p[2]
+        p[0] = cfpar
+    else:
+        p[0] = None
 #LLAMADA ARREGLO
 def p_LLAMADAARR(p):
     '''LLAMADAARR : ID OPENSQU EXPRESION CLOSESQU LLSEGD'''
@@ -1460,17 +1633,21 @@ def p_LLAMADAARR(p):
     global currscope
     global pilaoperand
     global ptipo
+    global sem_err
     pilaoperand.pop()
     ptipo.pop()
     if (p[1] in dirfunc[currscope]['vartab'].keys()):
         if not ('dims' in dirfunc[currscope]['vartab'][p[1]].keys()):
+            sem_err = True
             print('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
             raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[1], p.lineno(1)))
     elif (p[1] in dirfunc['global']['vartab'].keys()):
         if not ('dims' in dirfunc['global']['vartab'][p[1]].keys()):
+            sem_err = True
             print('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
             raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[1], p.lineno(1)))
     else:
+        sem_err = True
         print('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
         raise SyntaxError('La variable %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
     p[0] = p[1]
@@ -1489,69 +1666,225 @@ def p_LLTERD(p):
     if p[1] != None:
         global pilaoperand
         global ptipo
+
         pilaoperand.pop()
         ptipo.pop()
 
-#ARREGLO TEXTUAL
+
+
+########## ARREGLO TEXTUAL
 def p_ARR_TEX(p):
     '''ARR_TEX : OPENSQU ATPRIC CLOSESQU'''
-    p[0] = 'arrtext'
+    global ptipo
+    global pilaoperand
+
+    arrdim = {'dims':1}
+    print('Primera dim')
+    if p[2] != None:
+        arrdim.update(p[2])
+    ptipo.append(arrdim['tipo'])
+    pilaoperand.append('arr')
+    p[0] = arrdim
 
 def p_ATPRIC(p):
     ''' ATPRIC : ATPRE ATPRISIG
                | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+
+        if p[2] != None:
+
+            if (cubosem['arr'][p[1]['tipo']][p[2]['tipo']] != 'error'):
+                newtipo = p[1]
+                newtipo.update(p[2])
+                newtipo['tipo'] = cubosem['arr'][p[1]['tipo']][p[2]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (
+                p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[1], p.lineno(1)))
+        else:
+            p[0] = p[1]
+    else:
+        p[0] = None
 
 def p_ATPRE(p):
     '''ATPRE : EXPRESION
               | ATSEGD'''
-    if p[1] != '[':
+    arrdim = {}
+    if type(p[1]) is not dict :
         global pilaoperand
         global ptipo
         pilaoperand.pop()
-        ptipo.pop()
+
+        arrdim['tipo'] = ptipo.pop()
+
+    else:
+        arrdim.update({'dims': 2})
+        arrdim.update(p[1])
+
+
+
+    p[0] = arrdim
+
 def p_ATPRISIG(p):
     '''ATPRISIG : COMMA ATPRE ATPRISIG
                 | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+        if p[3] != None:
+
+            if (cubosem['arr'][p[2]['tipo']][p[3]['tipo']] != 'error'):
+                newtipo = p[2]
+                newtipo.update(p[3])
+                newtipo['tipo'] = cubosem['arr'][p[2]['tipo']][p[3]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (
+                    p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[2], p.lineno(2)))
+        else:
+            p[0] = p[2]
+    else:
+        p[0] = None
 
 def p_ATSEGD(p):
     '''ATSEGD : OPENSQU ATSEGC CLOSESQU'''
-    p[0] = p[1]
+    p[0] = p[2]
 
 def p_ATSEGC(p):
     ''' ATSEGC : ATSEGE ATSEGSIG
                | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+        if p[2] != None:
+            if (cubosem['arr'][p[1]['tipo']][p[2]['tipo']] != 'error'):
+                newtipo = p[1]
+                newtipo.update(p[2])
+                newtipo['tipo'] = cubosem['arr'][p[1]['tipo']][p[2]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (
+                p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[1], p.lineno(1)))
+        else:
+            p[0] = p[1]
+    else:
+        p[0] = None
 
 def p_ATSEGE(p):
     '''ATSEGE : EXPRESION
               | ATTERD'''
-    if p[1] != '[':
+    arrdim = {}
+    if type(p[1]) is not dict :
         global pilaoperand
         global ptipo
         pilaoperand.pop()
-        ptipo.pop()
+        arrdim['tipo'] = ptipo.pop()
+    else:
+        arrdim.update(p[1])
+        arrdim.update({'dims': 3})
+
+    p[0] = arrdim
 
 def p_ATSEGSIG(p):
     '''ATSEGSIG : COMMA ATSEGE ATSEGSIG
                 | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+        if p[3] != None:
+            if (cubosem['arr'][p[2]['tipo']][p[3]['tipo']] != 'error'):
+                newtipo = p[2]
+                newtipo.update(p[3])
+                newtipo['tipo'] = cubosem['arr'][p[2]['tipo']][p[3]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (
+                    p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[2], p.lineno(2)))
+        else:
+            p[0] = p[2]
+    else:
+        p[0] = None
 
 def p_ATTERD(p):
     '''ATTERD : OPENSQU ATTERC CLOSESQU'''
-    p[0] = p[1]
+    p[0] = p[2]
 
 def p_ATTERC(p):
     ''' ATTERC : ATTERE ATTERSIG
                | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+        if p[2] != None:
+            if(cubosem['arr'][p[1]['tipo']][p[2]['tipo']] != 'error'):
+                newtipo = p[1]
+                newtipo.update(p[2])
+                newtipo['tipo'] = cubosem['arr'][p[1]['tipo']][p[2]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[1], p.lineno(1)))
+        else:
+            p[0] = p[1]
+    else:
+        p[0] = None
+
 
 def p_ATTERE(p):
     '''ATTERE : EXPRESION'''
     global pilaoperand
     global ptipo
+
+    arrdim = {}
+
     pilaoperand.pop()
-    ptipo.pop()
+    arrdim['tipo'] = ptipo.pop()
+    p[0] = arrdim
 
 def p_ATTERSIG(p):
     '''ATTERSIG : COMMA ATTERE ATTERSIG
                 | empty'''
+    newtipo = None
+
+    global sem_err
+
+    if p[1] != None:
+        if p[3] != None:
+            if (cubosem['arr'][p[2]['tipo']][p[3]['tipo']] != 'error'):
+                newtipo = p[2]
+                newtipo.update(p[3])
+                newtipo['tipo'] = cubosem['arr'][p[2]['tipo']][p[3]['tipo']]
+                p[0] = newtipo
+            else:
+                sem_err = True
+                print('El tipo del elemento %r en la linea %r no es congruente con el tipo del arreglo' % (
+                p[1], p.lineno(1)))
+                raise SyntaxError('La variable %r en la linea %r no es un arreglo', (p[2], p.lineno(2)))
+        else:
+            p[0] = p[2]
+    else:
+        p[0] = None
 
 def p_empty(p):
     'empty :'
@@ -1563,6 +1896,12 @@ def p_error(p):
     raise TypeError("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
     
 parser = yacc.yacc( debug=1)
+
+
+def cuadToTxt(cuad):
+    opfile = open('cuadruplos.txt','w')
+    for i in range(len(cuad)):
+        opfile.write("%r %r %r %r\n" % cuad[i])
 
 
 #Prueba imprimir el cubo semantico para ver si esta bien
@@ -1601,6 +1940,7 @@ else:
     if(sem_err):
         print('No es lenguaje valido!!!!')
     else:
+        cuadToTxt(cuadruplos)
         print('aceptado')
 
 

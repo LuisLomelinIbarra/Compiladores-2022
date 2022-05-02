@@ -25,10 +25,10 @@ programa helloworld {
 		n = $factorial(3);
 		r = [2,2];
 		l = [[1,1],[1,1],[1,1]];
-		r = [[[1.0]]];
+		g = [[[1.0]]];
 		aka = 10-n;
 		10 / (-aka) ;
-		"apa" - "aja" ;
+		"apa" + "aja" ;
 		"coooooooooool" ;
 		l [1][1] = 3;
 		mientras(aka > 1){

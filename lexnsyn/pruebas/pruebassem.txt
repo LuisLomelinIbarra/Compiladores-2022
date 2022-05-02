@@ -25,14 +25,14 @@ programa helloworld {
 	{
 		n = $tres();
 		n = 'a';
-		r = [2,2];
+		r = [2 , 2];
 		l = [[1,1],[1,1],[1,1]];
-		r = [[[1.0]]];
+		g = [[[1.0]]];
 		aka = 10-n;
 		10 / aka ;
 		l [1][1] = 3;
 		aka = l[1][1];
-		mientras(aka > 1 || aka != 0){
+		mientras(aka > 1 || aka != 0 && n == 3){
 			aka = aka - 1;
 		}
 		por(aka = 10; aka > 1; aka = aka - 1;){
