@@ -689,12 +689,14 @@ lexer = lex.lex()
 
 
 #precedencia
-#precedence = (
-#    ('right','EQ' ),
-#    ( 'nonassoc', 'GT', 'LT','AND','OR'),
-#    ( 'left', 'PLUS', 'MINUS' ),
-#    ( 'left', 'MUL', 'DIV' ),
-#    )
+precedence = (
+    ('right','EQ' ),
+    ( 'nonassoc', 'GT', 'LT','AND','OR'),
+    ( 'left', 'PLUSMINUS' ),
+    ( 'left', 'MULDIV' ),
+    )
+
+########################################################################################################
 
 #Dir de func
 dirfunc = {}
@@ -1222,7 +1224,12 @@ def p_RETURNF(p):
 #####
 
 def p_EXPRESION(p):
-    '''EXPRESION : EXPRESIONR EXPRLOG'''
+    '''EXPRESION : EXPRESIONR EXPRLOGS '''
+
+    p[0] = 'exp'
+
+def p_EXPERLOGS(p):
+    '''EXPRLOGS : EXPRLOG'''
     global dirfunc
     global poper
     global pilaoperand
@@ -1230,7 +1237,7 @@ def p_EXPRESION(p):
     global regcount
 
     if (poper[-1:].pop() != None):
-        if(poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
+        if (poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
             rop = pilaoperand.pop()
             ropt = ptipo.pop()
             lop = pilaoperand.pop()
@@ -1242,8 +1249,8 @@ def p_EXPRESION(p):
                 print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
 
                 # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
-                pilaoperand.append('res'+str(regcount))
+                cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+                pilaoperand.append('res' + str(regcount))
                 regcount = regcount + 1
                 ptipo.append(restipo)
             else:
@@ -1255,7 +1262,6 @@ def p_EXPRESION(p):
                 raise SyntaxError(
                     'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
                         lopt, ropt, p.lineno(1)))
-    p[0] = 'exp'
 
 def p_EXPRLOG(p):
     '''EXPRLOG : AND EXPRESION
@@ -1267,48 +1273,51 @@ def p_EXPRLOG(p):
     print(poper)
 
 def p_EXPRESIONR(p):
-    '''EXPRESIONR : EXP EXPR'''
+    '''EXPRESIONR : EXP EXPRS'''
+
+
+def p_EXPRS(p):
+    '''EXPRS : EXPR'''
     global dirfunc
     global poper
     global pilaoperand
     global ptipo
     global regcount
     if (poper[-1:].pop() != None):
-        if(poper[-1:].pop() in ['>','<','<=','>=','==','!=']):
+        if (poper[-1:].pop() in ['>', '<', '<=', '>=', '==', '!=']):
 
+            rop = pilaoperand.pop()
+            ropt = ptipo.pop()
+            lop = pilaoperand.pop()
+            lopt = ptipo.pop()
+            oper = poper.pop()
+            if (cubosem[oper][ropt][lopt] != 'error'):
+                restipo = cubosem[oper][ropt][lopt]
+                print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
 
-                rop = pilaoperand.pop()
-                ropt = ptipo.pop()
-                lop = pilaoperand.pop()
-                lopt = ptipo.pop()
-                oper = poper.pop()
-                if (cubosem[oper][ropt][lopt] != 'error'):
-                    restipo = cubosem[oper][ropt][lopt]
-                    print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+                # generar cuadruplo
+                cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
 
-                    # generar cuadruplo
-                    cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
-
-                    pilaoperand.append('res' + str(regcount))
-                    regcount = regcount + 1
-                    ptipo.append(restipo)
-                else:
-                    global sem_err
-                    sem_err = True
-                    print(
-                        'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                            lopt, ropt, p.lineno(1)))
-                    raise SyntaxError(
-                        'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                            lopt, ropt, p.lineno(1)))
+                pilaoperand.append('res' + str(regcount))
+                regcount = regcount + 1
+                ptipo.append(restipo)
+            else:
+                global sem_err
+                sem_err = True
+                print(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, p.lineno(1)))
+                raise SyntaxError(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, p.lineno(1)))
 
 def p_EXPR(p):
-    '''EXPR : GT EXPRESIONR
-                 | LT EXPRESIONR
-                 | EXLAM EQ EXPRESIONR
-                 | EQ EQ EXPRESIONR
-                 | GT EQ EXPRESIONR
-                 | LT EQ EXPRESIONR
+    '''EXPR : GT EXP
+                 | LT EXP
+                 | EXLAM EQ EXP
+                 | EQ EQ EXP
+                 | GT EQ EXP
+                 | LT EQ EXP
                  | empty
                  '''
     global poper
@@ -1321,17 +1330,18 @@ def p_EXPR(p):
 
     
 def p_EXP(p):
-    '''EXP : TERMINO TERMINOS
-           | TERMINO '''
+    '''EXP : TERMINO
+    | TERMINOSS
+            '''
     global dirfunc
     global poper
     global pilaoperand
     global ptipo
     global regcount
-    #print(poper)
-    #print(pilaoperand)
-    #print(ptipo)
-    #print(poper[-1:].pop(),'\n----')
+    # print(poper)
+    # print(pilaoperand)
+    # print(ptipo)
+    # print(poper[-1:].pop(),'\n----')
     if poper[-1:].pop() == '+' or poper[-1:].pop() == '-':
         rop = pilaoperand.pop()
         ropt = ptipo.pop()
@@ -1343,71 +1353,95 @@ def p_EXP(p):
             print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
 
             # generar cuadruplo
-            cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
+            cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
 
-            pilaoperand.append('res'+str(regcount))
+            pilaoperand.append('res' + str(regcount))
             regcount = regcount + 1
             ptipo.append(restipo)
         else:
             global sem_err
             sem_err = True
-            print('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
-            raise SyntaxError('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
+            print(
+                'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
+            raise SyntaxError(
+                'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
 
-def p_TERMINOS(p):
-    '''TERMINOS : PLUS EXP
-                | MINUS EXP
+
+def p_TERMINOSS(p):
+    '''TERMINOSS : TERMINO PLUS EXP %prec PLUSMINUS
+                | TERMINO MINUS EXP %prec PLUSMINUS
                 | empty'''
     global poper
-    if p[1] == '+' or p[1] == '-':
-        poper.append(p[1])
+    if p[2] == '+' or p[2] == '-':
+        poper.append(p[2])
     print(poper)
+
+
+#def p_TERMINOS(p):
+#    '''TERMINOS : PLUS EXP
+#                | MINUS EXP
+#                | empty'''
+#    global poper
+#    if p[1] == '+' or p[1] == '-':
+#        poper.append(p[1])
+#    print(poper)
     
     
 def p_TERMINO(p):
-    '''TERMINO : FACTOR FACTORES
-               | FACTOR'''
-    #if p[2] != None:
+    '''TERMINO : FACTOR
+                | FACTORESS
+               '''
+    # if p[2] != None:
     global dirfunc
     global poper
     global pilaoperand
     global ptipo
     global regcount
-    #print(poper)
-    #print(pilaoperand)
-    #print(ptipo)
-    #print(poper[-1:].pop(), '\n----')
+    # print(poper)
+    # print(pilaoperand)
+    # print(ptipo)
+    # print(poper[-1:].pop(), '\n----')
     if poper[-1:].pop() == '*' or poper[-1:].pop() == '/':
         rop = pilaoperand.pop()
         ropt = ptipo.pop()
         lop = pilaoperand.pop()
         lopt = ptipo.pop()
         oper = poper.pop()
-        if(cubosem[oper][ropt][lopt] != 'error'):
+        if (cubosem[oper][ropt][lopt] != 'error'):
             restipo = cubosem[oper][ropt][lopt]
-            print('La operacion de ',lop,oper,rop,'resulta en '+restipo)
-            #generar cuadruplo
-            cuadruplos.append((oper, rop, lop, 'res'+str(regcount)))
+            print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+            # generar cuadruplo
+            cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
 
-            pilaoperand.append('res'+str(regcount))
+            pilaoperand.append('res' + str(regcount))
             regcount = regcount + 1
             ptipo.append(restipo)
         else:
             global sem_err
             sem_err = True
-            print('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
-            raise SyntaxError('Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt,ropt,p.lineno(2)))
+            print(
+                'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
+            raise SyntaxError(
+                'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
 
-
-    
-def p_FACTORES(p):
-    '''FACTORES : MUL TERMINO
-                | DIV TERMINO
+def p_FACTORESS(p):
+    '''FACTORESS : FACTOR MUL TERMINO %prec MULDIV
+                | FACTOR DIV TERMINO %prec MULDIV
                 | empty'''
     global poper
-    if p[1] == '*' or p[1] == '/':
-        poper.append(p[1])
+    if p[2] == '*' or p[2] == '/':
+        poper.append(p[2])
     print(poper)
+
+    
+#def p_FACTORES(p):
+#    '''FACTORES : MUL TERMINO
+#                | DIV TERMINO
+#                | empty'''
+#    global poper
+#    if p[1] == '*' or p[1] == '/':
+#        poper.append(p[1])
+#    print(poper)
     
     
 def p_FACTOR(p):
