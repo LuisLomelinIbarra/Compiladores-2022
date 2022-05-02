@@ -5,5 +5,5 @@ Se resolvieron algunos errores con la semantica para encontrar el tipo de un arr
 El avance de ahora debe de:
 - Generar código intermedio en un archivo de cuadruplos
 
-COSAS QUE ARREGLAR:
-- A pesar de haber resuelto el problema con la precedencia, ahora aparecio un problema con la associatividad de las expresiones, por alguna razón el sistema funciona haciendo todo de manera associativa derecha. Se esta trabajando (durante y después de esta entrega) en como resolver esto...
+COSAS QUE INVESTIGAR:
+- Hay que manejar bien la asignación de espacios en memoria de los cuadruplos para la generación de código intermedio. Por el momento solo va agregando de manera ascendente a un registro teoreticamente infinito

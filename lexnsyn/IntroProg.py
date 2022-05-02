@@ -1368,8 +1368,8 @@ def p_EXP(p):
 
 
 def p_TERMINOSS(p):
-    '''TERMINOSS : TERMINO PLUS EXP %prec PLUSMINUS
-                | TERMINO MINUS EXP %prec PLUSMINUS
+    '''TERMINOSS : EXP PLUS EXP %prec PLUSMINUS
+                | EXP MINUS EXP %prec PLUSMINUS
                 | empty'''
     global poper
     if p[2] == '+' or p[2] == '-':
@@ -1425,8 +1425,8 @@ def p_TERMINO(p):
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
 
 def p_FACTORESS(p):
-    '''FACTORESS : FACTOR MUL TERMINO %prec MULDIV
-                | FACTOR DIV TERMINO %prec MULDIV
+    '''FACTORESS : TERMINO MUL TERMINO %prec MULDIV
+                | TERMINO DIV TERMINO %prec MULDIV
                 | empty'''
     global poper
     if p[2] == '*' or p[2] == '/':
