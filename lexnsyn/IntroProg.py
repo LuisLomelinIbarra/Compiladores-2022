@@ -1372,8 +1372,9 @@ def p_TERMINOSS(p):
                 | EXP MINUS EXP %prec PLUSMINUS
                 | empty'''
     global poper
-    if p[2] == '+' or p[2] == '-':
-        poper.append(p[2])
+    if p[1] != None:
+        if p[2] == '+' or p[2] == '-':
+            poper.append(p[2])
     print(poper)
 
 
@@ -1429,8 +1430,9 @@ def p_FACTORESS(p):
                 | TERMINO DIV TERMINO %prec MULDIV
                 | empty'''
     global poper
-    if p[2] == '*' or p[2] == '/':
-        poper.append(p[2])
+    if p[1] != None:
+        if p[2] == '*' or p[2] == '/':
+            poper.append(p[2])
     print(poper)
 
     
