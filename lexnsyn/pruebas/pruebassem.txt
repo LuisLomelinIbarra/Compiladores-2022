@@ -20,6 +20,7 @@ programa helloworld {
 	{
 		entero aka;
 		flotante akas1;
+		entero n;
 
 	}
 	{

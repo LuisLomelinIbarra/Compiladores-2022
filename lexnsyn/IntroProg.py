@@ -730,15 +730,15 @@ def p_PROGRAMA(p):
     if(p[5] != None):
         # 4.- Checar que no se repitan los nombres de variables globales en las funciones locales
         #print("Funciones : %r" % p[5])
-        for kfun in p[5].keys():
-            funvars = p[5][kfun]['vartab']
-            for varnam in funvars:
-                if varnam in dirfunc['global']['vartab'].keys():
-                    print("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5)))
-
-                    sem_err = True
-                    raise (SyntaxError(
-                        "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5))))
+        #for kfun in p[5].keys():
+        #    funvars = p[5][kfun]['vartab']
+        #    for varnam in funvars:
+        #        if varnam in dirfunc['global']['vartab'].keys():
+        #            print("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5)))
+        #
+        #            sem_err = True
+        #            raise (SyntaxError(
+        #                "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5))))
 
         dirfunc.update(p[5])
 
@@ -759,19 +759,19 @@ def p_PRINSCOPE(p):
     print('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
     if (p[2] != None):
         ks = p[2].keys()
-        if dirfunc['global']['vartab'] != None:
-            if len(dirfunc['global']['vartab']) > 0 :
-                print('a', p[2], dirfunc['global']['vartab'])
-                for k in ks:
-                    if k in dirfunc['global']['vartab'].keys():
-                        print(
-                            "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
-                            k, p.lineno(9)))
-
-                        sem_err = True
-                        raise (SyntaxError(
-                            "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
-                            k, p.lineno(9))))
+        #if dirfunc['global']['vartab'] != None:
+        #    if len(dirfunc['global']['vartab']) > 0 :
+        #        print('a', p[2], dirfunc['global']['vartab'])
+        #        for k in ks:
+        #            if k in dirfunc['global']['vartab'].keys():
+        #                print(
+        #                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
+        #                    k, p.lineno(2)))
+        #
+        #                sem_err = True
+        #                raise (SyntaxError(
+        #                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
+        #                    k, p.lineno(2))))
     dirfunc['principal'] = {'vartab':p[2]}
     #dirfunc['global']['vartab'].update(p[2])
     p[0] = p[2]
