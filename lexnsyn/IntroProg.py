@@ -694,10 +694,12 @@ precedence = (
     ( 'nonassoc', 'GT', 'LT','AND','OR'),
     ( 'left', 'PLUSMINUS' ),
     ( 'left', 'MULDIV' ),
+    ('right', 'RRULE')
     )
 
 ########################################################################################################
-
+#### Variables globales de interes
+#########################################################################################################
 #Dir de func
 dirfunc = {}
 #Current scope
@@ -705,11 +707,82 @@ currscope = None
 #para saber cuales parametros evualuar en llamada de funcion
 funcallcurr = None
 
+#Pila de Saltos
+psaltos = []
+cuadcount = 0
+
 #Para generar los cuadruplos temporalmente asignar un registro de manera acendente al cuadruplo
 regcount = 0
 
 #Cuadruplos
 cuadruplos = []
+
+#Tabla constantes
+ctetab = {}
+
+#Contadores de variables
+#intcount = 0
+#floatcount = 0
+#charcount = 0
+#boolcount = 0
+cteintcount = 0
+ctefloatcount = 0
+ctecharcount = 0
+cteboolcount = 0
+
+#Contadores de arreglos
+#intarraycount = 0
+#floatarraycount = 0
+#chararraycount = 0
+#boolarraycount = 0
+
+#Offsets de direcciones
+
+#MAXIMOS POR VARIABLE
+INTMAX = 2000
+FLOATMAX = 2000
+CHARMAX = 1000
+BOOLMAX = 1000
+INTARRAYMAX = 2000
+FLOATARRAYMAX = 2000
+CHARARRAYMAX = 1000
+BOOLARRAYMAX = 1000
+
+#Global
+globalint = 1000
+globalfloat = globalint + INTMAX
+globalchar = globalfloat + FLOATMAX
+globalbool = globalchar + CHARMAX
+globalintarr = globalbool + BOOLMAX
+globalfloatarr = globalintarr + INTARRAYMAX
+globalchararr = globalfloatarr + FLOATARRAYMAX
+globalboolarr = globalchararr + CHARARRAYMAX
+
+#Local
+localint = globalboolarr + BOOLARRAYMAX
+localfloat = localint + INTMAX
+localchar = localfloat + FLOATMAX
+localbool = localchar + CHARMAX
+localintarr = localbool + BOOLMAX
+localfloatarr = localintarr + INTARRAYMAX
+localchararr = localfloatarr + FLOATARRAYMAX
+localboolarr = localchararr + CHARARRAYMAX
+
+#Temporal
+tempint = localboolarr + BOOLARRAYMAX
+tempfloat = tempint + INTMAX
+tempchar = tempfloat + FLOATMAX
+tempbool = tempchar + CHARMAX
+tempintarr = tempbool + BOOLMAX
+tempfloatarr = tempintarr + INTARRAYMAX
+tempchararr = tempfloatarr + FLOATARRAYMAX
+tempboolarr = tempchararr + CHARARRAYMAX
+
+#Constantes
+constint = tempboolarr + BOOLARRAYMAX
+constfloat = constint + INTMAX
+constchar = constfloat + FLOATMAX
+constbool = constchar + CHARMAX
 
 
 #Estructura del programa
@@ -718,15 +791,18 @@ def p_PROGRAMA(p):
 
 
     global dirfunc
+    global sem_err
 
     #1.- Crear el directorio de funciones
-    dirfunc['global'] = {'vartab':{}}
+    #dirfunc['global'] = {'vartab':{}}
     #2.- Si se encuentran declaraciones globales se debe de crear una tabla de symbolos a nivel global
-    # Este es encapsulado en la regla dirfunc
+    # Este es encapsulado en la regla decglob
+    #if p[4] != None:
+    #    dirfunc['global'].update(p[4])
 
-    global sem_err
+
     #3.- Si se encuentran funciones darlas de alta en el dir de funciones
-    #print(p[5])
+
     if(p[5] != None):
         # 4.- Checar que no se repitan los nombres de variables globales en las funciones locales
         #print("Funciones : %r" % p[5])
@@ -755,6 +831,24 @@ def p_PRINSCOPE(p):
     '''PRINSCOPE : OPENCUR DECLARACIONES CLOSECUR'''
     global currscope
     global dirfunc
+    global localint
+    global localfloat
+    global localchar
+    global localbool
+    global localintarr
+    global localfloatarr
+    global localchararr
+    global localboolarr
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global INTARRAYMAX
+    global FLOATARRAYMAX
+    global CHARARRAYMAX
+    global BOOLARRAYMAX
+    global sem_err
+
     currscope = 'principal'
     print('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
     if (p[2] != None):
@@ -772,7 +866,74 @@ def p_PRINSCOPE(p):
         #                raise (SyntaxError(
         #                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
         #                    k, p.lineno(2))))
-    dirfunc['principal'] = {'vartab':p[2]}
+
+        # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
+        # Contadores de variables
+        intcount = 0
+        floatcount = 0
+        charcount = 0
+        boolcount = 0
+
+        # Contadores de arreglos
+        intarraycount = 0
+        floatarraycount = 0
+        chararraycount = 0
+        boolarraycount = 0
+        if (p[2] != None and len(p[2]) > 0):
+
+            for k in p[2].keys():
+                if ('dims' in p[2][k].keys()):  # Asignacion de direcciones de arreglos
+                    pass
+                else:
+                    if (p[2][k]['tipo'] == 'entero'):  # Asignar las direcciones enteras
+                        if (intcount < INTMAX):
+                            p[2][k]['address'] = localint + intcount
+                            intcount += 1
+                        else:
+                            sem_err = True
+                            print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                p.lineno(1)))
+                            raise SyntaxError(
+                                "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                    p.lineno(1)))
+
+                    elif (p[2][k]['tipo'] == 'flotante'):  # Asignar las direcciones flotantes
+                        if (floatcount < FLOATMAX):
+                            p[2][k]['address'] = localfloat + floatcount
+                            floatcount += 1
+                        else:
+                            sem_err = True
+                            print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                p.lineno(1)))
+                            raise SyntaxError(
+                                "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                    p.lineno(1)))
+
+                    elif (p[2][k]['tipo'] == 'char'):  # Asignar las direcciones char
+                        if (charcount < CHARMAX):
+                            p[2][k]['address'] = localchar + charcount
+                            charcount += 1
+                        else:
+                            sem_err = True
+                            print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                p.lineno(1)))
+                            raise SyntaxError(
+                                "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                    p.lineno(1)))
+                    elif (p[2][k]['tipo'] == 'bool'):  # Asignar las direcciones char
+                        if (boolcount < BOOLMAX):
+                            p[2][k]['address'] = localbool + boolcount
+                            boolcount += 1
+                        else:
+                            sem_err = True
+                            print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                p.lineno(1)))
+                            raise SyntaxError(
+                                "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
+                                    p.lineno(1)))
+        print('\n\n\n() () () () () () () () () ()\n\n', p[2])
+
+    dirfunc['principal'] = {'tipo': 'vacio', 'params:': None,'vartab':p[2]}
     #dirfunc['global']['vartab'].update(p[2])
     p[0] = p[2]
 
@@ -783,6 +944,80 @@ def p_PRINSCOPE(p):
 def p_DECGLOB(p):
     '''DECGLOB : DECLARACIONES'''
     global dirfunc
+    global globalint
+    global globalfloat
+    global globalchar
+    global globalbool
+    global globalintarr
+    global globalfloatarr
+    global globalchararr
+    global globalboolarr
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global INTARRAYMAX
+    global FLOATARRAYMAX
+    global CHARARRAYMAX
+    global BOOLARRAYMAX
+
+    global sem_err
+
+    # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
+    # Contadores de variables
+    intcount = 0
+    floatcount = 0
+    charcount = 0
+    boolcount = 0
+
+    # Contadores de arreglos
+    intarraycount = 0
+    floatarraycount = 0
+    chararraycount = 0
+    boolarraycount = 0
+    #print(p[1])
+    if (p[1] != None):
+        for k in p[1].keys():
+            if('dims' in p[1][k].keys()): # Asignacion de direcciones de arreglos
+                pass
+            else:
+                if(p[1][k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                    if (intcount < INTMAX):
+                        p[1][k]['address'] = globalint + intcount
+                        intcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+
+                elif (p[1][k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                    if (floatcount < FLOATMAX):
+                        p[1][k]['address'] = globalfloat + floatcount
+                        floatcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+
+                elif (p[1][k]['tipo'] == 'char'):#Asignar las direcciones char
+                    if (charcount < CHARMAX):
+                        p[1][k]['address'] = globalchar + charcount
+                        charcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                elif (p[1][k]['tipo'] == 'bool'):#Asignar las direcciones char
+                    if (boolcount < BOOLMAX):
+                        p[1][k]['address'] = globalbool + boolcount
+                        boolcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+
+
+
     dirfunc['global'] = {'tipo': 'vacio', 'params:': None, 'vartab': p[1]}
 
 
@@ -808,6 +1043,7 @@ def p_DECLARACIONES(p):
                     raise (SyntaxError("Error de Semantica la variable %r tiene una o más definicionesen la linea %r" % (k, p.lexer.lineno)))
             #print( "P[1] contiene %r y p[2] contiene %r" % (p[1].keys(),p[2].keys()))
 
+
             vartab.update(p[2])
         #knownvars.update(vartab)
         p[0] = vartab
@@ -829,6 +1065,8 @@ def p_DECVAR(p):
                 sem_err = True
                 raise(SyntaxError("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varid, p.lineno(3))))
             newvars[varid] = {'tipo': p[1]}
+
+
 
     p[0] = newvars
 
@@ -919,24 +1157,65 @@ def p_DECTODASFUNC(p):
 
 def p_DECFUNC(p):
     '''DECFUNC :  ALTADECFUN BLOQUE '''
+
     p[0] = p[1]
 
 def p_ALTADECFUN(p):
-    ''' ALTADECFUN : FUNCION TIPOFUN ID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
+    ''' ALTADECFUN : FUNCQUAD TIPOFUN ID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
     # print('Lee una dec funcion')
 
-    entradafun = {p[3]: {'tipo': p[2]}}
+    entradafun = {p[3]: {'tipo': p[2],'params':{}}}
     global dirfunc
     global currscope
+    global localint
+    global localfloat
+    global localchar
+    global localbool
+    global localintarr
+    global localfloatarr
+    global localchararr
+    global localboolarr
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global INTARRAYMAX
+    global FLOATARRAYMAX
+    global CHARARRAYMAX
+    global BOOLARRAYMAX
+    global sem_err
+
     currscope = p[3]
-    dirfunc.update({p[3]: {'tipo': p[2]}})
+    dirfunc.update({p[3]: {'tipo': p[2]},'params':{}})
     vartabloc = {}
+
     # Si hay parametros agregarlos a la entrada de la tabla y a la tabla de variables local
     if (p[5] != None):
-        vartabloc.update(p[5])
+        aux = {}
+        aux.update(p[5])
+        aux.update(vartabloc)
+        vartabloc = aux
+
+
+
         #print('Add params to vartab')
         entradafun[p[3]].update({'vartab': vartabloc})
         entradafun[p[3]].update({'params': p[5]})
+
+    # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
+    # Contadores de variables
+    intcount = 0
+    floatcount = 0
+    charcount = 0
+    boolcount = 0
+
+    # Contadores de arreglos
+    intarraycount = 0
+    floatarraycount = 0
+    chararraycount = 0
+    boolarraycount = 0
+
+
     dirfunc.update(entradafun)
     # Checar que los id de parametros no sean declarados localmente (doble def)
     #print(p[3])
@@ -948,19 +1227,64 @@ def p_ALTADECFUN(p):
             if (var in p[8].keys()):
                 print("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
                 var, p.lineno(8)))
-                global sem_err
+
                 sem_err = True
                 raise (SyntaxError("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
                 var, p.lineno(8))))
 
         vartabloc.update(p[8])
+    if (vartabloc != None and len(vartabloc) > 0):
 
+        for k in vartabloc.keys():
+            if('dims' in vartabloc[k].keys()): # Asignacion de direcciones de arreglos
+                pass
+            else:
+                if(vartabloc[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                    if (intcount < INTMAX):
+                        vartabloc[k]['address'] = localint + intcount
+                        intcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+
+                elif (vartabloc[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                    if (floatcount < FLOATMAX):
+                        vartabloc[k]['address'] = localfloat + floatcount
+                        floatcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+
+                elif (vartabloc[k]['tipo'] == 'char'):#Asignar las direcciones char
+                    if (charcount < CHARMAX):
+                        vartabloc[k]['address'] = localchar + charcount
+                        charcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                elif (vartabloc[k]['tipo'] == 'bool'):#Asignar las direcciones char
+                    if (boolcount < BOOLMAX):
+                        vartabloc[k]['address'] = localbool + boolcount
+                        boolcount += 1
+                    else:
+                        sem_err = True
+                        print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+                        raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
+    #print('\n\n\n() () () () () () () () () ()\n\n', vartabloc)
     entradafun[p[3]].update({'vartab': vartabloc})
     dirfunc.update(entradafun)
 
 
     p[0] = entradafun
     # print(p[0])
+
+def p_FUNCQUAD(p):
+    '''FUNCQUAD : FUNCION'''
+    #print('inicio func')
+    pass
 
 def p_TIPOFUN(p):
     '''TIPOFUN : TIPO
@@ -1001,36 +1325,37 @@ def p_PARAMS(p):
         p[0] = p[1]
 
 def p_PARAMD(p):
-    '''PARAMD : OPENSQU CLOSESQU PDSEG
+    '''PARAMD : OPENSQU CTE_INT CLOSESQU PDSEG
               | empty'''
     pdim = {'dims':1}
     if(p[1] == None):
         p[0] = p[1]
     else:
-
-        if(p[3] != None):
-            pdim.update(p[3])
+        pdim['dim1len'] = p[2]
+        if(p[4] != None):
+            pdim.update(p[4])
         p[0] = pdim
 
 def p_PDSEG(p):
-    '''PDSEG : OPENSQU CLOSESQU PDTER
+    '''PDSEG : OPENSQU CTE_INT CLOSESQU PDTER
               | empty'''
     pdim = {'dims': 2}
     if (p[1] == None):
         p[0] = p[1]
     else:
-        if (p[3] != None):
-            pdim.update(p[3])
+        pdim['dim2len'] = p[2]
+        if (p[4] != None):
+            pdim.update(p[4])
         p[0] = pdim
 
 def p_PDTER(p):
-    '''PDTER : OPENSQU CLOSESQU 
+    '''PDTER : OPENSQU CTE_INT CLOSESQU
              | empty'''
     pdim = {'dims': 3}
     if (p[1] == None):
         p[0] = p[1]
     else:
-
+        pdim['dim3len'] = p[2]
         p[0] = pdim
 
 
@@ -1063,7 +1388,8 @@ def p_ESTATUTO(p):
 
 # Impresion -------------------------  
 def p_IMPRESION(p):
-    '''IMPRESION : IMPRIMIR OPENPAR PRINTABLE PRINTARGS CLOSEPAR SEMICOLON'''    
+    '''IMPRESION : IMPRIMIR OPENPAR PRINTABLE PRINTARGS CLOSEPAR SEMICOLON'''
+
 
 def p_PRINTARGS(p):
     '''PRINTARGS : COMMA PRINTABLE PRINTARGS
@@ -1074,12 +1400,15 @@ def p_PRINTABLE(p):
                  | CTE_STRING
                  | ARR_TEX'''
 
+    
+
 # Asignacion -------------------
 
 def p_ASIGNACION(p):
     '''ASIGNACION : ID EQ ARR_TEX SEMICOLON
-        | ID ADIMS EQ EXPRESION SEMICOLON
-        | ID EQ EXPRESION SEMICOLON'''
+        | ID EQ EXPRESION SEMICOLON
+        | ID ADIMS EQ EXPRESION SEMICOLON %prec RRULE
+ '''
     #print('Lee asignacion')
     #Evaluar que la asignación sea correcta
     global cubosem
@@ -1087,17 +1416,22 @@ def p_ASIGNACION(p):
     global ptipo
     global sem_err
     global dirfunc
+    global cuadcount
     #Se checa que el id a asignar exista
     vartipo = None
+    addresses = None
     print(ptipo)
     print(p[3])
     if p[2] == '=':
-
-
-
+        #Asignación a un id por medio de una expresión o arreglo textual
 
         if (p[1] in dirfunc[currscope]['vartab'].keys()):
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+
+            if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()): #Checar si se le ha asignado una address
+
+                addresses = dirfunc[currscope]['vartab'][p[1]]['address']
+
             if (type(p[3]) is dict):
                 print(p[3])
                 if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
@@ -1107,6 +1441,11 @@ def p_ASIGNACION(p):
 
         elif (p[1] in dirfunc['global']['vartab'].keys()):
             vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+
+            if('address' in dirfunc['global']['vartab'][p[1]].keys()):#Checar si se le ha asignado una address
+
+                addresses = dirfunc['global']['vartab'][p[1]]['address']
+
             if (type(p[3]) is dict):
                 print(p[3])
                 if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
@@ -1126,11 +1465,17 @@ def p_ASIGNACION(p):
         asigt = ptipo.pop()
 
         print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
-        cuadruplos.append(('=', asig,'',p[1]))
 
         if (cubosem['='][vartipo][asigt] != 'error'):
             print('Cubo dice: ', cubosem['='][vartipo][asigt])
-            pass
+            #Generación de cuadruplo de asignación
+            if (addresses != None):
+                cuadruplos.append(('=', asig, '', addresses))
+                cuadcount += 1
+            else:
+                cuadruplos.append(('=', asig, '', p[1]))
+                cuadcount += 1
+            p[0] = vartipo # Se regresa al token el valor del id asignado
         else:
 
             sem_err = True
@@ -1142,6 +1487,7 @@ def p_ASIGNACION(p):
 
 
     else:
+        #Asignación a la llamada de un arreglo ej. N[1] = 2
         if (p[1] in dirfunc[currscope]['vartab'].keys()):
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
         elif (p[1] in dirfunc['global']['vartab'].keys()):
@@ -1156,17 +1502,21 @@ def p_ASIGNACION(p):
         asigt = ptipo.pop()
 
         print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
-        cuadruplos.append(('=', asig, '', p[1]))
+
 
         if (cubosem['='][vartipo][asigt] != 'error'):
             print('Cubo dice: ',cubosem['='][vartipo][asigt])
-            pass
+            #Generación de cuadruplo de asignación
+            cuadruplos.append(('=', asig, '', p[1]))
+            cuadcount += 1
+            p[0] = vartipo # Se regresa al token el valor del id asignado
         else:
 
             sem_err = True
             print('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (vartipo, asigt, p.lineno(1)))
             raise SyntaxError(
                 'Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (vartipo, asigt, p.lineno(1)))
+
 
 #def p_ASIGNARR(p):
 #    '''ASIGNARR : ARR_TEX SEMICOLON'''
@@ -1189,30 +1539,179 @@ def p_ATERD(p):
 # Condicion ----------------------------
 
 def p_CONDICION(p):
-    'CONDICION : SI OPENPAR EXPRESION CLOSEPAR BLOQUE IFELSE'
+    'CONDICION : SI IFGTO BLOQUE IFELSE'
+    global cuadruplos
+    global cuadcount
+    global psaltos
+
+
+    endState = psaltos.pop()
+    #print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState,'\ncount: ', cuadcount)
+    cuadruplos[endState] = cuadruplos[endState] + (cuadcount,)
+
+
+
+
+def p_IFGTO(p):
+    '''IFGTO : OPENPAR EXPRESION CLOSEPAR '''
+    global ptipo
+    global pilaoperand
+    global sem_err
+    global cuadruplos
+    global cuadcount
+    global psaltos
+
+    tip = ptipo.pop()
+    if(tip != 'bool'):
+        sem_err = True
+        print(
+            'Error de Semantica, %r no es una expresion booleana en la linea %r' % (
+                tip, p.lineno(1)))
+        raise SyntaxError(
+            'Error de Semantica, %r no es una expresion booleana en la linea %r' % (
+                tip, p.lineno(1)))
+    else:
+        res = pilaoperand.pop()
+        cuadruplos.append(('gotof',res,''))
+        psaltos.append(cuadcount)
+        cuadcount += 1
+
     
     
 def p_IFELSE(p):
-    '''IFELSE : SINO BLOQUE
+    '''IFELSE : NSINO BLOQUE
               | empty'''
 
-# Bucles ---------------------------------
+
+def p_BLOQIF(p):
+    '''NSINO : SINO'''
+    if (p[1] != None):
+        global cuadruplos
+        global cuadcount
+        global psaltos
+        # print('\tELSE\nlength cuad: ', len(cuadruplos),  '\ncount: ', cuadcount)
+        cuadruplos.append(('goto', '', ''))
+        cuadcount += 1
+        falseState = psaltos.pop()
+        cuadruplos[falseState] = cuadruplos[falseState] + (cuadcount,)
+        # print('\tAFTERCUAD\nlength cuad: ', len(cuadruplos), '\npopsaltos: ', falseState, '\ncount: ', cuadcount)
+
+        psaltos.append(cuadcount - 1)
+
+
+# Bucles --------------------------------------------------------------------------------------------------------------
 
 def p_BUCLE(p):
     '''BUCLE : WHILE
              | FOR'''
 
+
 def p_WHILE(p):
-    '''WHILE : MIENTRAS OPENPAR EXPRESION CLOSEPAR BLOQUE'''
+    '''WHILE : NWHILE WCOND BLOQUE'''
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    retState = psaltos.pop()
+    condState = psaltos.pop()
+    cuadruplos.append(('goto', '', '',condState))
+    cuadcount += 1
+    #print("\t\tWHILE\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
+    #print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
+    cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
+
+def p_NWHILE(p):
+    '''NWHILE : MIENTRAS'''
+    global cuadcount
+    global psaltos
+    global cuadruplos
+
+    psaltos.append(cuadcount)
+
+def p_WCOND(p):
+    '''WCOND : OPENPAR EXPRESION CLOSEPAR'''
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    global pilaoperand
+    global ptipo
+    global sem_err
+
+    tip = ptipo.pop()
+    if(tip != 'bool'):
+        sem_err = True
+        print('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tip, p.lineno(2)))
+        raise SyntaxError('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tip, p.lineno(2)))
+    else:
+        res = pilaoperand.pop()
+        cuadruplos.append(('gotof',res,''))
+        psaltos.append(cuadcount)
+        cuadcount += 1
 
 def p_FOR(p):
-    '''FOR : POR OPENPAR FORINIT EXPRESION SEMICOLON ASIGNACION CLOSEPAR BLOQUE'''
+    '''FOR : POR OPENPAR FORINIT FORSTEP CLOSEPAR BLOQUE'''
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    retState = psaltos.pop()
+    condState = psaltos.pop()
+    cuadruplos.append(('goto', '', '', condState))
+    cuadcount += 1
+    # print("\t\tFOR\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
+    # print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
+    cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_FORINIT(p):
     '''FORINIT : ASIGNACION
                | empty '''
+    global sem_err
+    global psaltos
+    global cuadcount
 
-# Return ---------------------------
+    if(p[1] != None):
+        # 1.- Checar que sea una variable numeríca a utilizar
+        if(p[1] not in  ['entero','floatante']):
+            sem_err
+            print('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
+            raise SyntaxError('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
+        else:
+            #2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+            psaltos.append(cuadcount)
+
+
+def p_FORSTEP(p):
+    '''FORSTEP : EXPRESION SEMICOLON  ASIGNACION'''
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    global pilaoperand
+    global ptipo
+    global sem_err
+    print('\n', pilaoperand, '\n', ptipo, '\n')
+    tipas = p[3]
+
+    tipexp = ptipo.pop()
+    print('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
+    print('\t\t\tChecar la asignación: ',  tipas, '\n')
+    if (tipexp not in  ['bool']):
+        sem_err = True
+        print('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
+        raise SyntaxError('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
+    else:
+        if (tipas not in ['entero', 'floatante']):
+            sem_err = True
+            print('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
+            raise SyntaxError(
+                'Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
+        else:
+            # 2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+
+            res = pilaoperand.pop()
+            cuadruplos.append(('gotof', res, ''))
+            psaltos.append(cuadcount)
+            cuadcount += 1
+
+
+# Return --------------------------------------------------------------------------------------------------------------
 
 def p_RETURNF(p):
     '''RETURNF : REGRESAR EXPRESION SEMICOLON'''
@@ -1235,6 +1734,7 @@ def p_EXPERLOGS(p):
     global pilaoperand
     global ptipo
     global regcount
+    global cuadcount
 
     if (poper[-1:].pop() != None):
         if (poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
@@ -1250,6 +1750,7 @@ def p_EXPERLOGS(p):
 
                 # generar cuadruplo
                 cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+                cuadcount += 1
                 pilaoperand.append('res' + str(regcount))
                 regcount = regcount + 1
                 ptipo.append(restipo)
@@ -1283,6 +1784,8 @@ def p_EXPRS(p):
     global pilaoperand
     global ptipo
     global regcount
+    global cuadcount
+
     if (poper[-1:].pop() != None):
         if (poper[-1:].pop() in ['>', '<', '<=', '>=', '==', '!=']):
 
@@ -1297,6 +1800,7 @@ def p_EXPRS(p):
 
                 # generar cuadruplo
                 cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+                cuadcount += 1
 
                 pilaoperand.append('res' + str(regcount))
                 regcount = regcount + 1
@@ -1338,6 +1842,8 @@ def p_EXP(p):
     global pilaoperand
     global ptipo
     global regcount
+    global cuadcount
+
     # print(poper)
     # print(pilaoperand)
     # print(ptipo)
@@ -1354,6 +1860,7 @@ def p_EXP(p):
 
             # generar cuadruplo
             cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+            cuadcount += 1
 
             pilaoperand.append('res' + str(regcount))
             regcount = regcount + 1
@@ -1365,7 +1872,7 @@ def p_EXP(p):
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
             raise SyntaxError(
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
-
+    p[0] = 'EXP'
 
 def p_TERMINOSS(p):
     '''TERMINOSS : EXP PLUS EXP %prec PLUSMINUS
@@ -1398,6 +1905,8 @@ def p_TERMINO(p):
     global pilaoperand
     global ptipo
     global regcount
+    global cuadcount
+
     # print(poper)
     # print(pilaoperand)
     # print(ptipo)
@@ -1413,6 +1922,7 @@ def p_TERMINO(p):
             print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
             # generar cuadruplo
             cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+            cuadcount += 1
 
             pilaoperand.append('res' + str(regcount))
             regcount = regcount + 1
@@ -1424,6 +1934,7 @@ def p_TERMINO(p):
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
             raise SyntaxError(
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
+    p[0] = 'Termino'
 
 def p_FACTORESS(p):
     '''FACTORESS : TERMINO MUL TERMINO %prec MULDIV
@@ -1457,10 +1968,12 @@ def p_FACTOR(p):
             global ptipo
             global cuadruplos
             global regcount
+            global cuadcount
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
             if(cubosem[p[1]]['none'][lopt] != 'error'):
                 cuadruplos.append((p[1],'',p[2],'res'+str(regcount)))
+                cuadcount += 1
                 pilaoperand.append('res'+str(regcount))
                 ptipo.append(cubosem[p[1]]['none'][lopt])
             else:
@@ -1500,29 +2013,89 @@ def p_VARCTE(p):
     global special
     global sem_err
     global poper
+    global constint
+    global constfloat
+    global constchar
+    global constbool
+    global cteintcount
+    global ctefloatcount
+    global ctecharcount
+    global cteboolcount
 
     #print('Para el elemento',p[1],'En el scope '+currscope+' Se encuentra la dir func así:')
     #print('dirfunc', dirfunc, '\n\n')
-    pilaoperand.append(p[1])
+    #pilaoperand.append(p[1])
     print('operadores ',poper)
     print('Se leyo en expresion',p[1])
     print('Pila de operandos',pilaoperand)
     if isinstance(p[1],int):
+        #Checar si la constante la ha encontrado antes
+        if p[1] in ctetab:
+            pilaoperand.append(ctetab[p[1]])
+        else:
+            if cteintcount < INTMAX:
+                ctetab[p[1]] = constint + cteintcount
+                cteintcount += 1
+                pilaoperand.append(ctetab[p[1]])
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
 
         ptipo.append('entero')
     elif isinstance(p[1],float):
-
+        # Checar si la constante la ha encontrado antes
+        if p[1] in ctetab:
+            pilaoperand.append(ctetab[p[1]])
+        else:
+            if ctefloatcount < FLOATMAX:
+                ctetab[p[1]] = constint + ctefloatcount
+                ctefloatcount += 1
+                pilaoperand.append(ctetab[p[1]])
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('flotante')
     elif p[1] == 'verdadero' or p[1] == 'falso':
+        # Checar si la constante la ha encontrado antes
+        if p[1] in ctetab:
+            pilaoperand.append(ctetab[p[1]])
+        else:
+            if cteboolcount < BOOLMAX:
+                ctetab[p[1]] = constbool + cteboolcount
+                cteboolcount += 1
+                pilaoperand.append(ctetab[p[1]])
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('bool')
     elif re.fullmatch("\"[^\"]+\"",p[1]):
-
+        pilaoperand.append(p[1])
         ptipo.append('cadena')
     elif re.fullmatch("\'[^\']\'",p[1]):
+        # Checar si la constante la ha encontrado antes
+        if p[1] in ctetab:
+            pilaoperand.append(ctetab[p[1]])
+        else:
+            if ctecharcount < CHARMAX:
+                ctetab[p[1]] = constchar + ctecharcount
+                ctecharcount += 1
+                pilaoperand.append(ctetab[p[1]])
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('char')
     elif re.fullmatch(r"\$[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):
         #llamada func
         vartipo = None
+
         if (p[1][1:] in dirfunc.keys()):
             vartipo = dirfunc[p[1][1:]]['tipo']
         elif (p[1][1:] in special.keys()):
@@ -1531,20 +2104,33 @@ def p_VARCTE(p):
             sem_err = True
             print('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
             raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
+
+        pilaoperand.append(p[1])
+
         ptipo.append(vartipo)
     elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):
         #print('Para el elemento', p[1], 'En el scope ' + currscope + ' Se encuentra la dir func así:')
         #print('dirfunc', dirfunc, '\n\n')
         #llamada vars
         vartipo = None
+        address = None
         if(p[1] in dirfunc[currscope]['vartab'].keys()):
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+            if('address' in dirfunc[currscope]['vartab'][p[1]].keys()):
+                address = dirfunc[currscope]['vartab'][p[1]]['address']
         elif (p[1] in dirfunc['global']['vartab'].keys()):
             vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+            if ('address' in dirfunc['global']['vartab'][p[1]].keys()):
+                address = dirfunc['global']['vartab'][p[1]]['address']
         else:
             sem_err = True
             print('La variable %r en la linea %r no ha sido declarada'%(p[1],p.lineno(1)))
             raise SyntaxError('La variable %r en la linea %r no ha sido declarada',(p[1],p.lineno(1)))
+        if(address != None):
+            pilaoperand.append(address)
+        else:
+            pilaoperand.append(p[1])
+
         ptipo.append(vartipo)
 
     else:
@@ -1577,22 +2163,22 @@ def p_LLAMADAFUNC(p):
             vartipo = dirfunc[p[2]]['params']
     else:
         sem_err = True
-        print('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
-        raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
-
+        print('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
+        raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[2], p.lineno(1)))
+    print(vartipo)
     #Checar los parametros esten bien llamados
     if vartipo != None:
 
         if len(p[4]) != len(vartipo):
             sem_err = True
-            print('La funcion %r en la linea %r no tiene los parametros correctos' % (p[1], p.lineno(1)))
-            raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos', (p[1], p.lineno(1)))
+            print('La funcion %r en la linea %r no tiene los parametros correctos' % (p[2], p.lineno(1)))
+            raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos', (p[2], p.lineno(1)))
         else:
 
             i = 0
 
             for param in vartipo.values():
-                print('acpapapapa',param ,p[4][i])
+                #print('acpapapapa',param ,p[4][i])
                 if param['tipo'] != p[4][i]['tipo']:
 
                     sem_err = True
@@ -1937,7 +2523,7 @@ parser = yacc.yacc( debug=1)
 def cuadToTxt(cuad):
     opfile = open('cuadruplos.txt','w')
     for i in range(len(cuad)):
-        opfile.write("%r %r %r %r\n" % cuad[i])
+        opfile.write("%r : %r %r %r %r\n" % ((i,)+cuad[i]))
 
 
 #Prueba imprimir el cubo semantico para ver si esta bien

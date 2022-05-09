@@ -1,0 +1,14 @@
+- Arreglar las variables sintacticas de el arreglo textual (asegurar por medio de syntaxis que los arreglos solo se puedan declarar de la manera correcta.)
+- Cambiar como esta guardados los parametros de dirfunc (opcional)
+- Cambiar la comprobación de parametros (opcional)
+- Implementar el uso de direcciones en vez de nombres para los cuadruplos
+	- Crear los rangos de memoria global, local, temporal
+		- Crear un subrango para los enteros, flotantes, chars, bools y los arreglos de los mismos.
+	- Asignar los rangos una vez creada la tabla, antes de actualizar la variable de la tabla ir asignando las direcciones de acuerdo al scope de cada vartab
+- Implementar los puntos neuralgicos de IF
+- Implementar los puntos neuralgicos de IF-ELSE
+- Implementar los puntos neuralgicos de WHILE
+- Implementar los puntos neuralgicos de FOR
+- Implementar el primer cuadruplo (goto principal)
+- Implementar los cuadruplos de la llamada de funciones
+- Implementar la adicion del cuadruplo de inicio de la tabla de funciones
