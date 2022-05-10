@@ -1,9 +1,9 @@
-# Avance 3
+# Avance 4
 
-Se resolvieron algunos errores con la semantica para encontrar el tipo de un arreglo textual. También se cambio a que todos los elementos que se declaren en la función principal, se declaren como su propia entrada en la tabla en vez de que sea una addición a la tabla global. También se arreglo el error a la hora de declarar precedencia entre los operadores.
+Se implemento la generación de cuadruplos para los ciclos y para las condiciones. También se solucionaron ligeros errores que surgieron de algunos cambios menores a las expresiones. También ya se agregaron los cuadruplos del estatuto imprimir (porfin). De igual manera se avanzaron con algunos puntos de modulos, principalmente agregar los parametros correctos en el orden correcto a las funciones y la verificación de los tipos en las llamadas.
 
 El avance de ahora debe de:
-- Generar código intermedio en un archivo de cuadruplos
+- Generar código intermedio en un archivo de cuadruplos, generando también los cuadruplos pertinentes a los estatutos de condición y de bucle.
 
 COSAS QUE INVESTIGAR:
-- Hay que manejar bien la asignación de espacios en memoria de los cuadruplos para la generación de código intermedio. Por el momento solo va agregando de manera ascendente a un registro teoreticamente infinito
+- Como manejar los arreglos en memoría y como parametros/argumentos de funciones.

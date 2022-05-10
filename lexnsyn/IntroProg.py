@@ -747,6 +747,7 @@ INTARRAYMAX = 2000
 FLOATARRAYMAX = 2000
 CHARARRAYMAX = 1000
 BOOLARRAYMAX = 1000
+STRINGMAX = 1000
 
 #Global
 globalint = 1000
@@ -783,6 +784,7 @@ constint = tempboolarr + BOOLARRAYMAX
 constfloat = constint + INTMAX
 constchar = constfloat + FLOATMAX
 constbool = constchar + CHARMAX
+conststring = constbool + BOOLMAX
 
 
 #Estructura del programa
@@ -1389,18 +1391,48 @@ def p_ESTATUTO(p):
 # Impresion -------------------------  
 def p_IMPRESION(p):
     '''IMPRESION : IMPRIMIR OPENPAR PRINTABLE PRINTARGS CLOSEPAR SEMICOLON'''
+    global cuadcount
+    global cuadruplos
+
+    pargs = [p[3]]
+    if(p[4] != None):
+        pargs = pargs + p[4]
+    print(pargs)
+    for prin in pargs:
+        print(prin)
+        cuadruplos.append(('imprimir',prin,'',''))
+        cuadcount+=1
 
 
 def p_PRINTARGS(p):
     '''PRINTARGS : COMMA PRINTABLE PRINTARGS
                  | empty'''
 
+    if (p[1] != None):
+
+        pargs = [p[2]]
+        if(p[3] != None):
+            pargs = pargs + p[3]
+        p[0] = pargs
+    else:
+        p[0] = None
+
+
 def p_PRINTABLE(p):
     '''PRINTABLE : EXPRESION
                  | CTE_STRING
                  | ARR_TEX'''
+    global pilaoperand
+    global ptipo
 
-    
+    if type(p[1]) == str and p[1] != 'exp':
+        p[0] = p[1]
+    else:
+        op = pilaoperand.pop()
+        ptipo.pop()
+        p[0] = op
+    print(p[0])
+
 
 # Asignacion -------------------
 
