@@ -5,13 +5,22 @@ programa helloworld {
 	entero l[3][2];
 	flotante g[1][1][1];
 	
-	
+	funcion vacio pop(){}{
+		imprimir("pop");
+		
+	}	
 
 	
-	funcion flotante tres(entero g[2]){
+	funcion flotante tres(entero g,entero la,entero fa){
 		flotante tr;
 	}{
 		tr = 3.0;
+		tr = 4.0 - 1.0 * 1 + 1 - 1;
+		si(verdadero){
+			imprimir("verdadero");
+		}sino{
+			imprimir("falso");
+		}
 		regresar tr;
 	}
 
@@ -24,7 +33,7 @@ programa helloworld {
 
 	}
 	{
-		n = $tres(r);
+		n = $tres(1,2,3);
 		n = 'a';
 		r = [2 , 2];
 		l = [[1,1],[1,1],[1,1]];

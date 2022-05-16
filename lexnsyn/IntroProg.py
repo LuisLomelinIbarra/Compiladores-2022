@@ -561,7 +561,12 @@ ptipo = ['?']
 
 
 #funciones especiales
-special = {'leer':{'tipo':'vacio'}}
+special = {
+    'leer':
+        {
+            'tipo':'vacio'
+        },
+}
 
 #Definir los tokens de la gramática
 reserved = {'programa' :"PROGRAM",
@@ -721,10 +726,16 @@ cuadruplos = []
 ctetab = {}
 
 #Contadores de variables
-#intcount = 0
-#floatcount = 0
-#charcount = 0
-#boolcount = 0
+tmpintcount = 0
+tmpfloatcount = 0
+tmpcharcount = 0
+tmpboolcount = 0
+
+glbintcount = 0
+glbfloatcount = 0
+glbcharcount = 0
+glbboolcount = 0
+
 cteintcount = 0
 ctefloatcount = 0
 ctecharcount = 0
@@ -789,9 +800,10 @@ conststring = constbool + BOOLMAX
 
 #Estructura del programa
 def p_PROGRAMA(p):
-    '''PROGRAMA : PROGRAM ID OPENCUR DECGLOB DECTODASFUNC PRINCIPAL FUNCION PRINSCOPE BLOQUE CLOSECUR '''
+    '''PROGRAMA : INITPROG ID OPENCUR DECGLOB DECTODASFUNC PRINCIPAL FUNCION PRINSCOPE BLOQUE CLOSECUR '''
 
-
+    global cuadruplos
+    global cuadcount
     global dirfunc
     global sem_err
 
@@ -822,17 +834,38 @@ def p_PROGRAMA(p):
 
 
 
-    #4.- Checar si la declaración de las var locales de pricipal ya existen
+
 
 
 
     #4.- Borrar si se llega al final del programa.
+    for key in dirfunc.keys():
+        if 'vartab' in dirfunc[key]:
+            del dirfunc[key]['vartab']
     print(dirfunc)
+    cuadruplos.append(('END','','',''))
+    cuadcount+=1
+    #global ctetab
+    #print('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',ctetab)
+
+def p_INITPROG(p):
+    ''' INITPROG : PROGRAM'''
+    global cuadruplos
+    global psaltos
+    global cuadcount
+
+    #Generar el go to main
+    cuadruplos.append(('GOTO','',''))
+    psaltos.append(cuadcount)
+    cuadcount += 1
 
 def p_PRINSCOPE(p):
     '''PRINSCOPE : OPENCUR DECLARACIONES CLOSECUR'''
+    #Scope en el que se encuentra
     global currscope
+    #Dir. de Funciones
     global dirfunc
+    #Direcciones locales
     global localint
     global localfloat
     global localchar
@@ -841,6 +874,12 @@ def p_PRINSCOPE(p):
     global localfloatarr
     global localchararr
     global localboolarr
+    #Direcciones temporales
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    #Maximo de variables
     global INTMAX
     global FLOATMAX
     global CHARMAX
@@ -849,10 +888,36 @@ def p_PRINSCOPE(p):
     global FLOATARRAYMAX
     global CHARARRAYMAX
     global BOOLARRAYMAX
+    #Flag de error
     global sem_err
+    # Cuadruplos y su contador, pila de saltos
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    init = psaltos.pop()
+    cuadruplos[init] = cuadruplos[init] + (cuadcount,)
 
+    #Reiniciar el contador local de los temporales en main
+    tmpintcount = 0
+    tmpfloatcount = 0
+    tmpcharcount = 0
+    tmpboolcount = 0
+
+    #Poner el scope correcto
     currscope = 'principal'
+
     print('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
+    # Contadores de variables
+    intcount = 0
+    floatcount = 0
+    charcount = 0
+    boolcount = 0
+
+    # Contadores de arreglos
+    # intarraycount = 0
+    # floatarraycount = 0
+    # chararraycount = 0
+    # boolarraycount = 0
     if (p[2] != None):
         ks = p[2].keys()
         #if dirfunc['global']['vartab'] != None:
@@ -870,17 +935,7 @@ def p_PRINSCOPE(p):
         #                    k, p.lineno(2))))
 
         # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
-        # Contadores de variables
-        intcount = 0
-        floatcount = 0
-        charcount = 0
-        boolcount = 0
 
-        # Contadores de arreglos
-        intarraycount = 0
-        floatarraycount = 0
-        chararraycount = 0
-        boolarraycount = 0
         if (p[2] != None and len(p[2]) > 0):
 
             for k in p[2].keys():
@@ -933,10 +988,11 @@ def p_PRINSCOPE(p):
                             raise SyntaxError(
                                 "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
                                     p.lineno(1)))
-        print('\n\n\n() () () () () () () () () ()\n\n', p[2])
 
-    dirfunc['principal'] = {'tipo': 'vacio', 'params:': None,'vartab':p[2]}
+
+    dirfunc['principal'] = {'tipo': 'vacio', 'params:': None,'vartab':p[2], 'varres':{'entero': intcount, 'flotante':floatcount, 'char':charcount, 'bool': boolcount}}
     #dirfunc['global']['vartab'].update(p[2])
+
     p[0] = p[2]
 
 ###########
@@ -962,6 +1018,10 @@ def p_DECGLOB(p):
     global FLOATARRAYMAX
     global CHARARRAYMAX
     global BOOLARRAYMAX
+    global glbintcount
+    global glbfloatcount
+    global glbcharcount
+    global glbboolcount
 
     global sem_err
 
@@ -1018,9 +1078,12 @@ def p_DECGLOB(p):
                         print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
                         raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
 
+    glbintcount = intcount
+    glbfloatcount = floatcount
+    glbcharcount = charcount
+    glbboolcount = boolcount
 
-
-    dirfunc['global'] = {'tipo': 'vacio', 'params:': None, 'vartab': p[1]}
+    dirfunc['global'] = {'tipo': 'vacio', 'params:': None, 'vartab': p[1],'varres' : {'entero': intcount, 'flotante': floatcount, 'char':charcount, 'bool': boolcount}}
 
 
 def p_DECLARACIONES(p):
@@ -1159,16 +1222,37 @@ def p_DECTODASFUNC(p):
 
 def p_DECFUNC(p):
     '''DECFUNC :  ALTADECFUN BLOQUE '''
+    # Dir. de Funciones
+    global dirfunc
+    #Direcciones globales
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    # Cuadruplos y su contador
+    global cuadcount
+    global cuadruplos
+    #Scope actual
+    global currscope
 
+    #print('\n\n\t\t----------------------------TEMPS DE FUNC..........................\n',{'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount})
+
+    # Guardar los recursos temporales
+    p[1][currscope]['tmpres'] = {'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount}
+    dirfunc.update(p[1])
+    #Generar el cuadruplo de fin de función
+    cuadruplos.append(('ENDFUNC','','',''))
+    cuadcount += 1
     p[0] = p[1]
 
 def p_ALTADECFUN(p):
-    ''' ALTADECFUN : FUNCQUAD TIPOFUN ID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
+    ''' ALTADECFUN : FUNCQUAD TIPOFUN DECFUNCID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
     # print('Lee una dec funcion')
 
-    entradafun = {p[3]: {'tipo': p[2],'params':{}}}
+
+    #Dir. de funciones
     global dirfunc
-    global currscope
+    # Direcciones locales
     global localint
     global localfloat
     global localchar
@@ -1177,6 +1261,18 @@ def p_ALTADECFUN(p):
     global localfloatarr
     global localchararr
     global localboolarr
+
+    #Direcciones globales
+    global globalint
+    global globalfloat
+    global globalchar
+    global globalbool
+    global globalintarr
+    global globalfloatarr
+    global globalchararr
+    global globalboolarr
+
+    # MAX de cada variables
     global INTMAX
     global FLOATMAX
     global CHARMAX
@@ -1187,8 +1283,62 @@ def p_ALTADECFUN(p):
     global BOOLARRAYMAX
     global sem_err
 
-    currscope = p[3]
+    # Contadores globales
+    global glbintcount
+    global glbfloatcount
+    global glbcharcount
+    global glbboolcount
+
+    entradafun = {p[3]: {'tipo': p[2], 'params': {}, 'inicio':p[1]}}
+    address = 'res'
+    #Si es de retorno generar su variable global
+    if p[2] != 'vacio':
+
+        if (p[2] == 'entero'):  # Asignar las direcciones enteras
+            if (glbintcount < INTMAX):
+                address = globalint + glbintcount
+                glbintcount += 1
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de funciones con retorno declaradas en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+
+        elif (p[2] == 'flotante'):  # Asignar las direcciones flotantes
+            if (glbfloatcount < FLOATMAX):
+                address = globalfloat + glbfloatcount
+                glbfloatcount += 1
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+
+        elif (p[2] == 'char'):  # Asignar las direcciones char
+            if (glbcharcount < CHARMAX):
+                address = globalchar + glbcharcount
+                glbcharcount += 1
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+        elif (p[2] == 'bool'):  # Asignar las direcciones char
+            if (glbboolcount < BOOLMAX):
+                address = globalbool + glbboolcount
+                glbboolcount += 1
+            else:
+                sem_err = True
+                print("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+                raise SyntaxError(
+                    "Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+        dirfunc['global']['vartab'].update({p[3]: {'tipo': p[2],'address':address}})
+        dirfunc['global']['varres'].update({'entero': glbintcount, 'flotante':glbfloatcount, 'char':glbcharcount, 'bool': glbboolcount})
+
     dirfunc.update({p[3]: {'tipo': p[2]},'params':{}})
+    #Agregar la dirección global de la función si hay
+    if address != 'res':
+        entradafun[p[3]].update({'address':address})
     vartabloc = {}
 
     # Si hay parametros agregarlos a la entrada de la tabla y a la tabla de variables local
@@ -1276,17 +1426,51 @@ def p_ALTADECFUN(p):
                         print("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
                         raise SyntaxError("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (p.lineno(1)))
     #print('\n\n\n() () () () () () () () () ()\n\n', vartabloc)
-    entradafun[p[3]].update({'vartab': vartabloc})
+    entradafun[p[3]].update({'vartab': vartabloc, 'varres':{'entero': intcount, 'flotante':floatcount, 'char':charcount, 'bool': boolcount}})
+
     dirfunc.update(entradafun)
 
-
+    print('dirfunc',dirfunc)
     p[0] = entradafun
     # print(p[0])
+
+def p_DECFUNCID(p):
+    '''DECFUNCID : ID'''
+
+    #Checar que el id declarado no es una función existente
+    global dirfunc
+    global special
+    global sem_err
+    global currscope
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+
+    if p[1] in dirfunc.keys():
+        sem_err = True
+        print("Error de Semantica: El nombre de la función %r  en la linea %r ya fue declarado previamente" % (p[1],p.lineno(1)))
+        raise SyntaxError("Error de Semantica: El nombre de la función %r  en la linea %r ya fue declarado previamente" % (p[1], p.lineno(1)))
+    elif p[1] in special.keys():
+        print("Error de Semantica: El nombre de la función %r en la linea %r pertenece a una funcion especial" % (p[1], p.lineno(1)))
+        raise SyntaxError("Error de Semantica: El nombre de la función %r en la linea %r pertenece a una funcion especial" % (p[1], p.lineno(1)))
+
+    tmpintcount = 0
+    tmpfloatcount = 0
+    tmpcharcount = 0
+    tmpboolcount = 0
+    currscope = p[1]
+
+
+    p[0] = p[1]
 
 def p_FUNCQUAD(p):
     '''FUNCQUAD : FUNCION'''
     #print('inicio func')
-    pass
+    global cuadcount
+
+    p[0] = cuadcount
+
 
 def p_TIPOFUN(p):
     '''TIPOFUN : TIPO
@@ -1386,7 +1570,7 @@ def p_ESTATUTO(p):
                 | CONDICION
                 | BUCLE
                 | RETURNF
-                | LEER'''
+                '''
 
 # Impresion -------------------------  
 def p_IMPRESION(p):
@@ -1497,6 +1681,13 @@ def p_ASIGNACION(p):
         asigt = ptipo.pop()
 
         print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
+        # Detectar si algun operador es una llamada de una funcion vacia
+        if asigt == 'vacio':
+            sem_err = True
+            print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
+            raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
 
         if (cubosem['='][vartipo][asigt] != 'error'):
             print('Cubo dice: ', cubosem['='][vartipo][asigt])
@@ -1701,7 +1892,7 @@ def p_FORINIT(p):
 
     if(p[1] != None):
         # 1.- Checar que sea una variable numeríca a utilizar
-        if(p[1] not in  ['entero','floatante']):
+        if(p[1] not in  ['entero','flotante']):
             sem_err
             print('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
             raise SyntaxError('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
@@ -1718,18 +1909,18 @@ def p_FORSTEP(p):
     global pilaoperand
     global ptipo
     global sem_err
-    print('\n', pilaoperand, '\n', ptipo, '\n')
+    #print('\n', pilaoperand, '\n', ptipo, '\n')
     tipas = p[3]
 
     tipexp = ptipo.pop()
-    print('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
-    print('\t\t\tChecar la asignación: ',  tipas, '\n')
+    #print('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
+    #print('\t\t\tChecar la asignación: ',  tipas, '\n')
     if (tipexp not in  ['bool']):
         sem_err = True
         print('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
         raise SyntaxError('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
     else:
-        if (tipas not in ['entero', 'floatante']):
+        if (tipas not in ['entero', 'flotante']):
             sem_err = True
             print('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
             raise SyntaxError(
@@ -1747,7 +1938,47 @@ def p_FORSTEP(p):
 
 def p_RETURNF(p):
     '''RETURNF : REGRESAR EXPRESION SEMICOLON'''
+    #dir de funciones
+    global dirfunc
+    #Scope actual
     global currscope
+    #Pila de tipos y operandos
+    global pilaoperand
+    global ptipo
+    #Flag de error
+    global sem_err
+    #Cuadrup´los y su contador
+    global cuadcount
+    global cuadruplos
+    #Cubo semantico
+    global cubosem
+
+    # Obtener el tipo de la funcion
+    functipo = dirfunc[currscope]['tipo']
+
+    #Evitar el retorno en funciones vacias
+    if functipo == 'vacio':
+        sem_err = True
+        print('Error Semantico: se llamo return en una funcion vacia en la linea %r' % (p.lineno(1)))
+        raise SyntaxError('Error Semantico: se llamo return en una funcion vacia en la linea %r' % (p.lineno(1)))
+    else:
+        rettype = ptipo.pop();
+        if (cubosem['='][functipo][rettype] != 'error'):
+            print('Cubo dice: ',cubosem['='][functipo][rettype])
+            asig = dirfunc['global']['vartab'][currscope]['address']
+            print('Se pasa retorno a variable global ',currscope,' con address ',asig)
+            #Generación de cuadruplo de asignación
+            cuadruplos.append(('=', asig, '', p[1]))
+            cuadcount += 1
+            p[0] = functipo # Se regresa al token el valor del id asignado
+        else:
+
+            sem_err = True
+            print('Error de Semantica, el no se puede retornar %r en la funcion de tipo %r  en la linea %r' % (functipo, rettype, p.lineno(1)))
+            raise SyntaxError(
+                'Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (functipo, rettype, p.lineno(1)))
+
+
 
 
 #####
@@ -1767,6 +1998,19 @@ def p_EXPERLOGS(p):
     global ptipo
     global regcount
     global cuadcount
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global sem_err
 
     if (poper[-1:].pop() != None):
         if (poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
@@ -1775,19 +2019,80 @@ def p_EXPERLOGS(p):
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
 
+            # Detectar si algun operador es una llamada de una funcion vacia
+            if lopt == 'vacio' or ropt == 'vacio':
+                sem_err = True
+                print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+                raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+
             oper = poper.pop()
             if (cubosem[oper][ropt][lopt] != 'error'):
                 restipo = cubosem[oper][ropt][lopt]
                 print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+                #Asegurar de guardar en el espacio temporal correspondiente
+                address = 'res'
+                if restipo == 'entero':
+                    if tmpintcount < INTMAX:
+                        address = tmpintcount + tempint
+                        tmpintcount+=1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                 p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                 p.lineno(1)))
+
+                elif restipo == 'flotante':
+                    print('\t\tFloat',tmpfloatcount,FLOATMAX)
+                    if tmpfloatcount < FLOATMAX:
+                        address = tmpfloatcount + tempfloat
+                        tmpfloatcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'char':
+                    if tmpcharcount < CHARMAX:
+                        address = tmpcharcount + tempchar
+                        tmpcharcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'bool':
+                    if tmpboolcount < BOOLMAX:
+                        address = tmpboolcount + tempbool
+                        tmpboolcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
 
                 # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
+                cuadruplos.append((oper, rop, lop, address))
                 cuadcount += 1
-                pilaoperand.append('res' + str(regcount))
-                regcount = regcount + 1
+                pilaoperand.append(address)
                 ptipo.append(restipo)
             else:
-                global sem_err
+
                 sem_err = True
                 print(
                     'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
@@ -1817,6 +2122,19 @@ def p_EXPRS(p):
     global ptipo
     global regcount
     global cuadcount
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global sem_err
 
     if (poper[-1:].pop() != None):
         if (poper[-1:].pop() in ['>', '<', '<=', '>=', '==', '!=']):
@@ -1826,19 +2144,79 @@ def p_EXPRS(p):
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
             oper = poper.pop()
+
+            # Detectar si algun operador es una llamada de una funcion vacia
+            if lopt == 'vacio' or ropt == 'vacio':
+                sem_err = True
+                print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+                raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+
             if (cubosem[oper][ropt][lopt] != 'error'):
                 restipo = cubosem[oper][ropt][lopt]
                 print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
 
-                # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
-                cuadcount += 1
+                address = 'res'
+                if restipo == 'entero':
+                    if tmpintcount < INTMAX:
+                        address = tmpintcount + tempint
+                        tmpintcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
 
-                pilaoperand.append('res' + str(regcount))
-                regcount = regcount + 1
+                elif restipo == 'flotante':
+                    if tmpfloatcount < FLOATMAX:
+                        address = tmpfloatcount + tempfloat
+                        tmpfloatcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'char':
+                    if tmpcharcount < CHARMAX:
+                        address = tmpcharcount + tempchar
+                        tmpcharcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'bool':
+                    if tmpboolcount < BOOLMAX:
+                        address = tmpboolcount + tempbool
+                        tmpboolcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                # generar cuadruplo
+                cuadruplos.append((oper, rop, lop, address))
+                cuadcount += 1
+                pilaoperand.append(address)
                 ptipo.append(restipo)
+
             else:
-                global sem_err
+
                 sem_err = True
                 print(
                     'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
@@ -1869,12 +2247,33 @@ def p_EXP(p):
     '''EXP : TERMINO
     | TERMINOSS
             '''
+    #Dir de funciones
     global dirfunc
+    #Pila operadores
     global poper
+    #pila operandos
     global pilaoperand
+    #pila tipos
     global ptipo
-    global regcount
+    #Contador de cuadruplos
     global cuadcount
+    #Direciones temporales
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    #Contadores temporales
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    #Maximos de variables
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    #Flag de error
+    global sem_err
 
     # print(poper)
     # print(pilaoperand)
@@ -1886,19 +2285,79 @@ def p_EXP(p):
         lop = pilaoperand.pop()
         lopt = ptipo.pop()
         oper = poper.pop()
+
+        # Detectar si algun operador es una llamada de una funcion vacia
+        if lopt == 'vacio' or ropt == 'vacio':
+            sem_err = True
+            print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
+            raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
+
         if (cubosem[oper][ropt][lopt] != 'error'):
             restipo = cubosem[oper][ropt][lopt]
             print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
 
-            # generar cuadruplo
-            cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
-            cuadcount += 1
+            address = 'res'
+            if restipo == 'entero':
+                if tmpintcount < INTMAX:
+                    address = tmpintcount + tempint
+                    tmpintcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
 
-            pilaoperand.append('res' + str(regcount))
-            regcount = regcount + 1
+            elif restipo == 'flotante':
+                if tmpfloatcount < FLOATMAX:
+                    address = tmpfloatcount + tempfloat
+                    tmpfloatcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+            elif restipo == 'char':
+                if tmpcharcount < CHARMAX:
+                    address = tmpcharcount + tempchar
+                    tmpcharcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+            elif restipo == 'bool':
+                if tmpboolcount < BOOLMAX:
+                    address = tmpboolcount + tempbool
+                    tmpboolcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+            # generar cuadruplo
+            cuadruplos.append((oper, rop, lop, address))
+            cuadcount += 1
+            pilaoperand.append(address)
             ptipo.append(restipo)
+
         else:
-            global sem_err
+
             sem_err = True
             print(
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
@@ -1917,14 +2376,6 @@ def p_TERMINOSS(p):
     print(poper)
 
 
-#def p_TERMINOS(p):
-#    '''TERMINOS : PLUS EXP
-#                | MINUS EXP
-#                | empty'''
-#    global poper
-#    if p[1] == '+' or p[1] == '-':
-#        poper.append(p[1])
-#    print(poper)
     
     
 def p_TERMINO(p):
@@ -1932,12 +2383,33 @@ def p_TERMINO(p):
                 | FACTORESS
                '''
     # if p[2] != None:
+    #Dir de funciones
     global dirfunc
+    #Pila de operadores
     global poper
+    #pila de operandos
     global pilaoperand
+    #pila de tipos
     global ptipo
-    global regcount
+    #contador de cuadruplos
     global cuadcount
+    #Direcciones temporales
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    #Contadores temporales
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    #Maximos de memoria
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    #flag de error
+    global sem_err
 
     # print(poper)
     # print(pilaoperand)
@@ -1949,18 +2421,76 @@ def p_TERMINO(p):
         lop = pilaoperand.pop()
         lopt = ptipo.pop()
         oper = poper.pop()
+        # Detectar si algun operador es una llamada de una funcion vacia
+        if lopt == 'vacio' or ropt == 'vacio':
+            sem_err = True
+            print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
+            raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                p.lineno(1)))
+
         if (cubosem[oper][ropt][lopt] != 'error'):
             restipo = cubosem[oper][ropt][lopt]
             print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
-            # generar cuadruplo
-            cuadruplos.append((oper, rop, lop, 'res' + str(regcount)))
-            cuadcount += 1
+            address = 'res'
+            if restipo == 'entero':
+                if tmpintcount < INTMAX:
+                    address = tmpintcount + tempint
+                    tmpintcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
 
-            pilaoperand.append('res' + str(regcount))
-            regcount = regcount + 1
+            elif restipo == 'flotante':
+                if tmpfloatcount < FLOATMAX:
+                    address = tmpfloatcount + tempfloat
+                    tmpfloatcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+            elif restipo == 'char':
+                if tmpcharcount < CHARMAX:
+                    address = tmpcharcount + tempchar
+                    tmpcharcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+            elif restipo == 'bool':
+                if tmpboolcount < BOOLMAX:
+                    address = tmpboolcount + tempbool
+                    tmpboolcount += 1
+                else:
+                    sem_err = True
+                    print(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+                    raise SyntaxError(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+            # generar cuadruplo
+            cuadruplos.append((oper, rop, lop, address))
+            cuadcount += 1
+            pilaoperand.append(address)
             ptipo.append(restipo)
         else:
-            global sem_err
+
             sem_err = True
             print(
                 'Error de Semantica, el no se puede sumar/restar %r con %r  en la linea %r' % (lopt, ropt, p.lineno(2)))
@@ -1979,15 +2509,6 @@ def p_FACTORESS(p):
     print(poper)
 
     
-#def p_FACTORES(p):
-#    '''FACTORES : MUL TERMINO
-#                | DIV TERMINO
-#                | empty'''
-#    global poper
-#    if p[1] == '*' or p[1] == '/':
-#        poper.append(p[1])
-#    print(poper)
-    
     
 def p_FACTOR(p):
     '''FACTOR : SIGNOVAR VARCTE
@@ -1996,20 +2517,107 @@ def p_FACTOR(p):
         p[0] = p[2]
     else:
         if(p[1] != None):
+            #Pila de operandos
             global pilaoperand
+            #Pila de tipos
             global ptipo
+            #Cuadruplos
             global cuadruplos
-            global regcount
+            #contador de cuadruplos
             global cuadcount
+            #Direcciones de temporales
+            global tempint
+            global tempfloat
+            global tempchar
+            global tempbool
+            #Contadores temporales
+            global tmpintcount
+            global tmpfloatcount
+            global tmpcharcount
+            global tmpboolcount
+            #maximas de variables
+            global INTMAX
+            global FLOATMAX
+            global CHARMAX
+            global BOOLMAX
+            #Flag de errores
+            global sem_err
+
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
             if(cubosem[p[1]]['none'][lopt] != 'error'):
-                cuadruplos.append((p[1],'',p[2],'res'+str(regcount)))
+                oper = p[1]
+                rop = ''
+                lop = p[2]
+                restipo = cubosem[oper]['none'][lopt]
+
+                #Detectar si algun operador es una llamada de una funcion vacia
+                if lop == 'vacio' or rop == 'vacio':
+                    sem_err = True
+                    print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                                p.lineno(1)))
+                    raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                                p.lineno(1)))
+
+                address = 'res'
+                if restipo == 'entero':
+                    if tmpintcount < INTMAX:
+                        address = tmpintcount + tempint
+                        tmpintcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'flotante':
+                    if tmpfloatcount < FLOATMAX:
+                        address = tmpfloatcount + tempfloat
+                        tmpfloatcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'char':
+                    if tmpcharcount < CHARMAX:
+                        address = tmpcharcount + tempchar
+                        tmpcharcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif restipo == 'bool':
+                    if tmpboolcount < BOOLMAX:
+                        address = tmpboolcount + tempbool
+                        tmpboolcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                # generar cuadruplo
+                cuadruplos.append((oper, rop, lop, address))
                 cuadcount += 1
-                pilaoperand.append('res'+str(regcount))
-                ptipo.append(cubosem[p[1]]['none'][lopt])
+                pilaoperand.append(address)
+                ptipo.append(restipo)
             else:
-                global sem_err
+
                 sem_err = True
                 print('Error de Semantica, no se le puede dar un signo a una variable que no sea un entero o flotante')
                 raise SyntaxError('Error de Semantica, no se le puede dar un signo a una variable que no sea un entero o flotante')
@@ -2053,6 +2661,20 @@ def p_VARCTE(p):
     global ctefloatcount
     global ctecharcount
     global cteboolcount
+    # Cuadruplos
+    global cuadruplos
+    # contador de cuadruplos
+    global cuadcount
+    # Direcciones de temporales
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    # Contadores temporales
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
 
     #print('Para el elemento',p[1],'En el scope '+currscope+' Se encuentra la dir func así:')
     #print('dirfunc', dirfunc, '\n\n')
@@ -2060,15 +2682,17 @@ def p_VARCTE(p):
     print('operadores ',poper)
     print('Se leyo en expresion',p[1])
     print('Pila de operandos',pilaoperand)
-    if isinstance(p[1],int):
+
+    if isinstance(p[1],int): # ---------------------------- CTES INT ---------------------------------------------
         #Checar si la constante la ha encontrado antes
-        if p[1] in ctetab:
-            pilaoperand.append(ctetab[p[1]])
+        ctkey = str(p[1])
+        if ctkey in ctetab.keys():
+            pilaoperand.append(ctetab[ctkey])
         else:
             if cteintcount < INTMAX:
-                ctetab[p[1]] = constint + cteintcount
+                ctetab[ctkey] = constint + cteintcount
                 cteintcount += 1
-                pilaoperand.append(ctetab[p[1]])
+                pilaoperand.append(ctetab[ctkey])
             else:
                 sem_err = True
                 print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
@@ -2076,24 +2700,26 @@ def p_VARCTE(p):
                     "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
 
         ptipo.append('entero')
-    elif isinstance(p[1],float):
+    elif isinstance(p[1],float): # ---------------------------- CTE FLOAT ---------------------------------------------
         # Checar si la constante la ha encontrado antes
-        if p[1] in ctetab:
-            pilaoperand.append(ctetab[p[1]])
+        ctkey = str(p[1])
+        if ctkey in ctetab.keys():
+            pilaoperand.append(ctetab[ctkey])
         else:
             if ctefloatcount < FLOATMAX:
-                ctetab[p[1]] = constint + ctefloatcount
+                ctetab[ctkey] = constint + ctefloatcount
                 ctefloatcount += 1
-                pilaoperand.append(ctetab[p[1]])
+                pilaoperand.append(ctetab[ctkey])
             else:
                 sem_err = True
                 print("Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
                 raise SyntaxError(
                     "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('flotante')
-    elif p[1] == 'verdadero' or p[1] == 'falso':
+
+    elif p[1] == 'verdadero' or p[1] == 'falso': # ---------------------------- CTES BOOL -------------------------------
         # Checar si la constante la ha encontrado antes
-        if p[1] in ctetab:
+        if p[1] in ctetab.keys():
             pilaoperand.append(ctetab[p[1]])
         else:
             if cteboolcount < BOOLMAX:
@@ -2106,10 +2732,12 @@ def p_VARCTE(p):
                 raise SyntaxError(
                     "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('bool')
-    elif re.fullmatch("\"[^\"]+\"",p[1]):
+    elif re.fullmatch("\"[^\"]+\"",p[1]):# ---------------------------- CTES STRING -------------------------------------
         pilaoperand.append(p[1])
         ptipo.append('cadena')
-    elif re.fullmatch("\'[^\']\'",p[1]):
+
+
+    elif re.fullmatch("\'[^\']\'",p[1]):# ---------------------------- CTES CHAR ---------------------------------------
         # Checar si la constante la ha encontrado antes
         if p[1] in ctetab:
             pilaoperand.append(ctetab[p[1]])
@@ -2124,23 +2752,93 @@ def p_VARCTE(p):
                 raise SyntaxError(
                     "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (p.lineno(1)))
         ptipo.append('char')
-    elif re.fullmatch(r"\$[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):
+
+
+    elif re.fullmatch(r"\$[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):# ---------------------------- LLAMADA FUNC ------------------------------------
         #llamada func
         vartipo = None
+        isSpecial = False
+        funcadd = 'address'
 
         if (p[1][1:] in dirfunc.keys()):
             vartipo = dirfunc[p[1][1:]]['tipo']
+
+            if 'address' in dirfunc[p[1][1:]].keys():
+                funcadd = dirfunc[p[1][1:]]['address']
         elif (p[1][1:] in special.keys()):
             vartipo = special[p[1][1:]]['tipo']
+            isSpecial = True
+
         else:
             sem_err = True
             print('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
             raise SyntaxError('La funcion %r en la linea %r no ha sido declarada', (p[1], p.lineno(1)))
 
-        pilaoperand.append(p[1])
+        if(isSpecial):
+            pilaoperand.append(p[1])
+            ptipo.append(vartipo)
+        else:
+            if(vartipo != 'vacio'):
+                address = 'res'
+                if vartipo == 'entero':
+                    if tmpintcount < INTMAX:
+                        address = tmpintcount + tempint
+                        tmpintcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
 
-        ptipo.append(vartipo)
-    elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]):
+                elif vartipo == 'flotante':
+                    if tmpfloatcount < FLOATMAX:
+                        address = tmpfloatcount + tempfloat
+                        tmpfloatcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif vartipo == 'char':
+                    if tmpcharcount < CHARMAX:
+                        address = tmpcharcount + tempchar
+                        tmpcharcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+
+                elif vartipo == 'bool':
+                    if tmpboolcount < BOOLMAX:
+                        address = tmpboolcount + tempbool
+                        tmpboolcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                p.lineno(1)))
+                # generar cuadruplo
+                cuadruplos.append(('=', funcadd, '', address))
+                cuadcount += 1
+                pilaoperand.append(address)
+                ptipo.append(vartipo)
+
+
+    elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]): # ---------------------------- IDS ---------------------------------------------
         #print('Para el elemento', p[1], 'En el scope ' + currscope + ' Se encuentra la dir func así:')
         #print('dirfunc', dirfunc, '\n\n')
         #llamada vars
@@ -2179,16 +2877,29 @@ def p_LLAMADAFUNC(p):
     '''LLAMADAFUNC :  DLR FID OPENPAR CALLPARAMS CLOSEPAR '''
 
     #llamada a funcion
+
+    #Dir de funcion
     global dirfunc
+    #La llamada actual
     global funcallcurr
+    #Cuadruplos y su contador
+    global cuadruplos
+    global cuadcount
+    #flag de error
     global sem_err
 
     funcallcurr = p[2]
     vartipo = None
+    funcstart = ''
+
+    #Generar el nuevo espacio de memoria
+    cuadruplos.append(('ERA',p[2],'',''))
+    cuadcount += 1
 
     if (p[2] in dirfunc.keys()):
         if 'params' in dirfunc[p[2]].keys():
             vartipo = dirfunc[p[2]]['params']
+            funcstart = dirfunc[p[2]]['inicio']
 
     elif (p[2] in special.keys()):
         if 'params' in dirfunc[p[2]].keys():
@@ -2201,26 +2912,34 @@ def p_LLAMADAFUNC(p):
     #Checar los parametros esten bien llamados
     if vartipo != None:
 
-        if len(p[4]) != len(vartipo):
+        #Checar si los parametros estan vacios
+        print('Params leídos: ', p[4], '\nParams de la func: ', vartipo)
+        if len(p[4])  != len(vartipo):
             sem_err = True
-            print('La funcion %r en la linea %r no tiene los parametros correctos' % (p[2], p.lineno(1)))
-            raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos', (p[2], p.lineno(1)))
+            print('La funcion %r en la linea %r no tiene la cantidad de parametros correctos, se esperaban %r y se recibieron %r' % (p[2], p.lineno(2),len(vartipo),len(p[4])))
+            raise SyntaxError('La funcion %r en la linea %r no tiene la cantidad de parametros correctos, se esperaban %r y se recibieron %r' % (p[2], p.lineno(2),len(vartipo),len(p[4])))
         else:
 
             i = 0
 
             for param in vartipo.values():
-                #print('acpapapapa',param ,p[4][i])
+                #print('⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄','\nacpapapapa',param ,p[4])
+
                 if param['tipo'] != p[4][i]['tipo']:
 
                     sem_err = True
-                    print('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden' % (p[1], p.lineno(1),i+1))
-                    raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden', (p[1], p.lineno(1),i+1))
+                    print('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden. %r es diferente a %r' % (p[2], p.lineno(2),i+1,param['tipo'],p[4][i]['tipo']))
+                    raise SyntaxError('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden', (p[2], p.lineno(2),i+1))
                 else:
+
+                    # Pasar el parametro nuevo
+                    cuadruplos.append(('PARAMETER', p[4][i]['address'], '', 'param#'+str(i)))
+                    cuadcount += 1
                     i = i+1
             print(i)
 
-
+    cuadruplos.append(('GOTOSUB', p[2], '', funcstart))
+    cuadcount += 1
 
 
 
@@ -2237,6 +2956,7 @@ def p_FUNID(p):
     '''FUNID : LEER'''
     p[0] = p[1]
 
+#LECTURA DE LOS PARAMETROS
 def p_CALLPARAMS(p):
     '''CALLPARAMS : CPARAM
                   | empty '''
@@ -2251,11 +2971,15 @@ def p_CPARAM(p):
 
 
     cfpar = []
-    if type(p[1]) is dict:
-        cfpar.append(p[1])
+
+    if type(p[1]) is str and p[1] == 'exp':
+        if pilaoperand[-1:][0] != '?':
+
+            cfpar.append({'tipo':ptipo.pop(),'address':pilaoperand.pop()})
+
     else:
-        pilaoperand.pop()
-        cfpar.append({'tipo':ptipo.pop()})
+        cfpar.append(p[1])
+
     if p[2] != None:
         cfpar = cfpar + p[2]
 
@@ -2271,12 +2995,17 @@ def p_CPARAMS(p):
         global ptipo
         global pilaoperand
         cfpar = []
-        if type(p[1]) is dict:
-            cfpar.append(p[1])
+        #Checar si es una expresion
+
+        if type(p[2]) is str and p[2] == 'exp':
+
+            if pilaoperand[-1:][0] != '?':
+
+                cfpar.append({'tipo':ptipo.pop(),'address':pilaoperand.pop()})
         else:
-            pilaoperand.pop()
-            cfpar.append({'tipo': ptipo.pop()})
-        cfpar = cfpar + p[2]
+            cfpar.append(p[2])
+        if p[3] != None:
+            cfpar = cfpar + p[3]
         p[0] = cfpar
     else:
         p[0] = None
