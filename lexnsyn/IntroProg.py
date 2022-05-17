@@ -2891,6 +2891,7 @@ def p_LLAMADAFUNC(p):
     funcallcurr = p[2]
     vartipo = None
     funcstart = ''
+    isSpecial = False
 
     #Generar el nuevo espacio de memoria
     cuadruplos.append(('ERA',p[2],'',''))
@@ -2899,11 +2900,12 @@ def p_LLAMADAFUNC(p):
     if (p[2] in dirfunc.keys()):
         if 'params' in dirfunc[p[2]].keys():
             vartipo = dirfunc[p[2]]['params']
-            funcstart = dirfunc[p[2]]['inicio']
+        funcstart = dirfunc[p[2]]['inicio']
 
     elif (p[2] in special.keys()):
         if 'params' in dirfunc[p[2]].keys():
             vartipo = dirfunc[p[2]]['params']
+        isSpecial = True
     else:
         sem_err = True
         print('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
@@ -2938,7 +2940,11 @@ def p_LLAMADAFUNC(p):
                     i = i+1
             print(i)
 
-    cuadruplos.append(('GOTOSUB', p[2], '', funcstart))
+    cmd = 'GOTOSUB'
+    if isSpecial:
+        cmd = 'SPFUNC'
+
+    cuadruplos.append((cmd, p[2], '', funcstart))
     cuadcount += 1
 
 
