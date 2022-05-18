@@ -9,6 +9,7 @@ from ply import lex
 import ply.yacc as yacc
 import sys
 import re
+import json
 
 
 # Variables importantes
@@ -842,11 +843,14 @@ def p_PROGRAMA(p):
     for key in dirfunc.keys():
         if 'vartab' in dirfunc[key]:
             del dirfunc[key]['vartab']
-    print(dirfunc)
+    pdirfunc = json.dumps(dirfunc,indent=4)
+    print(pdirfunc)
     cuadruplos.append(('END','','',''))
     cuadcount+=1
-    #global ctetab
-    #print('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',ctetab)
+    
+    global ctetab
+    pctetab = json.dumps(ctetab,indent=4)
+    print('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',pctetab)
 
 def p_INITPROG(p):
     ''' INITPROG : PROGRAM'''
@@ -2087,7 +2091,7 @@ def p_EXPERLOGS(p):
                                 p.lineno(1)))
 
                 # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, address))
+                cuadruplos.append((oper, lop, rop, address))
                 cuadcount += 1
                 pilaoperand.append(address)
                 ptipo.append(restipo)
@@ -2210,7 +2214,7 @@ def p_EXPRS(p):
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 p.lineno(1)))
                 # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, address))
+                cuadruplos.append((oper, lop, rop, address))
                 cuadcount += 1
                 pilaoperand.append(address)
                 ptipo.append(restipo)
@@ -2351,7 +2355,7 @@ def p_EXP(p):
                         'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                             p.lineno(1)))
             # generar cuadruplo
-            cuadruplos.append((oper, rop, lop, address))
+            cuadruplos.append((oper, lop, rop, address))
             cuadcount += 1
             pilaoperand.append(address)
             ptipo.append(restipo)
@@ -2485,7 +2489,7 @@ def p_TERMINO(p):
                         'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                             p.lineno(1)))
             # generar cuadruplo
-            cuadruplos.append((oper, rop, lop, address))
+            cuadruplos.append((oper, lop, rop, address))
             cuadcount += 1
             pilaoperand.append(address)
             ptipo.append(restipo)
@@ -2612,7 +2616,7 @@ def p_FACTOR(p):
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 p.lineno(1)))
                 # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, address))
+                cuadruplos.append((oper, lop, rop, address))
                 cuadcount += 1
                 pilaoperand.append(address)
                 ptipo.append(restipo)
