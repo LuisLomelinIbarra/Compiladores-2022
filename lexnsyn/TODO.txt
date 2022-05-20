@@ -1,12 +1,6 @@
 - Arreglar las variables sintacticas de el arreglo textual (asegurar por medio de syntaxis que los arreglos solo se puedan declarar de la manera correcta.)
 - Cambiar como esta guardados los parametros de dirfunc
 - Cambiar la comprobación de parametros
-- Implementar el uso de direcciones en vez de nombres para los cuadruplos -> Solo faltan temporales y arreglos
-	- Crear los rangos de memoria global, local, temporal
-		- Crear un subrango para los enteros, flotantes, chars, bools y los arreglos de los mismos.
-		- Asignar los rangos una vez creada la tabla, antes de actualizar la variable de la tabla ir asignando las direcciones de acuerdo al scope de cada vartab
-- Implementar el primer cuadruplo (goto principal)
-- Implementar los cuadruplos de la llamada de funciones
-- Implementar la adicion del cuadruplo de inicio de la tabla de funciones
-- Implementar la contabilización y agregar los recursos utilizados en la dirfunc
-- Implementar los puntos neuralgicos para la llamada de función
+- Implementar el uso de direcciones en vez de nombres para los cuadruplos -> arreglos
+- Impelementar arreglos
+- Verificación de delcaración correcta de  los arreglos
