@@ -1985,6 +1985,115 @@ def p_RETURNF(p):
 # Expresion
 #####
 
+# Funcion para manejar la generación de cuadruplos
+def expcuadgen(expopers,linenum):
+
+    global poper
+    global pilaoperand
+    global ptipo
+    global cuadcount
+    global tempint
+    global tempfloat
+    global tempchar
+    global tempbool
+    global tmpintcount
+    global tmpfloatcount
+    global tmpcharcount
+    global tmpboolcount
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global sem_err
+    if (poper[-1:].pop() != None):
+        if (poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
+            rop = pilaoperand.pop()
+            ropt = ptipo.pop()
+            lop = pilaoperand.pop()
+            lopt = ptipo.pop()
+
+            # Detectar si algun operador es una llamada de una funcion vacia
+            if lopt == 'vacio' or ropt == 'vacio':
+                sem_err = True
+                print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    linenum))
+                raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    linenum))
+
+            oper = poper.pop()
+            if (cubosem[oper][ropt][lopt] != 'error'):
+                restipo = cubosem[oper][ropt][lopt]
+                print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+                # Asegurar de guardar en el espacio temporal correspondiente
+                address = 'res'
+                if restipo == 'entero':
+                    if tmpintcount < INTMAX:
+                        address = tmpintcount + tempint
+                        tmpintcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+
+                elif restipo == 'flotante':
+                    print('\t\tFloat', tmpfloatcount, FLOATMAX)
+                    if tmpfloatcount < FLOATMAX:
+                        address = tmpfloatcount + tempfloat
+                        tmpfloatcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+
+                elif restipo == 'char':
+                    if tmpcharcount < CHARMAX:
+                        address = tmpcharcount + tempchar
+                        tmpcharcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+
+                elif restipo == 'bool':
+                    if tmpboolcount < BOOLMAX:
+                        address = tmpboolcount + tempbool
+                        tmpboolcount += 1
+                    else:
+                        sem_err = True
+                        print(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+                        raise SyntaxError(
+                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                                linenum))
+
+                # generar cuadruplo
+                cuadruplos.append((oper, rop, lop, address))
+                cuadcount += 1
+                pilaoperand.append(address)
+                ptipo.append(restipo)
+            else:
+
+                sem_err = True
+                print(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, linenum))
+                raise SyntaxError(
+                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
+                        lopt, ropt, linenum))
+
 def p_EXPRESION(p):
     '''EXPRESION : EXPRESIONR EXPRLOGS '''
 
@@ -2011,95 +2120,10 @@ def p_EXPERLOGS(p):
     global CHARMAX
     global BOOLMAX
     global sem_err
+    # ['||','&&']
 
-    if (poper[-1:].pop() != None):
-        if (poper[-1:].pop() == '||' or poper[-1:].pop() == '&&'):
-            rop = pilaoperand.pop()
-            ropt = ptipo.pop()
-            lop = pilaoperand.pop()
-            lopt = ptipo.pop()
+    expcuadgen(['||', '&&'], p.lineno(1))
 
-            # Detectar si algun operador es una llamada de una funcion vacia
-            if lopt == 'vacio' or ropt == 'vacio':
-                sem_err = True
-                print('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
-                    p.lineno(1)))
-                raise SyntaxError('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
-                    p.lineno(1)))
-
-            oper = poper.pop()
-            if (cubosem[oper][ropt][lopt] != 'error'):
-                restipo = cubosem[oper][ropt][lopt]
-                print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
-                #Asegurar de guardar en el espacio temporal correspondiente
-                address = 'res'
-                if restipo == 'entero':
-                    if tmpintcount < INTMAX:
-                        address = tmpintcount + tempint
-                        tmpintcount+=1
-                    else:
-                        sem_err = True
-                        print(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                 p.lineno(1)))
-                        raise SyntaxError(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                 p.lineno(1)))
-
-                elif restipo == 'flotante':
-                    print('\t\tFloat',tmpfloatcount,FLOATMAX)
-                    if tmpfloatcount < FLOATMAX:
-                        address = tmpfloatcount + tempfloat
-                        tmpfloatcount += 1
-                    else:
-                        sem_err = True
-                        print(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-                        raise SyntaxError(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-                elif restipo == 'char':
-                    if tmpcharcount < CHARMAX:
-                        address = tmpcharcount + tempchar
-                        tmpcharcount += 1
-                    else:
-                        sem_err = True
-                        print(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-                        raise SyntaxError(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-                elif restipo == 'bool':
-                    if tmpboolcount < BOOLMAX:
-                        address = tmpboolcount + tempbool
-                        tmpboolcount += 1
-                    else:
-                        sem_err = True
-                        print(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-                        raise SyntaxError(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-                # generar cuadruplo
-                cuadruplos.append((oper, rop, lop, address))
-                cuadcount += 1
-                pilaoperand.append(address)
-                ptipo.append(restipo)
-            else:
-
-                sem_err = True
-                print(
-                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                        lopt, ropt, p.lineno(1)))
-                raise SyntaxError(
-                    'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
-                        lopt, ropt, p.lineno(1)))
 
 def p_EXPRLOG(p):
     '''EXPRLOG : AND EXPRESION
