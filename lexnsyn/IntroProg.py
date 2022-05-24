@@ -1617,7 +1617,7 @@ def p_PRINTABLE(p):
             p[0] = ctetab[p[1]]
         else:
             if ctestringcount < STRINGMAX:
-                ctetab[ctkey] = constint + ctestringcount
+                ctetab[ctkey] = conststring + ctestringcount
                 objctetab[ctetab[ctkey]] =p[1]
                 ctestringcount += 1
                 p[0] = ctetab[p[1]]
@@ -1842,7 +1842,7 @@ def p_IFGTO(p):
 
     else:
         res = pilaoperand.pop()
-        cuadruplos.append(('gotof',res,''))
+        cuadruplos.append(('GOTOf',res,''))
         psaltos.append(cuadcount)
         cuadcount += 1
 
@@ -1860,7 +1860,7 @@ def p_BLOQIF(p):
         global cuadcount
         global psaltos
         # dprint('\tELSE\nlength cuad: ', len(cuadruplos),  '\ncount: ', cuadcount)
-        cuadruplos.append(('goto', '', ''))
+        cuadruplos.append(('GOTO', '', ''))
         cuadcount += 1
         falseState = psaltos.pop()
         cuadruplos[falseState] = cuadruplos[falseState] + (cuadcount,)
@@ -1883,7 +1883,7 @@ def p_WHILE(p):
     global psaltos
     retState = psaltos.pop()
     condState = psaltos.pop()
-    cuadruplos.append(('goto', '', '',condState))
+    cuadruplos.append(('GOTO', '', '',condState))
     cuadcount += 1
     #dprint("\t\tWHILE\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
     #dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
@@ -1910,7 +1910,7 @@ def p_WCOND(p):
         printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tip, p.lineno(2)))
     else:
         res = pilaoperand.pop()
-        cuadruplos.append(('gotof',res,''))
+        cuadruplos.append(('GOTOF',res,''))
         psaltos.append(cuadcount)
         cuadcount += 1
 
@@ -1921,7 +1921,7 @@ def p_FOR(p):
     global psaltos
     retState = psaltos.pop()
     condState = psaltos.pop()
-    cuadruplos.append(('goto', '', '', condState))
+    cuadruplos.append(('GOTO', '', '', condState))
     cuadcount += 1
     # dprint("\t\tFOR\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
     # dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
@@ -1967,7 +1967,7 @@ def p_FORSTEP(p):
             # 2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
 
             res = pilaoperand.pop()
-            cuadruplos.append(('gotof', res, ''))
+            cuadruplos.append(('GOTOF', res, ''))
             psaltos.append(cuadcount)
             cuadcount += 1
 
@@ -2115,24 +2115,26 @@ def expcuadgen(expopers,linenum):
 
 
 def p_EXPRESION(p):
-    '''EXPRESION : EXPRESIONR EXPRLOGS '''
-
+    '''EXPRESION : EXPRESIONR
+    | EXPRLOG '''
+    # Generar cuadruplos
+    expcuadgen(['||', '&&'], p.lineno(1))
     p[0] = 'exp'
 
 def p_EXPERLOGS(p):
-    '''EXPRLOGS : EXPRLOG'''
+    '''EXPRLOGS : EXPRESIONR'''
     # ['||','&&']
 
     #Generar cuadruplos
     expcuadgen(['||', '&&'], p.lineno(1))
 
 def p_EXPRLOG(p):
-    '''EXPRLOG : AND EXPRESION
-               | OR EXPRESION
+    '''EXPRLOG : EXPRLOGS AND EXPRESION
+               | EXPRLOGS OR EXPRESION
                | empty'''
     global poper
     if(p[1] != None):
-        poper.append(p[1])
+        poper.append(p[2])
     #dprint(poper)
 
 def p_EXPRESIONR(p):
@@ -2422,7 +2424,7 @@ def p_VARCTE(p):
             pilaoperand.append(ctetab[ctkey])
         else:
             if ctestringcount < STRINGMAX:
-                ctetab[ctkey] = constint + ctestringcount
+                ctetab[ctkey] = conststring + ctestringcount
                 objctetab[ctetab[ctkey]] = p[1]
                 ctestringcount += 1
                 pilaoperand.append(ctetab[ctkey])
