@@ -11,6 +11,12 @@ import sys
 import re
 import json
 
+debugp = True
+#PrintDebug
+def dprint(*args,**kwargs):
+    global debugp
+    if debugp:
+        print(*args,**kwargs)
 
 # Variables importantes
 sem_err = False # Evitar imprmir aceptado cuando se detectan errores
@@ -799,6 +805,10 @@ conststring = constbool + BOOLMAX
 
 #Variables pertinentes para arreglos
 R = 0
+atarrsize = 0
+atd1 = 0
+atd2 = 0
+atd3 = 0
 
 
 # Funcion para imprmir errores y parar la ejecución
@@ -857,126 +867,70 @@ def assignvirtualaddress(vartab,addressscope,linenum):
     if addressscope == 'global':
         for k in vartab.keys():
             if('dims' in vartab[k].keys()): # Asignacion de direcciones de arreglos
-                arrsize = vartab[k]['size']
-                if (vartab[k]['tipo'] == 'entero'):  # Asignar las direcciones enteras
-                    if (intcount < INTMAX):
-                        vartab[k]['address'] = globalint + intcount
-                        intcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-
-                elif (vartab[k]['tipo'] == 'flotante'):  # Asignar las direcciones flotantes
-                    if (floatcount < FLOATMAX):
-                        vartab[k]['address'] = globalfloat + floatcount
-                        floatcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-
-                elif (vartab[k]['tipo'] == 'char'):  # Asignar las direcciones char
-                    if (charcount < CHARMAX):
-                        vartab[k]['address'] = globalchar + charcount
-                        charcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-                elif (vartab[k]['tipo'] == 'bool'):  # Asignar las direcciones char
-                    if (boolcount < BOOLMAX):
-                        vartab[k]['address'] = globalbool + boolcount
-                        boolcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-
+                incr = vartab[k]['size']
             else:
-                if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
-                    if (intcount < INTMAX):
-                        vartab[k]['address'] = globalint + intcount
-                        intcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+                incr = 1
 
-                elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
-                    if (floatcount < FLOATMAX):
-                        vartab[k]['address'] = globalfloat + floatcount
-                        floatcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
 
-                elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
-                    if (charcount < CHARMAX):
-                        vartab[k]['address'] = globalchar + charcount
-                        charcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
-                elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
-                    if (boolcount < BOOLMAX):
-                        vartab[k]['address'] = globalbool + boolcount
-                        boolcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                if (intcount < INTMAX):
+                    vartab[k]['address'] = globalint + intcount
+                    intcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                if (floatcount < FLOATMAX):
+                    vartab[k]['address'] = globalfloat + floatcount
+                    floatcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
+                if (charcount < CHARMAX):
+                    vartab[k]['address'] = globalchar + charcount
+                    charcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
+                if (boolcount < BOOLMAX):
+                    vartab[k]['address'] = globalbool + boolcount
+                    boolcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
     elif addressscope == 'local':
         for k in vartab.keys():
             if('dims' in vartab[k].keys()): # Asignacion de direcciones de arreglos
-                arrsize = vartab[k]['size']
-                if (vartab[k]['tipo'] == 'entero'):  # Asignar las direcciones enteras
-                    if (intcount < INTMAX):
-                        vartab[k]['address'] = localint + intcount
-                        intcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-
-                elif (vartab[k]['tipo'] == 'flotante'):  # Asignar las direcciones flotantes
-                    if (floatcount < FLOATMAX):
-                        vartab[k]['address'] = localfloat + floatcount
-                        floatcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-
-                elif (vartab[k]['tipo'] == 'char'):  # Asignar las direcciones char
-                    if (charcount < CHARMAX):
-                        vartab[k]['address'] = localchar + charcount
-                        charcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
-                elif (vartab[k]['tipo'] == 'bool'):  # Asignar las direcciones char
-                    if (boolcount < BOOLMAX):
-                        vartab[k]['address'] = localbool + boolcount
-                        boolcount += arrsize
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (
-                            linenum))
+                incr = vartab[k]['size']
             else:
-                if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
-                    if (intcount < INTMAX):
-                        vartab[k]['address'] = localint + intcount
-                        intcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+                incr = 1
 
-                elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
-                    if (floatcount < FLOATMAX):
-                        vartab[k]['address'] = localfloat + floatcount
-                        floatcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                if (intcount < INTMAX):
+                    vartab[k]['address'] = localint + intcount
+                    intcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
 
-                elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
-                    if (charcount < CHARMAX):
-                        vartab[k]['address'] = localchar + charcount
-                        charcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
-                elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
-                    if (boolcount < BOOLMAX):
-                        vartab[k]['address'] = localbool + boolcount
-                        boolcount += 1
-                    else:
-                        printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                if (floatcount < FLOATMAX):
+                    vartab[k]['address'] = localfloat + floatcount
+                    floatcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
+                if (charcount < CHARMAX):
+                    vartab[k]['address'] = localchar + charcount
+                    charcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
+                if (boolcount < BOOLMAX):
+                    vartab[k]['address'] = localbool + boolcount
+                    boolcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
     return vartab, intcount, floatcount, charcount, boolcount
 
 
@@ -1001,7 +955,7 @@ def p_PROGRAMA(p):
 
     if(p[5] != None):
         # 4.- Checar que no se repitan los nombres de variables globales en las funciones locales
-        #print("Funciones : %r" % p[5])
+        #dprint("Funciones : %r" % p[5])
         #for kfun in p[5].keys():
         #    funvars = p[5][kfun]['vartab']
         #    for varnam in funvars:
@@ -1025,13 +979,13 @@ def p_PROGRAMA(p):
         if 'vartab' in dirfunc[key]:
             del dirfunc[key]['vartab']
     pdirfunc = json.dumps(dirfunc,indent=4)
-    print(pdirfunc)
+    dprint(pdirfunc)
     cuadruplos.append(('END','','',''))
     cuadcount+=1
     
     global ctetab
     pctetab = json.dumps(ctetab,indent=4)
-    print('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',pctetab)
+    dprint('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',pctetab)
 
 def p_INITPROG(p):
     ''' INITPROG : PROGRAM'''
@@ -1073,13 +1027,13 @@ def p_PRINSCOPE(p):
     #Poner el scope correcto
     currscope = 'principal'
 
-    print('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
+    dprint('\n\n\n\n--------------------------------------------------------\nLLego a scope global\n---------------')
 
     if (p[2] != None):
         ks = p[2].keys()
         #if dirfunc['global']['vartab'] != None:
         #    if len(dirfunc['global']['vartab']) > 0 :
-        #        print('a', p[2], dirfunc['global']['vartab'])
+        #        dprint('a', p[2], dirfunc['global']['vartab'])
         #        for k in ks:
         #            if k in dirfunc['global']['vartab'].keys():
         #                print(
@@ -1132,7 +1086,7 @@ def p_DECGLOB(p):
     floatarraycount = 0
     chararraycount = 0
     boolarraycount = 0
-    #print(p[1])
+    #dprint(p[1])
     if (p[1] != None):
         p[1], intcount, floatcount, charcount, boolcount = assignvirtualaddress(p[1],'global',p.lineno(1))
 
@@ -1156,12 +1110,12 @@ def p_DECLARACIONES(p):
         if(p[2] != None):
             checkexistance = p[1].keys()
             for k in checkexistance:
-                #print(p[2].keys())
-                #print(k)
+                #dprint(p[2].keys())
+                #dprint(k)
                 if(k in p[2].keys()):
-                    #print(p[2].keys())
+                    #dprint(p[2].keys())
                     printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (k, p.lineno(2)))
-            #print( "P[1] contiene %r y p[2] contiene %r" % (p[1].keys(),p[2].keys()))
+            #dprint( "P[1] contiene %r y p[2] contiene %r" % (p[1].keys(),p[2].keys()))
 
 
             vartab.update(p[2])
@@ -1196,13 +1150,13 @@ def p_DVNID(p):
         vars = [p[2]]
 
         if(p[3] != None):
-            #print("Checkin if %r is in %r" % (p[2],p[3]))
+            #dprint("Checkin if %r is in %r" % (p[2],p[3]))
             if p[2] in p[3]:
 
                 printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (p[2],p.lexspan(3)))
             else:
                 vars = vars + p[3]
-            #print(vars)
+            #dprint(vars)
         p[0] = vars
 
 #Declaración de arreglos
@@ -1223,12 +1177,15 @@ def p_DECARR(p):
         R = m
     vararr[p[2]]['m' + str(mi)] = 0
     vararr[p[2]]['size'] = darrsize
-    print('\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+\n',vararr,'\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+')
+    dprint('\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+\n',vararr,'\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+')
     p[0] = vararr
 
 def p_DPRIM(p):
     '''DPRIM : OPENSQU CTE_INT CLOSESQU '''
     global R
+    if (p[2] < 0):
+        printerror(
+            'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
     R = R * (p[2])
     p[0] = {'dims': 1, 'dim1len': p[2]}
 
@@ -1246,6 +1203,9 @@ def p_DSEG(p):
     if(p[1] == None):
         p[0] = None
     else:
+        if (p[2] < 0):
+            printerror(
+                'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         decdims = {'dims':2,'dim2len':p[2]}
         R = R * p[2]
         if(p[4]!=None):
@@ -1261,6 +1221,9 @@ def p_DTER(p):
     if (p[1] == None):
         p[0] = None
     else:
+        if (p[2] < 0):
+            printerror(
+                'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         decdims = {'dims': 3, 'dim3len': p[2]}
         R = R * p[2]
         p[0] = decdims
@@ -1278,7 +1241,7 @@ def p_TIPO(p):
 def p_DECTODASFUNC(p):
     '''DECTODASFUNC : DECFUNC DECTODASFUNC
                     | empty'''
-    #print('decfuns')
+    #dprint('decfuns')
 
     if(p[1] == None):
         p[0] = p[1]
@@ -1313,7 +1276,7 @@ def p_DECFUNC(p):
     #Scope actual
     global currscope
 
-    #print('\n\n\t\t----------------------------TEMPS DE FUNC..........................\n',{'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount})
+    #dprint('\n\n\t\t----------------------------TEMPS DE FUNC..........................\n',{'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount})
 
     # Guardar los recursos temporales
     p[1][currscope]['tmpres'] = {'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount}
@@ -1325,7 +1288,7 @@ def p_DECFUNC(p):
 
 def p_ALTADECFUN(p):
     ''' ALTADECFUN : FUNCQUAD TIPOFUN DECFUNCID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
-    # print('Lee una dec funcion')
+    # dprint('Lee una dec funcion')
 
 
     #Dir. de funciones
@@ -1415,7 +1378,7 @@ def p_ALTADECFUN(p):
 
 
 
-        #print('Add params to vartab')
+        #dprint('Add params to vartab')
         entradafun[p[3]].update({'vartab': vartabloc})
         entradafun[p[3]].update({'params': p[5]})
 
@@ -1435,10 +1398,10 @@ def p_ALTADECFUN(p):
 
     dirfunc.update(entradafun)
     # Checar que los id de parametros no sean declarados localmente (doble def)
-    #print(p[3])
+    #dprint(p[3])
 
     if (p[8] != None):
-        # print(p[8])
+        # dprint(p[8])
         # if(len(vartabloc) > 0):
         for var in vartabloc.keys():
             if (var in p[8].keys()):
@@ -1452,14 +1415,14 @@ def p_ALTADECFUN(p):
         vartabloc, intcount, floatcount, charcount, boolcount = assignvirtualaddress(vartabloc,'local',p.lineno(1))
 
 
-    #print('\n\n\n() () () () () () () () () ()\n\n', vartabloc)
+    #dprint('\n\n\n() () () () () () () () () ()\n\n', vartabloc)
     entradafun[p[3]].update({'vartab': vartabloc, 'varres':{'entero': intcount, 'flotante':floatcount, 'char':charcount, 'bool': boolcount}})
 
     dirfunc.update(entradafun)
 
-    print('dirfunc',dirfunc)
+    dprint('dirfunc',dirfunc)
     p[0] = entradafun
-    # print(p[0])
+    # dprint(p[0])
 
 def p_DECFUNCID(p):
     '''DECFUNCID : ID'''
@@ -1493,7 +1456,7 @@ def p_DECFUNCID(p):
 
 def p_FUNCQUAD(p):
     '''FUNCQUAD : FUNCION'''
-    #print('inicio func')
+    #dprint('inicio func')
     global cuadcount
 
     p[0] = cuadcount
@@ -1502,7 +1465,7 @@ def p_FUNCQUAD(p):
 def p_TIPOFUN(p):
     '''TIPOFUN : TIPO
                | VACIO'''
-    #print('Llego a tipo')
+    #dprint('Llego a tipo')
     p[0] = p[1]
 
 def p_FUNPARAM(p):
@@ -1541,6 +1504,8 @@ def p_PARAMD(p):
     if(p[1] == None):
         p[0] = p[1]
     else:
+        if(p[2] < 0):
+            printerror('Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         pdim['dim1len'] = p[2]
         if(p[4] != None):
             pdim.update(p[4])
@@ -1553,6 +1518,9 @@ def p_PDSEG(p):
     if (p[1] == None):
         p[0] = p[1]
     else:
+        if (p[2] < 0):
+            printerror(
+                'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         pdim['dim2len'] = p[2]
         if (p[4] != None):
             pdim.update(p[4])
@@ -1565,6 +1533,9 @@ def p_PDTER(p):
     if (p[1] == None):
         p[0] = p[1]
     else:
+        if (p[2] < 0):
+            printerror(
+                'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         pdim['dim3len'] = p[2]
         p[0] = pdim
 
@@ -1580,8 +1551,7 @@ def p_BLOQUE(p):
 def p_ESTATUTOS(p):
     '''ESTATUTOS : ESTATUTO ESTATUTOS
                  | empty'''
-    #global dirfunc
-    #print('knowvars',dirfunc,'\n\n')
+
 
 #######
 # Declaración Estatutos
@@ -1605,9 +1575,7 @@ def p_IMPRESION(p):
     pargs = [p[3]]
     if(p[4] != None):
         pargs = pargs + p[4]
-    print(pargs)
     for prin in pargs:
-        print(prin)
         cuadruplos.append(('imprimir',prin,'',''))
         cuadcount+=1
 
@@ -1658,7 +1626,6 @@ def p_PRINTABLE(p):
         op = pilaoperand.pop()
         ptipo.pop()
         p[0] = op
-    print(p[0])
 
 
 # Asignacion -------------------
@@ -1668,7 +1635,7 @@ def p_ASIGNACION(p):
         | ID EQ EXPRESION SEMICOLON
         | ID ADIMS EQ EXPRESION SEMICOLON %prec RRULE
  '''
-    #print('Lee asignacion')
+    #dprint('Lee asignacion')
     #Evaluar que la asignación sea correcta
     global cubosem
     global pilaoperand
@@ -1679,73 +1646,124 @@ def p_ASIGNACION(p):
     #Se checa que el id a asignar exista
     vartipo = None
     addresses = None
-    print(ptipo)
-    print(p[3])
+    dprint(ptipo)
+    dprint(p[3])
     if p[2] == '=':
         #Asignación a un id por medio de una expresión o arreglo textual
+        #Asignación por id
+        if type(p[3]) is str and p[3] == 'exp':
 
-        if (p[1] in dirfunc[currscope]['vartab'].keys()):
-            vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+            if (p[1] in dirfunc[currscope]['vartab'].keys()):
+                vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
 
-            if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()): #Checar si se le ha asignado una address
+                if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
 
-                addresses = dirfunc[currscope]['vartab'][p[1]]['address']
-
-            if (type(p[3]) is dict):
-                print(p[3])
-                if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
-
-                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+                    addresses = dirfunc[currscope]['vartab'][p[1]]['address']
 
 
-        elif (p[1] in dirfunc['global']['vartab'].keys()):
-            vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+            elif (p[1] in dirfunc['global']['vartab'].keys()):
+                vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
 
-            if('address' in dirfunc['global']['vartab'][p[1]].keys()):#Checar si se le ha asignado una address
+                if ('address' in dirfunc['global']['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
 
-                addresses = dirfunc['global']['vartab'][p[1]]['address']
-
-            if (type(p[3]) is dict):
-                print(p[3])
-                if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
-
-                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
-
-        else:
-            printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
-
-        asig = pilaoperand.pop()
-
-        asigt = ptipo.pop()
-
-        print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
-        # Detectar si algun operador es una llamada de una funcion vacia
-        if asigt == 'vacio':
-
-            printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
-                p.lineno(1)))
+                    addresses = dirfunc['global']['vartab'][p[1]]['address']
 
 
-        if (cubosem['='][vartipo][asigt] != 'error'):
-            print('Cubo dice: ', cubosem['='][vartipo][asigt])
-            #Generación de cuadruplo de asignación
-            if (addresses != None):
-                cuadruplos.append(('=', asig, '', addresses))
-                cuadcount += 1
+
             else:
-                cuadruplos.append(('=', asig, '', p[1]))
-                cuadcount += 1
-            p[0] = vartipo # Se regresa al token el valor del id asignado
+                printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+
+            asig = pilaoperand.pop()
+
+            asigt = ptipo.pop()
+
+            dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
+            # Detectar si algun operador es una llamada de una funcion vacia
+            if asigt == 'vacio':
+                printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+
+            if (cubosem['='][vartipo][asigt] != 'error'):
+                dprint('Cubo dice: ', cubosem['='][vartipo][asigt])
+                # Generación de cuadruplo de asignación
+                if (addresses != None):
+                    cuadruplos.append(('=', asig, '', addresses))
+                    cuadcount += 1
+                else:
+                    cuadruplos.append(('=', asig, '', p[1]))
+                    cuadcount += 1
+                p[0] = vartipo  # Se regresa al token el valor del id asignado
+            else:
+
+                printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
+                    vartipo, asigt, p.lineno(1)))
+
+        #----------------------------ASIGNACION POR ARREGLO TEXTUAL------------------------------------------------
         else:
+            dprint('\nasginación de arr\n')
+            if (p[1] in dirfunc[currscope]['vartab'].keys()):
+                vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+
+                if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()): #Checar si se le ha asignado una address
+
+                    addresses = dirfunc[currscope]['vartab'][p[1]]['address']
+
+                if (type(p[3]) is dict):
+                    dprint(p[3])
+                    if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
+
+                        printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
 
 
-            printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
-            vartipo, asigt, p.lineno(1)))
+            elif (p[1] in dirfunc['global']['vartab'].keys()):
+                vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+
+                if('address' in dirfunc['global']['vartab'][p[1]].keys()):#Checar si se le ha asignado una address
+
+                    addresses = dirfunc['global']['vartab'][p[1]]['address']
+
+                if (type(p[3]) is dict):
+                    dprint(p[3])
+                    if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
+
+                        printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+
+            else:
+                printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+
+            asig = pilaoperand.pop()
+
+            asigt = ptipo.pop()
+
+            dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
+            # Detectar si algun operador es una llamada de una funcion vacia
+            if asigt == 'vacio':
+
+                printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
+                    p.lineno(1)))
+
+
+            if (cubosem['='][vartipo][asigt] != 'error'):
+                dprint('Cubo dice: ', cubosem['='][vartipo][asigt])
+                #Generación de cuadruplo de asignación
+                if (addresses != None):
+                    cuadruplos.append(('=', asig, '', addresses))
+                    cuadcount += 1
+                else:
+                    cuadruplos.append(('=', asig, '', p[1]))
+                    cuadcount += 1
+                p[0] = vartipo # Se regresa al token el valor del id asignado
+            else:
+
+
+                printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
+                vartipo, asigt, p.lineno(1)))
 
 
 
     else:
         #Asignación a la llamada de un arreglo ej. N[1] = 2
+
         if (p[1] in dirfunc[currscope]['vartab'].keys()):
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
         elif (p[1] in dirfunc['global']['vartab'].keys()):
@@ -1756,11 +1774,11 @@ def p_ASIGNACION(p):
 
         asigt = ptipo.pop()
 
-        print('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
+        dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
 
 
         if (cubosem['='][vartipo][asigt] != 'error'):
-            print('Cubo dice: ',cubosem['='][vartipo][asigt])
+            dprint('Cubo dice: ',cubosem['='][vartipo][asigt])
             #Generación de cuadruplo de asignación
             cuadruplos.append(('=', asig, '', p[1]))
             cuadcount += 1
@@ -1772,7 +1790,7 @@ def p_ASIGNACION(p):
 #def p_ASIGNARR(p):
 #    '''ASIGNARR : ARR_TEX SEMICOLON'''
 #
-#    #print( "⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄ ")
+#    #dprint( "⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄ ")
 #    pass
 
 def p_ADIMS(p):
@@ -1797,7 +1815,7 @@ def p_CONDICION(p):
 
 
     endState = psaltos.pop()
-    #print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState,'\ncount: ', cuadcount)
+    #dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState,'\ncount: ', cuadcount)
     cuadruplos[endState] = cuadruplos[endState] + (cuadcount,)
 
 
@@ -1836,12 +1854,12 @@ def p_BLOQIF(p):
         global cuadruplos
         global cuadcount
         global psaltos
-        # print('\tELSE\nlength cuad: ', len(cuadruplos),  '\ncount: ', cuadcount)
+        # dprint('\tELSE\nlength cuad: ', len(cuadruplos),  '\ncount: ', cuadcount)
         cuadruplos.append(('goto', '', ''))
         cuadcount += 1
         falseState = psaltos.pop()
         cuadruplos[falseState] = cuadruplos[falseState] + (cuadcount,)
-        # print('\tAFTERCUAD\nlength cuad: ', len(cuadruplos), '\npopsaltos: ', falseState, '\ncount: ', cuadcount)
+        # dprint('\tAFTERCUAD\nlength cuad: ', len(cuadruplos), '\npopsaltos: ', falseState, '\ncount: ', cuadcount)
 
         psaltos.append(cuadcount - 1)
 
@@ -1862,8 +1880,8 @@ def p_WHILE(p):
     condState = psaltos.pop()
     cuadruplos.append(('goto', '', '',condState))
     cuadcount += 1
-    #print("\t\tWHILE\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
-    #print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
+    #dprint("\t\tWHILE\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
+    #dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
     cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_NWHILE(p):
@@ -1900,8 +1918,8 @@ def p_FOR(p):
     condState = psaltos.pop()
     cuadruplos.append(('goto', '', '', condState))
     cuadcount += 1
-    # print("\t\tFOR\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
-    # print('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
+    # dprint("\t\tFOR\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
+    # dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
     cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_FORINIT(p):
@@ -1928,12 +1946,12 @@ def p_FORSTEP(p):
     global pilaoperand
     global ptipo
 
-    #print('\n', pilaoperand, '\n', ptipo, '\n')
+    #dprint('\n', pilaoperand, '\n', ptipo, '\n')
     tipas = p[3]
 
     tipexp = ptipo.pop()
-    #print('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
-    #print('\t\t\tChecar la asignación: ',  tipas, '\n')
+    #dprint('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
+    #dprint('\t\t\tChecar la asignación: ',  tipas, '\n')
     if (tipexp not in  ['bool']):
         printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
     else:
@@ -1977,10 +1995,10 @@ def p_RETURNF(p):
     else:
         rettype = ptipo.pop();
         if (cubosem['='][functipo][rettype] != 'error'):
-            print('Cubo dice: ',cubosem['='][functipo][rettype])
+            dprint('Cubo dice: ',cubosem['='][functipo][rettype])
             retop = pilaoperand.pop()
             asig = dirfunc['global']['vartab'][currscope]['address']
-            print('Se pasa retorno a variable global ',currscope,' con address ',asig)
+            dprint('Se pasa retorno a variable global ',currscope,' con address ',asig)
             #Generación de cuadruplo de asignación
             cuadruplos.append(('=', retop, '',asig ))
             cuadcount += 1
@@ -2032,7 +2050,7 @@ def expcuadgen(expopers,linenum):
             oper = poper.pop()
             if (cubosem[oper][ropt][lopt] != 'error'):
                 restipo = cubosem[oper][ropt][lopt]
-                print('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
+                #dprint('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
                 # Asegurar de guardar en el espacio temporal correspondiente
                 address = 'res'
                 if restipo == 'entero':
@@ -2047,7 +2065,7 @@ def expcuadgen(expopers,linenum):
 
 
                 elif restipo == 'flotante':
-                    print('\t\tFloat', tmpfloatcount, FLOATMAX)
+                    #dprint('\t\tFloat', tmpfloatcount, FLOATMAX)
                     if tmpfloatcount < FLOATMAX:
                         address = tmpfloatcount + tempfloat
                         tmpfloatcount += 1
@@ -2110,7 +2128,7 @@ def p_EXPRLOG(p):
     global poper
     if(p[1] != None):
         poper.append(p[1])
-    print(poper)
+    #dprint(poper)
 
 def p_EXPRESIONR(p):
     '''EXPRESIONR : EXP EXPRS'''
@@ -2154,7 +2172,7 @@ def p_TERMINOSS(p):
     if p[1] != None:
         if p[2] == '+' or p[2] == '-':
             poper.append(p[2])
-    print(poper)
+    #dprint(poper)
     
 def p_TERMINO(p):
     '''TERMINO : FACTOR
@@ -2173,7 +2191,7 @@ def p_FACTORESS(p):
     if p[1] != None:
         if p[2] == '*' or p[2] == '/':
             poper.append(p[2])
-    print(poper)
+    #dprint(poper)
     
 def p_FACTOR(p):
     '''FACTOR : SIGNOVAR VARCTE
@@ -2333,12 +2351,13 @@ def p_VARCTE(p):
     global tmpcharcount
     global tmpboolcount
 
-    #print('Para el elemento',p[1],'En el scope '+currscope+' Se encuentra la dir func así:')
-    #print('dirfunc', dirfunc, '\n\n')
+    #dprint('Para el elemento',p[1],'En el scope '+currscope+' Se encuentra la dir func así:')
+    #dprint('dirfunc', dirfunc, '\n\n')
     #pilaoperand.append(p[1])
-    print('operadores ',poper)
-    print('Se leyo en expresion',p[1])
-    print('Pila de operandos',pilaoperand)
+    #dprint('operadores ',poper)
+    #dprint('Se leyo en expresion',p[1])
+    #dprint('Pila de operandos',pilaoperand)
+    #dprint('-------------------------------------------------------------------------------------------------------')
 
     if isinstance(p[1],int): # ---------------------------- CTES INT ---------------------------------------------
         #Checar si la constante la ha encontrado antes
@@ -2492,8 +2511,8 @@ def p_VARCTE(p):
 
 
     elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]): # ---------------------------- IDS ---------------------------------------------
-        #print('Para el elemento', p[1], 'En el scope ' + currscope + ' Se encuentra la dir func así:')
-        #print('dirfunc', dirfunc, '\n\n')
+        #dprint('Para el elemento', p[1], 'En el scope ' + currscope + ' Se encuentra la dir func así:')
+        #dprint('dirfunc', dirfunc, '\n\n')
         #llamada vars
         vartipo = None
         address = None
@@ -2517,10 +2536,10 @@ def p_VARCTE(p):
         ptipo.append(vartipo)
 
     else:
-        print('No se sabe que es')
+        dprint('No se sabe que es')
         pass
 
-    print('Pila tipos       ',ptipo,'\n----------------------------------------------------------------------------------------------------------------------------------------------\n')
+   # dprint('Pila tipos       ',ptipo,'\n----------------------------------------------------------------------------------------------------------------------------------------------\n')
 
     p[0] = p[1]
 
@@ -2562,12 +2581,12 @@ def p_LLAMADAFUNC(p):
 
         printerror('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
 
-    print(vartipo)
+    dprint(vartipo)
     #Checar los parametros esten bien llamados
     if vartipo != None:
 
         #Checar si los parametros estan vacios
-        print('Params leídos: ', p[4], '\nParams de la func: ', vartipo)
+        dprint('Params leídos: ', p[4], '\nParams de la func: ', vartipo)
         if len(p[4])  != len(vartipo):
 
             printerror('La funcion %r en la linea %r no tiene la cantidad de parametros correctos, se esperaban %r y se recibieron %r' % (p[2], p.lineno(2),len(vartipo),len(p[4])))
@@ -2577,7 +2596,7 @@ def p_LLAMADAFUNC(p):
             i = 0
 
             for param in vartipo.values():
-                #print('⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄','\nacpapapapa',param ,p[4])
+                #dprint('⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄','\nacpapapapa',param ,p[4])
 
                 if param['tipo'] != p[4][i]['tipo']:
 
@@ -2588,7 +2607,7 @@ def p_LLAMADAFUNC(p):
                     cuadruplos.append(('PARAMETER', p[4][i]['address'], '', 'param#'+str(i)))
                     cuadcount += 1
                     i = i+1
-            print(i)
+            dprint(i)
 
     cmd = 'GOTOSUB'
     if isSpecial:
@@ -2673,42 +2692,78 @@ def p_LLAMADAARR(p):
     global pilaoperand
     global ptipo
 
-    pilaoperand.pop()
-    ptipo.pop()
+    var = None
+
     if (p[1] in dirfunc[currscope]['vartab'].keys()):
         if not ('dims' in dirfunc[currscope]['vartab'][p[1]].keys()):
 
             printerror('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
+        else:
+            var = dirfunc[currscope]['vartab'][p[1]]
 
     elif (p[1] in dirfunc['global']['vartab'].keys()):
         if not ('dims' in dirfunc['global']['vartab'][p[1]].keys()):
 
             printerror('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
+        else:
+            var = dirfunc['global']['vartab'][p[1]]
 
     else:
 
         printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+
+    etipo = ptipo.pop()
+    if etipo == 'entero':
+        si = {'s1': pilaoperand.pop()}
+    else:
+        printerror('Error Semantico : Se esperaba que las expresiones de los subindices sean enteras en la linea %r' % (
+            p.lineno(1)))
+
+    if p[5] != None:
+        si.update(p[5])
+    dprint(si)
+    #Por el momento se pide que se den subindices extrictamente a las dimensiones del arreglo
+    if var['dims'] != len(si):
+        printerror('Error Semantico: La cantidad de subindices no coincide con las dimensiones del arreglo en la linea %r' % (p.lineno(1)))
+    else:
+        for i in range(var['dims']):
+            pass
 
     p[0] = p[1]
 
 def p_LLSEGD(p):
     '''LLSEGD : OPENSQU EXPRESION CLOSESQU LLTERD
               | empty'''
+
     if p[1] != None:
+
         global pilaoperand
         global ptipo
-        pilaoperand.pop()
-        ptipo.pop()
+        etipo = ptipo.pop()
+        if etipo == 'entero':
+            si = {'s2': pilaoperand.pop()}
+        else:
+            printerror('Error Semantico : Se esperaba que las expresiones de los subindices sean enteras en la linea %r' % (p.lineno(1)))
+        if p[4] != None:
+            si.update(p[4])
+        p[0] = si
+
+
+
 def p_LLTERD(p):
     '''LLTERD : OPENSQU EXPRESION CLOSESQU
               | empty'''
     if p[1] != None:
         global pilaoperand
         global ptipo
-
-        pilaoperand.pop()
-        ptipo.pop()
-
+        etipo = ptipo.pop()
+        if etipo == 'entero':
+            si = {'s3': pilaoperand.pop()}
+        else:
+            printerror(
+                'Error Semantico : Se esperaba que las expresiones de los subindices sean enteras en la linea %r' % (
+                    p.lineno(1)))
+        p[0] = si
 
 
 ########## ARREGLO TEXTUAL
@@ -2716,14 +2771,52 @@ def p_ARR_TEX(p):
     '''ARR_TEX : OPENSQU ATPRIC CLOSESQU'''
     global ptipo
     global pilaoperand
+    global atd1
 
     arrdim = {'dims':1}
-    print('Primera dim')
+    dprint('Primera dim')
     if p[2] != None:
         arrdim.update(p[2])
+        dprint('ad1 = ',atd1)
+        arrdim['dim1len'] = atd1
+        atd1 = 0
     ptipo.append(arrdim['tipo'])
     pilaoperand.append('arr')
+    dprint('\n\nArrdim final: ',arrdim,'\n\n\n')
     p[0] = arrdim
+
+#def p_ATSEGDIME(p):
+#    '''ATSEGDIME : ATELEM
+#                | ATSEGDIM'''
+#
+#def p_ATSEGDIM(p):
+#    '''ATSEGDIM : [ATELEM] ATSEGDIMS'''
+#
+#def p_ATSEGDIMS(p):
+#    '''ATSEGDIMS : COMMA ATSEGDIM
+#                | empty'''
+#
+#def p_ATTERDIME(p):
+#    '''ATTERDIME : ATELEM
+#                | ATTERDIM'''
+#
+#def p_ATTERDIM(p):
+#    '''ATTERDIM : [ATELEM] ATTERDIMS
+#                | empty'''
+#
+#def p_ATTERDIMS(p):
+#    '''ATTERDIMS : COMMA ATTERDIM
+#                | empty'''
+#
+#
+#def p_ATELEM(p):
+#    '''ATELEM : EXPRESION ATELEMS'''
+#
+#
+#def p_ATELEMS(p):
+#    '''ATELEMS : COMMA ATELEM
+#                    | empty'''
+#
 
 def p_ATPRIC(p):
     ''' ATPRIC : ATPRE ATPRISIG
@@ -2734,8 +2827,14 @@ def p_ATPRIC(p):
 
     if p[1] != None:
 
-        if p[2] != None:
 
+        if p[2] != None :
+            if p[1]['dimf'] != p[2]['dimf']:
+                printerror("No se declaro correctamente el arreglo textual en la linea %r" % (p.lineno(1)))
+            # checar la congruencia entre los arreglos
+            if p[2]['dimf'] == 'arr':
+                if p[1]['dim2len'] != p[2]['dim2len']:
+                    printerror("Los tamaños de la asignacion no son consistentes en la linea %r\n" % (p.lineno(1)))
             if (cubosem['arr'][p[1]['tipo']][p[2]['tipo']] != 'error'):
                 newtipo = p[1]
                 newtipo.update(p[2])
@@ -2755,18 +2854,27 @@ def p_ATPRE(p):
     '''ATPRE : EXPRESION
               | ATSEGD'''
     arrdim = {}
-    if type(p[1]) is not dict :
+
+    global atd1
+
+    if type(p[1]) is str and p[1] == 'exp' :
         global pilaoperand
         global ptipo
-        pilaoperand.pop()
+        #pilaoperand.pop()
 
-        arrdim['tipo'] = ptipo.pop()
+        arrdim['tipo'] = ptipo[-1:].pop()
+        arrdim['dimf'] = 'exp'
+        dprint('atpre expr\n')
+
 
     else:
         arrdim.update({'dims': 2})
+
         arrdim.update(p[1])
+        arrdim['dimf'] = 'arr'
+        dprint('atpre arr')
 
-
+    atd1 += 1
 
     p[0] = arrdim
 
@@ -2778,8 +2886,13 @@ def p_ATPRISIG(p):
 
 
     if p[1] != None:
-        if p[3] != None:
-
+        if p[3] != None :
+            if p[2]['dimf'] != p[3]['dimf']:
+                printerror("No se declaro correctamente el arreglo textual en la linea %r" % (p.lineno(1)))
+            # checar la congruencia entre los arreglos
+            if p[2]['dimf'] == 'arr':
+                if p[2]['dim2len'] != p[3]['dim2len']:
+                    printerror("Los tamaños de la asignacion no son consistentes en la linea %r\n" % (p.lineno(1)))
             if (cubosem['arr'][p[2]['tipo']][p[3]['tipo']] != 'error'):
                 newtipo = p[2]
                 newtipo.update(p[3])
@@ -2797,6 +2910,13 @@ def p_ATPRISIG(p):
 
 def p_ATSEGD(p):
     '''ATSEGD : OPENSQU ATSEGC CLOSESQU'''
+    dprint('Segunda dim')
+    global atd2
+    if p[2] != None:
+        dprint('-------------------------------------------- ', atd2)
+        p[2]['dim2len'] = atd2
+        atd2 = 0
+
     p[0] = p[2]
 
 def p_ATSEGC(p):
@@ -2807,7 +2927,14 @@ def p_ATSEGC(p):
 
 
     if p[1] != None:
+        dprint('\np[1][dimf] = ', p[1]['dimf'], '\np[2][dimf] = ', p[2])
         if p[2] != None:
+            if p[1]['dimf'] != p[2]['dimf']:
+                printerror("No se declaro correctamente el arreglo textual en la linea %r" % (p.lineno(1)))
+            #checar la congruencia entre los arreglos
+            if p[2]['dimf'] == 'arr':
+                if p[1]['dim3len'] != p[2]['dim3len']:
+                    printerror("Los tamaños de la asignacion no son consistentes en la linea %r\n"% (p.lineno(1)))
             if (cubosem['arr'][p[1]['tipo']][p[2]['tipo']] != 'error'):
                 newtipo = p[1]
                 newtipo.update(p[2])
@@ -2827,15 +2954,21 @@ def p_ATSEGE(p):
     '''ATSEGE : EXPRESION
               | ATTERD'''
     arrdim = {}
-    if type(p[1]) is not dict :
+    global atd2
+    if type(p[1]) is str and p[1] == 'exp' :
         global pilaoperand
         global ptipo
-        pilaoperand.pop()
-        arrdim['tipo'] = ptipo.pop()
+        #pilaoperand.pop()
+        arrdim['tipo'] = ptipo[-1:].pop()
+        arrdim['dimf'] = 'exp'
+        dprint('exptesion en atsege')
+
     else:
         arrdim.update(p[1])
         arrdim.update({'dims': 3})
+        arrdim['dimf'] = 'arr'
 
+    atd2 += 1
     p[0] = arrdim
 
 def p_ATSEGSIG(p):
@@ -2846,7 +2979,14 @@ def p_ATSEGSIG(p):
 
 
     if p[1] != None:
-        if p[3] != None:
+
+        if p[3] != None :
+            if p[2]['dimf'] != p[3]['dimf']:
+                printerror("No se declaro correctamente el arreglo textual en la linea %r" % (p.lineno(1)))
+            #Revisar que los tamaños sean consitentes
+            if p[2]['dimf'] == 'arr':
+                if p[2]['dim3len'] != p[3]['dim3len']:
+                    printerror("Los tamaños de la asignacion no son consistentes en la linea %r\n"% (p.lineno(1)))
             if (cubosem['arr'][p[2]['tipo']][p[3]['tipo']] != 'error'):
                 newtipo = p[2]
                 newtipo.update(p[3])
@@ -2864,6 +3004,12 @@ def p_ATSEGSIG(p):
 
 def p_ATTERD(p):
     '''ATTERD : OPENSQU ATTERC CLOSESQU'''
+    dprint('Terdim')
+    global atd3
+
+    if p[2] != None:
+        p[2]['dim3len'] = atd3
+        atd3 = 0
     p[0] = p[2]
 
 def p_ATTERC(p):
@@ -2894,11 +3040,13 @@ def p_ATTERE(p):
     '''ATTERE : EXPRESION'''
     global pilaoperand
     global ptipo
+    global atd3
 
     arrdim = {}
-
-    pilaoperand.pop()
-    arrdim['tipo'] = ptipo.pop()
+    atd3 += 1
+    #pilaoperand.pop()
+    arrdim['tipo'] = ptipo[-1:].pop()
+    arrdim['dimf'] = 'arr'
     p[0] = arrdim
 
 def p_ATTERSIG(p):
@@ -2931,7 +3079,7 @@ def p_empty(p):
     pass
 
 def p_error(p):
-    print("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
+    dprint("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
     raise TypeError("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
     
 parser = yacc.yacc( debug=1)
@@ -2944,7 +3092,7 @@ def cuadToTxt(cuad):
 
 
 #Prueba imprimir el cubo semantico para ver si esta bien
-#print(cubosem['||']['cadena']['cadena'])
+#dprint(cubosem['||']['cadena']['cadena'])
 
 '''print('\n\n\n')
 print('Cubo semantico:\n')
