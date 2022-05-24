@@ -729,6 +729,7 @@ cuadruplos = []
 
 #Tabla constantes
 ctetab = {}
+objctetab = {} #Una copia para guardarlo en el obj
 
 #Contadores de variables
 tmpintcount = 0
@@ -969,7 +970,9 @@ def p_PROGRAMA(p):
         dirfunc.update(p[5])
 
 
+    #Guardar los temporales utilizadoes en prinicpal
 
+    dirfunc[currscope]['tmpres'] = {'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount}
 
 
 
@@ -1602,6 +1605,7 @@ def p_PRINTABLE(p):
     global ptipo
     #Tabla de constantes
     global ctetab
+    global objctetab
     #Rango de constantes string y su contador
     global STRINGMAX
     global ctestringcount
@@ -1614,6 +1618,7 @@ def p_PRINTABLE(p):
         else:
             if ctestringcount < STRINGMAX:
                 ctetab[ctkey] = constint + ctestringcount
+                objctetab[ctetab[ctkey]] =p[1]
                 ctestringcount += 1
                 p[0] = ctetab[p[1]]
             else:
@@ -2350,6 +2355,9 @@ def p_VARCTE(p):
     global tmpfloatcount
     global tmpcharcount
     global tmpboolcount
+    #Ctetab
+    global ctetab
+    global objctetab
 
     #dprint('Para el elemento',p[1],'En el scope '+currscope+' Se encuentra la dir func así:')
     #dprint('dirfunc', dirfunc, '\n\n')
@@ -2367,6 +2375,7 @@ def p_VARCTE(p):
         else:
             if cteintcount < INTMAX:
                 ctetab[ctkey] = constint + cteintcount
+                objctetab[ctetab[ctkey]] = p[1]
                 cteintcount += 1
                 pilaoperand.append(ctetab[ctkey])
             else:
@@ -2383,6 +2392,7 @@ def p_VARCTE(p):
         else:
             if ctefloatcount < FLOATMAX:
                 ctetab[ctkey] = constint + ctefloatcount
+                objctetab[ctetab[ctkey]] = p[1]
                 ctefloatcount += 1
                 pilaoperand.append(ctetab[ctkey])
             else:
@@ -2396,6 +2406,10 @@ def p_VARCTE(p):
         else:
             if cteboolcount < BOOLMAX:
                 ctetab[p[1]] = constbool + cteboolcount
+                if p[1] == 'verdadero':
+                    objctetab[ctetab[p[1]]] = True
+                else:
+                    objctetab[ctetab[p[1]]] = False
                 cteboolcount += 1
                 pilaoperand.append(ctetab[p[1]])
             else:
@@ -2409,6 +2423,7 @@ def p_VARCTE(p):
         else:
             if ctestringcount < STRINGMAX:
                 ctetab[ctkey] = constint + ctestringcount
+                objctetab[ctetab[ctkey]] = p[1]
                 ctestringcount += 1
                 pilaoperand.append(ctetab[ctkey])
             else:
@@ -2425,6 +2440,7 @@ def p_VARCTE(p):
         else:
             if ctecharcount < CHARMAX:
                 ctetab[p[1]] = constchar + ctecharcount
+                objctetab[ctetab[p[1]]] = p[1]
                 ctecharcount += 1
                 pilaoperand.append(ctetab[p[1]])
             else:
@@ -3089,6 +3105,16 @@ def cuadToTxt(cuad):
     opfile = open('cuadruplos.txt','w')
     for i in range(len(cuad)):
         opfile.write("%r : %r %r %r %r\n" % ((i,)+cuad[i]))
+    opfile.close()
+
+def genobjfile(ctes, funcs, cuad,filename):
+    obj = {'ctetab':ctes,'dirfunc':funcs,'cuadruplos':cuad}
+    #wobj = json.dumps(obj)
+    #open(filename + '.json', 'w').close()
+    with open(filename+'.json','w') as opfile:
+        json.dump(obj,opfile)
+
+
 
 
 #Prueba imprimir el cubo semantico para ver si esta bien
@@ -3118,6 +3144,8 @@ for op1 in oper1:
 print('\n\n\n')'''
 #Leer de archivo
 myFile = open(sys.argv[1])
+filename = sys.argv[1].split('.')[0]
+
 try:
     parser.parse(myFile.read(),tracking=True)
 except TypeError:
@@ -3128,6 +3156,8 @@ else:
         print('No es lenguaje valido!!!!')
     else:
         cuadToTxt(cuadruplos)
+        print(filename)
+        genobjfile(objctetab,dirfunc,cuadruplos,filename)
         print('aceptado')
 
 

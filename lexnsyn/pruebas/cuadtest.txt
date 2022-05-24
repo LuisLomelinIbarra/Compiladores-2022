@@ -5,7 +5,7 @@ programa cuadtest {
 	} {
 		x = 10 + 10*30/30*2 + (1+1000000);
 		bo = 10 > 2 || 20 - 30*2 != 2 && verdadero;
-		imprimir("Hola Mundo!!!!",1+1*3,3);
+		imprimir("Hola Mundo!!!!",1+1*3,3,x,bo);
 		
 	} 
 }

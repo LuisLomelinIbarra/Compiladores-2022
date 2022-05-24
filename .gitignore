@@ -1,0 +1,6 @@
+**/AvancesEntregados/
+lexnsyn/out.txt
+lexnsyn/parser.out
+.idea/
+__pycache__/
+lexnsyn/cuadruplos.txt
