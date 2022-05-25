@@ -1,3 +1,10 @@
+/*
+    Nombre: myscanner.hpp
+    Descripción: Es la definicion del archivo header del scanner henerado por flex. 
+    Aquí se definen algunos atributos que se van a usar durante la generación y 
+    ejecución del escaner
+    Por: Luis Fernando Lomelín Ibarra
+*/
 #ifndef __myscanner_hpp__
 #define __myscanner_hpp__ 1
 #if ! defined(yyFlexLexerOnce)

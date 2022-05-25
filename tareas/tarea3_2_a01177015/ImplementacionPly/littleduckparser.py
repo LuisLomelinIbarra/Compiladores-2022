@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
 
-# In[1]:
-
+#    Nombre: littleduckparser.py
+#    Descripción: Una implementación del lexer y parser usando python y ply
+#    Por: Luis Fernando Lomelín Ibarra
 
 #importar las herramientas de lex y yacc de ply
 
@@ -97,6 +96,7 @@ precedence = (
 def p_PROGRAMA(p):
     '''PROGRAMA : PROGRAM ID COLON VARS BLOQUE
                 | PROGRAM ID COLON  BLOQUE'''
+
     
     
 def p_BLOQUE(p):

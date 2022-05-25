@@ -1,4 +1,9 @@
 %{
+    /*
+    Nombre: myscanner
+    Descripción: Es el scanner generado por el archivo lex "mylexer.l".
+    Por: Luis Fernando Lomelín Ibarra
+    */
     #include <string>
     #include<iostream>
     #include "myscanner.hpp"

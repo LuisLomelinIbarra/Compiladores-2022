@@ -4,3 +4,6 @@ lexnsyn/parser.out
 .idea/
 __pycache__/
 lexnsyn/cuadruplos.txt
+virtualmachine/*.json
+lexnsyn/pruebas/*.json
+tareas/unfinished/*

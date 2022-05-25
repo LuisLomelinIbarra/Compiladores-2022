@@ -25,6 +25,11 @@
 %parse-param{ mydriver &driver}
 
 %code{
+    /*
+    Nombre: myparser
+    Descripción: Es el parser generado por bison y el archivo "myparser.yy"
+    Por: Luis Fernando Lomelín Ibarra
+    */
     #include <iostream>
     #include <cstdlib>
     #include <fstream>

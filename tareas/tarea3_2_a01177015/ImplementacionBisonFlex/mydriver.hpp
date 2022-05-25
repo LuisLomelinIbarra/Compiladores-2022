@@ -1,3 +1,9 @@
+/*
+    Nombre: mydriver
+    Descripción: La definicion header de la clase driver para un manejo 
+	más sencillo del parser y lexer generado por flex y bison.
+    Por: Luis Fernando Lomelín Ibarra
+*/
 #ifndef __MYSCANNER_HPP__
 #define __MYSCANNER_HPP__ 1
 

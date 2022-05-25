@@ -1,3 +1,8 @@
+/*
+    Nombre: Main
+    Descripción: Una implementación del lexer y parser usando flex y bison, este programa sirve como el punto de entrada para utilizar los componentes generados
+    Por: Luis Fernando Lomelín Ibarra
+*/
 #include <iostream>
 #include <cstdlib>
 #include <cstring>

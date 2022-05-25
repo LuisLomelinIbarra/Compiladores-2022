@@ -1,3 +1,11 @@
+/*
+    Nombre: mydriver
+    Descripción: Una implementación de una clase driver para 
+    utlizar de manera más sencilla el lexer y parser generado 
+    por flex y bison.
+    Por: Luis Fernando Lomelín Ibarra
+*/
+
 //Codigo basado en: https://github.com/jonathan-beard/simple_wc_example/blob/master/mc_driver.cpp
 //Se usa como referencia para construir un driver para mi caso especifico
 

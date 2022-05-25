@@ -1,5 +1,5 @@
-- Arreglar las variables sintacticas de el arreglo textual (asegurar por medio de syntaxis que los arreglos solo se puedan declarar de la manera correcta.)
-- Cambiar como esta guardados los parametros de dirfunc
+
+- Cambiar como esta guardados los parametros de dirfunc (OPCIONAL)
 - Cambiar la comprobación de parametros
 - Implementar el uso de direcciones en vez de nombres para los cuadruplos -> arreglos
 - Impelementar arreglos

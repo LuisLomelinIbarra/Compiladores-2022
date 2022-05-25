@@ -1097,7 +1097,8 @@ def p_DECGLOB(p):
     glbfloatcount = floatcount
     glbcharcount = charcount
     glbboolcount = boolcount
-
+    if p[1] == None:
+        p[1] = {}
     dirfunc['global'] = {'tipo': 'vacio', 'params:': None, 'vartab': p[1],'varres' : {'entero': intcount, 'flotante': floatcount, 'char':charcount, 'bool': boolcount}}
 
 
@@ -1842,7 +1843,7 @@ def p_IFGTO(p):
 
     else:
         res = pilaoperand.pop()
-        cuadruplos.append(('GOTOf',res,''))
+        cuadruplos.append(('GOTOF',res,''))
         psaltos.append(cuadcount)
         cuadcount += 1
 
@@ -1932,6 +1933,7 @@ def p_FORINIT(p):
                | empty '''
     global psaltos
     global cuadcount
+    global cuadruplos
 
     if(p[1] != None):
         # 1.- Checar que sea una variable numeríca a utilizar
@@ -1940,11 +1942,34 @@ def p_FORINIT(p):
             printerror('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
         else:
             #2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+
             psaltos.append(cuadcount)
 
 
+
+
+def p_FOREXP(p):
+    '''FOREXP : EXPRESION SEMICOLON'''
+    global cuadcount
+    global cuadruplos
+    global psaltos
+    tipexp = ptipo.pop()
+    # dprint('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
+    # dprint('\t\t\tChecar la asignación: ',  tipas, '\n')
+    if (tipexp not in ['bool']):
+        printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
+
+    res = pilaoperand.pop()
+    cuadruplos.append(('GOTOF', res, ''))
+    psaltos.append(cuadcount)
+    cuadcount += 1
+    cuadruplos.append(('GOTO','',''))
+    psaltos.append(cuadcount)
+    cuadcount+=1
+    psaltos.append(cuadcount)
+
 def p_FORSTEP(p):
-    '''FORSTEP : EXPRESION SEMICOLON  ASIGNACION'''
+    '''FORSTEP : FOREXP  ASIGNACION'''
     global cuadcount
     global cuadruplos
     global psaltos
@@ -1952,27 +1977,31 @@ def p_FORSTEP(p):
     global ptipo
 
     #dprint('\n', pilaoperand, '\n', ptipo, '\n')
-    tipas = p[3]
+    tipas = p[2]
 
-    tipexp = ptipo.pop()
-    #dprint('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
-    #dprint('\t\t\tChecar la asignación: ',  tipas, '\n')
-    if (tipexp not in  ['bool']):
-        printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
+
+
+    if (tipas not in ['entero', 'flotante']):
+
+        printerror('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
     else:
-        if (tipas not in ['entero', 'flotante']):
+        # 2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
 
-            printerror('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
-        else:
-            # 2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+        salasig = psaltos.pop()
+        salacod = psaltos.pop()
+        gtf = psaltos.pop()
+        cond = psaltos.pop()
 
-            res = pilaoperand.pop()
-            cuadruplos.append(('GOTOF', res, ''))
-            psaltos.append(cuadcount)
-            cuadcount += 1
+        cuadruplos.append(('GOTO','','',cond))
+
+        psaltos.append(salasig)
+        psaltos.append(gtf)
+        cuadcount += 1
+        cuadruplos[salacod] = cuadruplos[salacod] + (cuadcount,)
 
 
-# Return --------------------------------------------------------------------------------------------------------------
+
+    # Return --------------------------------------------------------------------------------------------------------------
 
 def p_RETURNF(p):
     '''RETURNF : REGRESAR EXPRESION SEMICOLON'''
@@ -2006,6 +2035,8 @@ def p_RETURNF(p):
             dprint('Se pasa retorno a variable global ',currscope,' con address ',asig)
             #Generación de cuadruplo de asignación
             cuadruplos.append(('=', retop, '',asig ))
+            cuadcount += 1
+            cuadruplos.append(('ENDFUNC','','',''))
             cuadcount += 1
             p[0] = functipo # Se regresa al token el valor del id asignado
         else:
@@ -2237,7 +2268,7 @@ def p_FACTOR(p):
             if(cubosem[p[1]]['none'][lopt] != 'error'):
                 oper = p[1]
                 rop = ''
-                lop = p[2]
+                #lop = p[2]
                 restipo = cubosem[oper]['none'][lopt]
 
                 #Detectar si algun operador es una llamada de una funcion vacia

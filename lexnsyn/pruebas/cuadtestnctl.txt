@@ -1,0 +1,27 @@
+programa cuadtestnctl { 
+	principal funcion {
+	entero x;
+	bool bo;
+	char c;
+	} {
+		x = 10 + 10*30/30*2 + (1+1000000);
+		bo = 10 > 2 || 20 - 30*2 != 2 && verdadero;
+		imprimir("Hola Mundo!!!!",1+1*3,3,x,bo);
+		x = -1;
+		si (x > 1) {
+			imprimir("X es mayor a 1");
+		}sino{
+			imprimir("X es menor a 1");
+		}
+		imprimir("For loop");
+		por(x=1; x <= 10; x = x+1;){
+			imprimir(x);
+		}
+		imprimir("Operaciones con char y bool");
+		imprimir('a' + 1,verdadero + verdadero);
+		bo = 50;
+		c = 98;
+		imprimir(bo,c);
+		
+	} 
+}

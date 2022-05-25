@@ -1,0 +1,14 @@
+programa fibbo { 
+	funcion entero fibbo(entero n){}{
+		si(n == 0){
+			regresar 0;
+		}
+		si(n == 1){
+			regresar 1;
+		}
+		regresar $fibbo(n-1) + $fibbo(n-2);
+	}
+	principal funcion {} {
+		imprimir("fibbo",$fibbo(8));
+	} 
+}
