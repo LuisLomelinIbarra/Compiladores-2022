@@ -8,7 +8,10 @@ programa fibbo {
 		}
 		regresar $fibbo(n-1) + $fibbo(n-2);
 	}
-	principal funcion {} {	
+	principal funcion {
+		entero x, y;
+	} {	
+		x = y;
 		imprimir("fibbo ",$fibbo(8));
 	} 
 }

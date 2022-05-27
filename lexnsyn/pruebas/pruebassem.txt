@@ -5,7 +5,7 @@ programa helloworld {
 	entero l[3][2];
 	flotante g[1][1][1];
 	
-	funcion vacio pop(){}{
+	funcion vacio pop(entero g[1][1][1]){}{
 		imprimir("pop");
 		
 	}	
