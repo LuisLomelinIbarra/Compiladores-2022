@@ -992,20 +992,26 @@ while runcode:
             elif res == 2:
                 lop = chr(lop)
             elif res == 3:
-                if lop != 0:
-                    lop = True
-                else:
-                    lop = False
+                lop = lop != 0
+        
+        #Checar si los temporales fueron transformados apropiadamente
+        if lt == et and lt == 2 and type(lop) is not chr:
+            lop = chr(lop)
+        elif lt == et and lt == 3 and type(lop) is not bool:
+            lop = lop != 0
+
         storeinmem(currcuad[3],lop)
         ip+=1
 
     elif currcuad[0] == 'imprimir': #imprimir
         lop, lt = getexpoper(currcuad[1])
-        
         if type(lop) is bool:
+            
             if lop:
                 lop = 'verdadero'
-            else:
+                
+            elif lop == False:
+                
                 lop = 'falso'
         elif type(lop) is not str:
             lop = str(lop)

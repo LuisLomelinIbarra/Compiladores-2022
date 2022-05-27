@@ -3,7 +3,7 @@ programa cuadtest {
 	entero x,y,w;
 	bool bo;
 	entero z[3];
-	entero mat[3][3];
+	bool mat[3][3];
 	entero cubo[3][3][3];
 	} {
 		x = 10 + 10*30/30*2 + (1+1000000);
@@ -30,6 +30,15 @@ programa cuadtest {
 					imprimir(cubo[x][y][w]);
 				}
 				
+			}
+		}
+		imprimir("Probando arreglos textuales");
+		mat = [[1,'a',verdadero],[4,5,6],['b','c',(falso+127+z[2]) && falso]];
+		
+		por(x = 0; x < 3;x = x + 1;){
+			por(y = 0; y < 3; y = y +1;){
+				
+				imprimir(mat[x][y]);
 			}
 		}
 	} 

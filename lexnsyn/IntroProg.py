@@ -1800,32 +1800,51 @@ def p_ASIGNACION(p):
     #Se checa que el id a asignar exista
     vartipo = None
     addresses = None
+    arrsize = 0
     dprint(ptipo)
     dprint(p[3])
     if p[2] == '=':
         #Asignación a un id por medio de una expresión o arreglo textual
-        #Asignación por id
+        if (p[1] in dirfunc[currscope]['vartab'].keys()):
+            vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
+
+            if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
+
+                addresses = dirfunc[currscope]['vartab'][p[1]]['address']
+
+            if (type(p[3]) is dict):
+                dprint(p[3])
+                if 'dims' not in dirfunc[currscope]['vartab'][p[1]].keys():
+                    printerror('Error Semántico : La asignacion de variable %r en la linea %r no es un arreglo y por ende no se le puede asignar un arreglo' % (p[1], p.lineno(1)))
+                arrsize = dirfunc[currscope]['vartab'][p[1]]['size']
+                if (dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
+                    printerror(
+                        'Error Semántico : La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+
+
+        elif (p[1] in dirfunc['global']['vartab'].keys()):
+            vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
+
+            if ('address' in dirfunc['global']['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
+
+                addresses = dirfunc['global']['vartab'][p[1]]['address']
+
+            if (type(p[3]) is dict):
+                dprint(p[3])
+                if 'dims' not in dirfunc['global']['vartab'][p[1]].keys():
+                    printerror('Error Semántico : La asignacion de variable %r en la linea %r no es un arreglo y por ende no se le puede asignar un arreglo' % (p[1], p.lineno(1)))
+                arrsize = dirfunc['global']['vartab'][p[1]]['size']
+                if (dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
+                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+
+        else:
+            printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+
+        ############################### Asignación por id #############################
+
         if type(p[3]) is str and p[3] == 'exp':
 
-            if (p[1] in dirfunc[currscope]['vartab'].keys()):
-                vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
 
-                if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
-
-                    addresses = dirfunc[currscope]['vartab'][p[1]]['address']
-
-
-            elif (p[1] in dirfunc['global']['vartab'].keys()):
-                vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
-
-                if ('address' in dirfunc['global']['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
-
-                    addresses = dirfunc['global']['vartab'][p[1]]['address']
-
-
-
-            else:
-                printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
 
             asig = pilaoperand.pop()
 
@@ -1859,35 +1878,8 @@ def p_ASIGNACION(p):
         #----------------------------ASIGNACION POR ARREGLO TEXTUAL------------------------------------------------
         else:
             dprint('\nasginación de arr\n')
-            if (p[1] in dirfunc[currscope]['vartab'].keys()):
-                vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
 
-                if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()): #Checar si se le ha asignado una address
-
-                    addresses = dirfunc[currscope]['vartab'][p[1]]['address']
-
-                if (type(p[3]) is dict):
-                    dprint(p[3])
-                if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
-
-                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
-
-
-            elif (p[1] in dirfunc['global']['vartab'].keys()):
-                vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
-
-                if('address' in dirfunc['global']['vartab'][p[1]].keys()):#Checar si se le ha asignado una address
-
-                    addresses = dirfunc['global']['vartab'][p[1]]['address']
-
-                if (type(p[3]) is dict):
-                    dprint(p[3])
-                if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
-
-                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
-
-            else:
-                printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
+            addr = addresses
 
             asig = pilaoperand.pop()
 
@@ -1904,16 +1896,24 @@ def p_ASIGNACION(p):
             if (cubosem['='][vartipo][asigt] != 'error'):
                 dprint('Cubo dice: ', cubosem['='][vartipo][asigt])
                 #Generación de cuadruplo de asignación
-                if (addresses != None):
-                    cuadruplos.append(('=', asig, '', addresses))
-
+                #if (addresses != None):
+                #    cuadruplos.append(('=', asig, '', addresses))
+#
+                #    sclines.append(p.lineno(1))
+                #    cuadcount += 1
+                #else:
+                #    cuadruplos.append(('=', asig, '', p[1]))
+#
+                #    sclines.append(p.lineno(1))
+                #    cuadcount += 1
+                addr += arrsize-1
+                for i in range(arrsize):
+                    asig = pilaoperand.pop()
+                    asigt = ptipo.pop()
+                    cuadruplos.append(('=', asig, '', addr))
                     sclines.append(p.lineno(1))
                     cuadcount += 1
-                else:
-                    cuadruplos.append(('=', asig, '', p[1]))
-
-                    sclines.append(p.lineno(1))
-                    cuadcount += 1
+                    addr -= 1
                 p[0] = vartipo # Se regresa al token el valor del id asignado
             else:
 
@@ -2372,6 +2372,8 @@ def expcuadgen(expopers,linenum):
                 printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
                     linenum))
 
+            if lop == 'arr' or rop == 'arr':
+                printerror('Error Semantico: Se esta intentando hacer una operación de expresion sobre un arreglo textual en la linea %r, lo cual no se puede hacer' % (p.lineno(1)))
 
             oper = poper.pop()
             if (cubosem[oper][ropt][lopt] != 'error'):
@@ -2853,6 +2855,28 @@ def p_VARCTE(p):
     p[0] = p[1]
 
 
+def getArrayData(addr):
+    global dirfunc
+    global currscope
+    res = {}
+
+    for var in dirfunc[currscope]['vartab'].values():
+
+        if addr['address'] == var['address']:
+            res['size'] = var['size']
+            res['dimlen'] = var['dimlen']
+            res['dims'] = var['dims']
+            return res
+    for var in dirfunc['global']['vartab'].values():
+
+        if addr['address'] == var['address']:
+
+            res['size'] = var['size']
+            res['dimlen'] = var['dimlen']
+            res['dims'] = var['dims']
+            return res
+    return res
+
 #LLAMADA FUNCION
 def p_LLAMADAFUNC(p):
     '''LLAMADAFUNC :  DLR FID OPENPAR CALLPARAMS CLOSEPAR '''
@@ -2914,8 +2938,41 @@ def p_LLAMADAFUNC(p):
                     printerror('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden. %r es diferente a %r' % (p[2], p.lineno(2),i+1,param['tipo'],p[4][i]['tipo']))
                 else:
 
+
                     # Pasar el parametro nuevo
-                    cuadruplos.append(('PARAMETER', p[4][i]['address'], '', 'param#'+str(i)))
+                    isArgArr = ''
+                    if 'dims' in param.keys():
+                        # Si es arreglo checar si se pasa un arreglo, y que las dimensiones son correctas
+
+                        p[4][i].update(getArrayData(p[4][i]))
+
+                        paramsIsArrayAndArgIsNot = ('dims' in param.keys() and 'dims' not in p[4][i].keys())
+                        paramsIsNotArrayAndArgIs = ('dims' not in param.keys() and 'dims' in p[4][i].keys())
+
+                        if paramsIsArrayAndArgIsNot:
+                            printerror(
+                                "Error Semántico: La llamada de la función {} en la linea {} esperaba un arreglo, mátriz o cubo y recibio un expresión o constante en el argumento {}".format(
+                                    (p[2], p.lineno(2))))
+                        if paramsIsNotArrayAndArgIs:
+                            printerror(
+                                "Error Semántico: La llamada de la función {} en la linea {} esperaba una expresión o constante y recibio un arreglo, mátriz o cubo en el argumento {}".format(
+                                    (p[2], p.lineno(2),i)))
+                        isArgArr = param['size']
+
+                        #Checar que sean de la misma dimension
+                        hasNotTheSameDims = param['dims'] != p[4][i]['dims']
+
+                        if hasNotTheSameDims:
+                            printerror("Error Semántico: La llamada de la función {} en la linea {} esperaba el argumento {} tuviera {} dimensiones. Se recibio un arreglo con {} dimensiones".format(
+                                    p[2], p.lineno(2),i,param['dims'],p[4][i]['dims']))
+
+                        #Checar que las dimensiones cuadren
+                        paramsDimsAreNotEqual = param['dimlen'] != p[4][i]['dimlen'] and not isSpecial
+                        if paramsDimsAreNotEqual:
+                            printerror("Error Semántico: La llamada de la función {} en la linea {} esperaba que el tamaño de cada una de las dimensiones del argumento {} sean las mismas que la funcion".format(
+                                    p[2], p.lineno(2),i))
+
+                    cuadruplos.append(('PARAMETER', p[4][i]['address'], isArgArr, 'param#'+str(i)))
                     sclines.append(p.lineno(1))
                     cuadcount += 1
                     i = i+1
@@ -2952,8 +3009,7 @@ def p_CALLPARAMS(p):
     p[0] = p[1]
 
 def p_CPARAM(p):
-    ''' CPARAM : ARR_TEX CPARAMS
-                | EXPRESION CPARAMS'''
+    ''' CPARAM :  EXPRESION CPARAMS'''
     #hay que cambiar como identifica si es un arr_tex
     global ptipo
     global pilaoperand
@@ -2976,7 +3032,6 @@ def p_CPARAM(p):
 
 def p_CPARAMS(p):
     ''' CPARAMS : COMMA EXPRESION CPARAMS
-                | COMMA ARR_TEX CPARAMS
                 | empty'''
     if p[1] != None:
         global ptipo

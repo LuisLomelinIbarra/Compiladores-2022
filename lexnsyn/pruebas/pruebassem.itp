@@ -3,7 +3,7 @@ programa helloworld {
 	entero n, f,nmam;
 	entero r[2];
 	entero l[3][2];
-	flotante g[1][1][1];
+	entero g[1][2][1];
 	
 	funcion vacio pop(entero g[1][1][1]){}{
 		imprimir("pop");
@@ -33,6 +33,7 @@ programa helloworld {
 
 	}
 	{
+		$pop(g);
 		n = $tres(1,2,3);
 		n = 'a';
 		r = [2 , 2];
