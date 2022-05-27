@@ -621,7 +621,7 @@ for k in ctetab.keys():
         if re.match("\'.\'",ctetab[k]):
             ctetab[k] = ctetab[k][1]
         elif re.match("\"[^\"]+\"",ctetab[k]):
-            ctetab[k] = ctetab[k].replace('"','')
+            ctetab[k] = ctetab[k].replace('"','').encode('ascii').decode('unicode_escape')
 #pdirfunc = json.dumps(ctetab,indent=4)
 #print(pdirfunc)
 

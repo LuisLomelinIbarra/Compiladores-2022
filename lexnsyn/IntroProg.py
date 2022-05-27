@@ -1868,9 +1868,9 @@ def p_ASIGNACION(p):
 
                 if (type(p[3]) is dict):
                     dprint(p[3])
-                    if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
+                if(dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
 
-                        printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
 
 
             elif (p[1] in dirfunc['global']['vartab'].keys()):
@@ -1882,9 +1882,9 @@ def p_ASIGNACION(p):
 
                 if (type(p[3]) is dict):
                     dprint(p[3])
-                    if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
+                if(dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
 
-                        printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
+                    printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
 
             else:
                 printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
@@ -3488,7 +3488,7 @@ def genobjfile(ctes, funcs, cuad,filename):
     obj = {'ctetab':ctes,'dirfunc':funcs,'cuadruplos':cuad,'sclines':sclines}
     #wobj = json.dumps(obj)
     #open(filename + '.json', 'w').close()
-    with open(filename+'.json','w') as opfile:
+    with open(filename+'.obj','w') as opfile:
         json.dump(obj,opfile)
 
 

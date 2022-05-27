@@ -1,9 +1,10 @@
 programa cuadtest { 
 	principal funcion {
-	entero x,y;
+	entero x,y,w;
 	bool bo;
 	entero z[3];
 	entero mat[3][3];
+	entero cubo[3][3][3];
 	} {
 		x = 10 + 10*30/30*2 + (1+1000000);
 		bo = 10 > 2 || 20 - 30*2 != 2 && verdadero;
@@ -12,10 +13,23 @@ programa cuadtest {
 		z[1] = 10;
 		z[2] = z[1+1-1*1] * z[z[0]*2*2 - 3*z[0]-1];
 		imprimir(z[0]," ",z[1]," ",z[2]);
+		imprimir("Iteracion por la matriz");
 		por(x = 0; x < 3;x = x + 1;){
 			por(y = 0; y < 3; y = y +1;){
 				mat[x][y] = z[x]*z[y];
 				imprimir(mat[x][y]);
+			}
+		}
+		imprimir("Iteracion por el cubo");
+		por(x = 0; x < 3;x = x + 1;){
+			imprimir("\t--Dim2");
+			por(y = 0; y < 3; y = y +1;){
+				imprimir("\t\t---Dim 3:");
+				por(w = 0; w < 3; w = w +1;){
+					cubo[x][y][w] = z[x]*z[y]*(w+1);
+					imprimir(cubo[x][y][w]);
+				}
+				
 			}
 		}
 	} 
