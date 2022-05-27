@@ -2003,7 +2003,7 @@ def p_ASIGNACION(p):
                 printerror(
                     'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                         p.lineno(1)))
-            cuadruplos.append(('+', aux, ctetab[str(var['address'])], address))
+            cuadruplos.append(('+', aux, ctetab[str(var['address'])], '*'+str(address)))
 
             sclines.append(p.lineno(1))
             cuadcount += 1
@@ -3112,7 +3112,7 @@ def p_LLAMADAARR(p):
             printerror(
                 'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                     p.lineno(1)))
-        cuadruplos.append(('+',aux,ctetab[str(var['address'])],address))
+        cuadruplos.append(('+',aux,ctetab[str(var['address'])],'*'+str(address)))
 
         sclines.append(p.lineno(1))
         cuadcount += 1

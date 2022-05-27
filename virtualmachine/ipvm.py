@@ -768,11 +768,13 @@ def getexpoper(addrs):
             elif atype == 3: #bool
                 return memstack[-1][1].mbool[aoff], atype
             elif atype == 4: #pointer
-                #if memstack[-1][1].mpoint[aoff] == None:
-                #    printerr('El valor del arreglo que usted esta accesando no tiene ningún valor.\n Revise su código para asgurar que el espacio del arreglo que anda buscando si tenga valor',ip)
-                #else:
+                if memstack[-1][1].mpoint[aoff] == None:
+                    printerr('El valor del arreglo que usted esta accesando no tiene ningún valor.\n Revise su código para asgurar que el espacio del arreglo que anda buscando si tenga valor',ip)
+                else:
                 #ascop, atype, val = getTypeAndOffset(memstack[-1][1].mpoint[aoff])
-                return getexpoper(memstack[-1][1].mpoint[aoff])
+                    #print('Pila Pointers:\n',list(map(lambda x: None if x == None else getexpoper(x)[0],memstack[-1][1].mpoint)),'\nADDRESS : ', addrs, ' offset : ',aoff)
+                    val, atype = getexpoper(memstack[-1][1].mpoint[aoff])
+                    return val, atype
 
 #Guardar en memoria el res
 def storeinmem(addrs,val, isera = False):
@@ -865,6 +867,10 @@ def valtonum(val,t):
             val = 0
     return val
 
+def reusePointer(addrs,val):
+    scop, atype, aoff = getTypeAndOffset(addrs)
+    memstack[-1][1].mpoint[aoff] = val
+
 def exeExpresion(op,ladd,radd,resadd):
     lop,lt = getexpoper(ladd)
     rop,rt = getexpoper(radd)
@@ -927,8 +933,10 @@ def exeExpresion(op,ladd,radd,resadd):
     elif op == '||': 
         # or
         aux = lop or rop
-
-    storeinmem(resadd,aux)
+    if type(resadd) is str:
+        reusePointer(int(resadd[1:]),aux)
+    else:
+        storeinmem(resadd,aux)
 
 #################################################################
 ####### Ejecutar las acciones
