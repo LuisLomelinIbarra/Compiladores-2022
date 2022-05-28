@@ -568,11 +568,268 @@ ptipo = ['?']
 
 
 #funciones especiales
+# ['leer', 'modulo', 'suma', 'raiz', 'exp', 'elevar', 'techo', 'piso', 'cos', 'sen', 'tan', 'cotan', 'sec', 'cosec',
+# 'log', 'minimo', 'maximo', 'redondear', 'productoPunto', 'media', 'mediana', 'moda', 'varianza', 'percentil',
+# 'aleatorio', 'wilcoxon', 'wilcoxonComp', 'regresionSimple', 'normal', 'poisson', 'dexponencial', 'dgeometrica',
+# 'histograma', 'diagramaDeCaja', 'grafDispersion']
+
 special = {
-    'leer':
-        {
+    'leer': {
             'tipo':'flotante'
-        },
+    },
+
+    'modulo': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+                'b': { 'tipo': 'entero', },
+            }
+    },
+
+    'suma': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': {  'tipo': 'entero',
+                        'dims' : 1,
+                        'dimlen' : [] },
+            }
+    },
+
+    'raiz': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'exp': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'elevar': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+                'b': { 'tipo': 'entero', },
+            }
+    },
+    'techo': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'piso': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'cos': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'sen': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'tan': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'cotan': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'sec': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'cosec': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'log': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'minimo': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'maximo': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'exp': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'redondear': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'productoPunto': { # Para estas funciones hay que hacer un cheque especial
+        # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
+        # de esta funcion
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero',
+                        'dims' : 1,
+                        'dimlen' : [] },
+                'b': { 'tipo': 'entero',
+                        'dims' : 1,
+                        'dimlen' : [] },
+            }
+    },
+    'media': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'mediana': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'moda': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'varianza': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+            }
+    },
+    'percentil': {
+        'tipo': 'flotante',
+        'params' : {
+                'a': { 'tipo': 'entero', },
+                'q': { 'tipo': 'entero', },
+            }
+    },
+    'aleatorio': {
+        'tipo': 'flotante',
+        'params' : {
+                'min': { 'tipo': 'entero', },
+                'max': { 'tipo': 'entero', },
+            }
+    },
+    'wilcoxon': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero', },
+
+            }
+    },
+    'wilcoxonComp': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero', },
+                'y': { 'tipo': 'entero', },
+            }
+    },
+    'regresionSimple': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero',
+                       'dims' : 1,
+                        'dimlen' : [] },
+                'y': { 'tipo': 'entero',
+                       'dims' : 1,
+                        'dimlen' : []},
+                'xi': { 'tipo': 'entero', },
+            }
+    },
+    'normal': {
+        'tipo': 'flotante',
+        'params' : {
+                'media': { 'tipo': 'entero', },
+                'desv': { 'tipo': 'entero', },
+            }
+    },
+    'poisson': {
+        'tipo': 'flotante',
+        'params' : {
+                'lambda': { 'tipo': 'entero', },
+
+            }
+    },
+    'dexponencial': {
+        'tipo': 'flotante',
+        'params' : {
+                'beta': { 'tipo': 'entero', },
+
+            }
+    },
+    'dgeometrica': {
+        'tipo': 'flotante',
+        'params' : {
+                'exitos': { 'tipo': 'entero', },
+                'intentos': { 'tipo': 'entero', },
+
+            }
+    },
+    'histograma': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero',
+                            'dims' : 1,
+                        'dimlen' : [] },
+                'rango': { 'tipo': 'entero', }, # Bins para matplotlib
+
+            }
+    },
+    'diagramaDeCaja': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero',
+                            'dims' : 1,
+                        'dimlen' : [] },
+
+            }
+    },
+    'grafDispersion': {
+        'tipo': 'flotante',
+        'params' : {
+                'x': { 'tipo': 'entero',
+                            'dims' : 1,
+                        'dimlen' : [] },
+
+            }
+    },
+
+
+
+
 }
 
 #Definir los tokens de la gramática

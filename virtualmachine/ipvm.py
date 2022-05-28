@@ -938,6 +938,87 @@ def exeExpresion(op,ladd,radd,resadd):
     else:
         storeinmem(resadd,aux)
 
+#########Funciones Especiales del lenguaje
+
+def spfuncs(fname):
+    if fname == 'leer':
+        pass
+    elif fname == 'modulo':
+        pass
+    elif fname == 'suma':
+        pass
+    elif fname == 'raiz':
+        pass
+    elif fname == 'exp':
+        pass
+    elif fname == 'elevar':
+        pass
+    elif fname == 'techo':
+        pass
+    elif fname == 'piso':
+        pass
+    elif fname == 'cos':
+        pass
+    elif fname == 'sen':
+            pass
+    elif fname == 'tan':
+            pass
+    elif fname == 'cotan':
+            pass
+    elif fname == 'sec':
+            pass
+    elif fname == 'cosec':
+            pass
+    elif fname == 'log':
+            pass
+    elif fname == 'minimo':
+            pass
+    elif fname == 'maximo':
+            pass
+    elif fname == 'redondear':
+            pass
+    elif fname == 'productoPunto':
+            pass
+    elif fname == 'media':
+            pass
+    elif fname == 'mediana':
+            pass
+    elif fname == 'moda':
+            pass
+    elif fname == 'varianza':
+            pass
+    elif fname == 'percentil':
+            pass
+    elif fname == 'aleatorio':
+            pass
+    elif fname == 'wilcoxon':
+            pass
+    elif fname == 'wilcoxonComp':
+            pass
+    elif fname == 'regresionSimple':
+            pass
+    elif fname == 'normal':
+            pass
+    elif fname == 'poisson':
+            pass
+    elif fname == 'dexponencial':
+            pass
+    elif fname == 'dgeometrica':
+            pass
+    elif fname == 'histograma':
+            pass
+    elif fname == 'diagramaDeCaja':
+        pass
+    elif fname == 'grafDispersion':
+        pass
+
+
+
+
+
+    
+    
+
 #################################################################
 ####### Ejecutar las acciones
 #################################################################
