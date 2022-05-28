@@ -3,10 +3,10 @@ programa helloworld {
 	entero n, f,nmam;
 	entero r[2];
 	entero l[3][2];
-	entero g[1][2][1];
+	entero g[2][2][2];
 	
-	funcion vacio pop(entero g[1][1][1]){}{
-		imprimir("pop");
+	funcion vacio pop(entero g[2][2][2]){}{
+		imprimir("pop ", g[1][1][1]);
 		
 	}	
 
@@ -38,7 +38,7 @@ programa helloworld {
 		n = 'a';
 		r = [2 , 2];
 		l = [[1,2],[3,4],[5,6]];
-		g = [[[1.0]]];
+		g = [[[1.0,2.0],[3.0,4.0]],[[5.0,6.0],[7.0,8.0]]];
 		aka = 10-n;
 		10 / aka ;
 		l [1][1] = 3;

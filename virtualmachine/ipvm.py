@@ -622,8 +622,8 @@ for k in ctetab.keys():
             ctetab[k] = ctetab[k][1]
         elif re.match("\"[^\"]+\"",ctetab[k]):
             ctetab[k] = ctetab[k].replace('"','').encode('ascii').decode('unicode_escape')
-#pdirfunc = json.dumps(ctetab,indent=4)
-#print(pdirfunc)
+pdirfunc = json.dumps(ctetab,indent=4)
+print(pdirfunc)
 
 # Parar ejecución e imprimir error
 def printerr(msg,cn):
@@ -978,20 +978,20 @@ while runcode:
 #########################ESTATUTOS###############################
     elif currcuad[0] == '=':
         lop,lt = getexpoper(currcuad[1])
-        
+        lop = valtonum(lop,lt)
         _ , et = getexpoper(currcuad[3])
         res = cubosem['='][et][lt]
         if lop == None:
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         # Asegurar que se este guardando con el tipo correcto
         if res != lt:
-            if res == 0:
+            if res == 0 and type(lop) is not int:
                 lop = int(lop)
-            elif res == 1:
+            elif res == 1 and type(lop) is not float:
                 lop = float(lop)
-            elif res == 2:
+            elif res == 2 and type(lop) is not chr:
                 lop = chr(lop)
-            elif res == 3:
+            elif res == 3 and type(lop) is not bool:
                 lop = lop != 0
         
         #Checar si los temporales fueron transformados apropiadamente
@@ -1005,7 +1005,10 @@ while runcode:
 
     elif currcuad[0] == 'imprimir': #imprimir
         lop, lt = getexpoper(currcuad[1])
-        if type(lop) is bool:
+        
+        if lop == None:
+            lop = 'indefinido'
+        elif type(lop) is bool:
             
             if lop:
                 lop = 'verdadero'
@@ -1015,6 +1018,7 @@ while runcode:
                 lop = 'falso'
         elif type(lop) is not str:
             lop = str(lop)
+        
         ip+=1
         isNextPrintable = cuad[ip][0] == 'imprimir'
         
@@ -1035,12 +1039,14 @@ while runcode:
     elif currcuad[0] == 'VERIF':
         lop,lt = getexpoper(currcuad[1])
         rop,rt = getexpoper(currcuad[2])
+
         lop = valtonum(lop,lt)
         rop = valtonum(rop,rt)
+        
         if lop < 0:
-            printerr("Uno de los subindices se resulta en un valor negativo. Los subindices no pueden ser negativos, recuerda que van de 0 a el tamaño del arreglo.\nRevisa tu código para calcular los sub indices que no te den valores negativos")
+            printerr("Uno de los subindices se resulta en un valor negativo. Los subindices no pueden ser negativos, recuerda que van de 0 a el tamaño del arreglo.\nRevisa tu código para calcular los sub indices que no te den valores negativos",ip)
         elif lop >= rop:
-            printerr("Uno de tus subindices resulta ser más grande que el tamaño del arreglo. Recuerda que los subindices se limitan en valores entre 0 y el tamaño del arreglo.\nRevisa tu código para encontrar que expresión causa que el valor sobre pase el tamaño")
+            printerr("Uno de tus subindices resulta ser más grande que el tamaño del arreglo. Recuerda que los subindices se limitan en valores entre 0 y el tamaño del arreglo.\nRevisa tu código para encontrar que expresión causa que el valor sobre pase el tamaño",ip)
         ip += 1
         
 
@@ -1055,19 +1061,45 @@ while runcode:
     elif currcuad[0] == 'PARAMETER':
         lop, lt = getexpoper(currcuad[1])
         addr = 0
-        if lt == 0:
-            addr = localint + intc
-            intc += 1
-        elif lt == 2:
-            addr = localfloat + floatc
-            floatc += 1
-        elif lt == 3:
-            addr = localchar + charc
-            charc += 1
-        elif lt == 4:
-            addr = localbool + boolc
-            boolc += 1
-        storeinmem(addr,lop,True)
+        if currcuad[2] != '':#Es array
+            
+            base = 0
+            basep = currcuad[1]
+            count = 0
+            if lt == 0:
+                base = localint
+                count = intc
+            elif lt == 2:
+                base = localfloat 
+                count = floatc
+            elif lt == 3:
+                base = localchar
+                count = charc 
+            elif lt == 4:
+                base = localbool
+                count = boolc 
+            for i in range(currcuad[2]):
+                addr = base + count
+                lop, lt = getexpoper(basep + count)
+                storeinmem(addr,lop,True)
+                count+=1
+                
+            
+        else:
+        # Es Solo un elemento
+            if lt == 0:
+                addr = localint + intc
+                intc += 1
+            elif lt == 2:
+                addr = localfloat + floatc
+                floatc += 1
+            elif lt == 3:
+                addr = localchar + charc
+                charc += 1
+            elif lt == 4:
+                addr = localbool + boolc
+                boolc += 1
+            storeinmem(addr,lop,True)
         ip += 1
     elif currcuad[0] == 'GOTOSUB':
         memstack.append(eratemp)

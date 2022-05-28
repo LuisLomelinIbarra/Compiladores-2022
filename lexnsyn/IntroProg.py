@@ -850,7 +850,7 @@ def addConst(cte,tipo,line):
                 "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
     elif tipo == 'flotante':
         if ctefloatcount < FLOATMAX:
-            ctetab[ctkey] = constint + ctefloatcount
+            ctetab[ctkey] = constfloat + ctefloatcount
             objctetab[ctetab[ctkey]] = cte
             ctefloatcount += 1
             return ctetab[ctkey]
@@ -1285,7 +1285,7 @@ def p_DPRIM(p):
     R = R * (p[2])
     # Agregar la cte si no esta
     global ctetab
-    if p[2] not in ctetab.keys():
+    if str(p[2]) not in ctetab.keys():
         addConst(p[2], 'entero', p.lineno(1))
     p[0] = {'dims': 1, 'dimlen': [[p[2],0]]}
 
@@ -1309,7 +1309,7 @@ def p_DSEG(p):
         R = R * p[2]
         # Agregar la cte si no la encuentra
         global ctetab
-        if p[2] not in ctetab.keys():
+        if str(p[2]) not in ctetab.keys():
             addConst(p[2], 'entero', p.lineno(1))
         if(p[4]!=None):
             decdims.append(p[4])
@@ -1330,7 +1330,7 @@ def p_DTER(p):
 
         decdims = [p[2],0]
         global ctetab
-        if p[2] not in ctetab.keys():
+        if str(p[2]) not in ctetab.keys():
             addConst(p[2], 'entero', p.lineno(1))
         R = R * p[2]
         p[0] = decdims
@@ -1593,9 +1593,12 @@ def p_PARAM(p):
             mi += 1
 
             m = R / p[3]['dimlen'][k][0]
+            m = int(m)
             p[3]['dimlen'][k][1] = m
-
             R = m
+
+            if str(m) not in ctetab.keys():
+                addConst(m, 'entero', p.lineno(1))
 
         p[3]['dimlen'][mi - 1][1] = 0
         p[3]['size'] = darrsize
@@ -1638,7 +1641,7 @@ def p_PARAMD(p):
         pdim['dimlen'] += [[p[2],0]]
         R = R * (p[2])
         global ctetab
-        if p[2] not in ctetab.keys():
+        if str(p[2]) not in ctetab.keys():
             addConst(p[2], 'entero', p.lineno(1))
         if(p[4] != None):
             pdim['dimlen'] += p[4]['dimlen']
@@ -1660,7 +1663,7 @@ def p_PDSEG(p):
         pdim['dimlen'] = [[p[2],0]]
         R = R * (p[2])
         global ctetab
-        if p[2] not in ctetab.keys():
+        if str(p[2]) not in ctetab.keys():
             addConst(p[2], 'entero', p.lineno(1))
         if (p[4] != None):
             pdim['dimlen']+=p[4]['dimlen']
@@ -1681,7 +1684,7 @@ def p_PDTER(p):
                 'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
         pdim['dimlen'] += [[p[2],0]]
         global ctetab
-        if p[2] not in ctetab.keys():
+        if str(p[2]) not in ctetab.keys():
             addConst(p[2], 'entero', p.lineno(1))
         R = R * (p[2])
         p[0] = pdim
@@ -1711,6 +1714,13 @@ def p_ESTATUTO(p):
                 | BUCLE
                 | RETURNF
                 '''
+    #Pila de operandos y pila de tipos
+    global pilaoperand
+    global ptipo
+    # Si se hace una expresión suelta sacarla de la pila
+    if type(p[1]) is str and p[1] == 'exp':
+        pilaoperand.pop()
+        ptipo.pop()
 
 # Impresion -------------------------  
 def p_IMPRESION(p):
