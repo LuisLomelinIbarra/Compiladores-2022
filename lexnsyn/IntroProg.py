@@ -575,21 +575,22 @@ ptipo = ['?']
 
 special = {
     'leer': {
-            'tipo':'flotante'
+            'tipo':'flotante',
+            'params' : {}
     },
 
     'modulo': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
-                'b': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
+                'b': { 'tipo': 'flotante', },
             }
     },
 
     'suma': {
         'tipo': 'flotante',
         'params' : {
-                'a': {  'tipo': 'entero',
+                'a': {  'tipo': 'flotante',
                         'dims' : 1,
                         'dimlen' : [] },
             }
@@ -598,98 +599,98 @@ special = {
     'raiz': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'exp': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'elevar': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
-                'b': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
+                'b': { 'tipo': 'flotante', },
             }
     },
     'techo': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'piso': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'cos': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'sen': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'tan': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'cotan': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'sec': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'cosec': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'log': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'minimo': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'maximo': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'exp': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'redondear': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante', },
             }
     },
     'productoPunto': { # Para estas funciones hay que hacer un cheque especial
@@ -697,10 +698,10 @@ special = {
         # de esta funcion
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero',
+                'a': { 'tipo': 'flotante',
                         'dims' : 1,
                         'dimlen' : [] },
-                'b': { 'tipo': 'entero',
+                'b': { 'tipo': 'flotante',
                         'dims' : 1,
                         'dimlen' : [] },
             }
@@ -708,110 +709,126 @@ special = {
     'media': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante',
+                       'dims': 1,
+                       'dimlen': []
+                       },
             }
     },
     'mediana': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante',
+                       'dims' : 1,
+                        'dimlen' : [] },
             }
     },
     'moda': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante',
+                       'dims': 1,
+                       'dimlen': []
+                       },
             }
     },
     'varianza': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante',
+                       'dims': 1,
+                       'dimlen': []
+                       },
             }
     },
     'percentil': {
         'tipo': 'flotante',
         'params' : {
-                'a': { 'tipo': 'entero', },
-                'q': { 'tipo': 'entero', },
+                'a': { 'tipo': 'flotante',
+                       'dims': 1,
+                       'dimlen': []
+                       },
+                'q': { 'tipo': 'flotante', },
             }
     },
     'aleatorio': {
         'tipo': 'flotante',
         'params' : {
-                'min': { 'tipo': 'entero', },
-                'max': { 'tipo': 'entero', },
+                'min': { 'tipo': 'flotante', },
+                'max': { 'tipo': 'flotante', },
             }
     },
     'wilcoxon': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero', },
+                'x': { 'tipo': 'flotante', },
 
             }
     },
     'wilcoxonComp': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero', },
-                'y': { 'tipo': 'entero', },
+                'x': { 'tipo': 'flotante', },
+                'y': { 'tipo': 'flotante', },
             }
     },
     'regresionSimple': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero',
+                'x': { 'tipo': 'flotante',# Para estas funciones hay que hacer un cheque especial
+        # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
+        # de esta funcion
                        'dims' : 1,
                         'dimlen' : [] },
-                'y': { 'tipo': 'entero',
+                'y': { 'tipo': 'flotante',
                        'dims' : 1,
                         'dimlen' : []},
-                'xi': { 'tipo': 'entero', },
+                'xi': { 'tipo': 'flotante', },
             }
     },
     'normal': {
         'tipo': 'flotante',
         'params' : {
-                'media': { 'tipo': 'entero', },
-                'desv': { 'tipo': 'entero', },
+                'media': { 'tipo': 'flotante', },
+                'desv': { 'tipo': 'flotante', },
             }
     },
     'poisson': {
         'tipo': 'flotante',
         'params' : {
-                'lambda': { 'tipo': 'entero', },
+                'lambda': { 'tipo': 'flotante', },
 
             }
     },
     'dexponencial': {
         'tipo': 'flotante',
         'params' : {
-                'beta': { 'tipo': 'entero', },
+                'beta': { 'tipo': 'flotante', },
 
             }
     },
     'dgeometrica': {
         'tipo': 'flotante',
         'params' : {
-                'exitos': { 'tipo': 'entero', },
-                'intentos': { 'tipo': 'entero', },
+                'exitos': { 'tipo': 'flotante', },
+                'intentos': { 'tipo': 'flotante', },
 
             }
     },
     'histograma': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero',
+                'x': { 'tipo': 'flotante',
                             'dims' : 1,
                         'dimlen' : [] },
-                'rango': { 'tipo': 'entero', }, # Bins para matplotlib
+                'rango': { 'tipo': 'flotante', }, # Bins para matplotlib
 
             }
     },
     'diagramaDeCaja': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero',
+                'x': { 'tipo': 'flotante',
                             'dims' : 1,
                         'dimlen' : [] },
 
@@ -820,7 +837,7 @@ special = {
     'grafDispersion': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'entero',
+                'x': { 'tipo': 'flotante',
                             'dims' : 1,
                         'dimlen' : [] },
 
@@ -849,7 +866,7 @@ reserved = {'programa' :"PROGRAM",
     'verdadero':"CTE_BOOL",
     'falso':"CTE_BOOL",
     'principal':"PRINCIPAL",
-    'leer':"LEER",
+    #'leer':"LEER",
     'imprimir':"IMPRIMIR",
     'regresar' : "REGRESAR",
 
@@ -1432,6 +1449,8 @@ def p_DECGLOB(p):
     # Contadores de arreglos
     pointcount = 0
 
+    #Agregar las variables globales para las funciones especiales
+
     #dprint(p[1])
     if (p[1] != None):
         p[1], intcount, floatcount, charcount, boolcount = assignvirtualaddress(p[1],'global',p.lineno(1))
@@ -1975,9 +1994,13 @@ def p_ESTATUTO(p):
     global pilaoperand
     global ptipo
     # Si se hace una expresión suelta sacarla de la pila
-    if type(p[1]) is str and p[1] == 'exp':
-        pilaoperand.pop()
-        ptipo.pop()
+    if p[1] != None:
+        if type(p[1]) is str and p[1] == 'exp':
+            #dprint('Pop de exp',pilaoperand)
+            if pilaoperand[-1] != '?':
+
+                pilaoperand.pop()
+                ptipo.pop()
 
 # Impresion -------------------------  
 def p_IMPRESION(p):
@@ -2114,7 +2137,6 @@ def p_ASIGNACION(p):
 
 
             asig = pilaoperand.pop()
-
             asigt = ptipo.pop()
 
             dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
@@ -2333,7 +2355,6 @@ def p_ASEGD(p):
         if p[4] != None:
             si+= p[4]
         p[0] = si
-
 
 def p_ATERD(p):
     '''ATERD : OPENSQU EXPRESION CLOSESQU
@@ -2626,13 +2647,15 @@ def expcuadgen(expopers,linenum):
     global FLOATMAX
     global CHARMAX
     global BOOLMAX
+    global objctetab
     if (poper[-1:].pop() != None):
         if (poper[-1:].pop() in expopers):
             rop = pilaoperand.pop()
             ropt = ptipo.pop()
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
-
+            dprint(lop, ' ' + poper[-1:].pop() + ' ',rop)
+            #dprint('\nPila de oper en expresion: ',pilaoperand,'\n')
             # Detectar si algun operador es una llamada de una funcion vacia
             if lopt == 'vacio' or ropt == 'vacio':
 
@@ -3023,68 +3046,67 @@ def p_VARCTE(p):
         elif (p[1][1:] in special.keys()):
             vartipo = special[p[1][1:]]['tipo']
             isSpecial = True
+            if 'address' in special[p[1][1:]].keys():
+                funcadd = special[p[1][1:]]['address']
 
         else:
 
             printerror('La funcion %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
 
 
-        if(isSpecial):
-            pilaoperand.append(p[1])
+
+        if(vartipo != 'vacio'):
+            address = 'res'
+            if vartipo == 'entero':
+                if tmpintcount < INTMAX:
+                    address = tmpintcount + tempint
+                    tmpintcount += 1
+                else:
+
+                    printerror(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+
+            elif vartipo == 'flotante':
+                if tmpfloatcount < FLOATMAX:
+                    address = tmpfloatcount + tempfloat
+                    tmpfloatcount += 1
+                else:
+
+                    printerror(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+
+            elif vartipo == 'char':
+                if tmpcharcount < CHARMAX:
+                    address = tmpcharcount + tempchar
+                    tmpcharcount += 1
+                else:
+
+                    printerror(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+
+            elif vartipo == 'bool':
+                if tmpboolcount < BOOLMAX:
+                    address = tmpboolcount + tempbool
+                    tmpboolcount += 1
+                else:
+
+                    printerror(
+                        'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
+                            p.lineno(1)))
+
+            # generar cuadruplo
+            cuadruplos.append(('=', funcadd, '', address))
+            global sclines
+            sclines.append(p.lineno(1))
+            cuadcount += 1
+            pilaoperand.append(address)
             ptipo.append(vartipo)
-        else:
-            if(vartipo != 'vacio'):
-                address = 'res'
-                if vartipo == 'entero':
-                    if tmpintcount < INTMAX:
-                        address = tmpintcount + tempint
-                        tmpintcount += 1
-                    else:
-
-                        printerror(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-
-                elif vartipo == 'flotante':
-                    if tmpfloatcount < FLOATMAX:
-                        address = tmpfloatcount + tempfloat
-                        tmpfloatcount += 1
-                    else:
-
-                        printerror(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-
-                elif vartipo == 'char':
-                    if tmpcharcount < CHARMAX:
-                        address = tmpcharcount + tempchar
-                        tmpcharcount += 1
-                    else:
-
-                        printerror(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-
-                elif vartipo == 'bool':
-                    if tmpboolcount < BOOLMAX:
-                        address = tmpboolcount + tempbool
-                        tmpboolcount += 1
-                    else:
-
-                        printerror(
-                            'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
-                                p.lineno(1)))
-
-                # generar cuadruplo
-                cuadruplos.append(('=', funcadd, '', address))
-                global sclines
-                sclines.append(p.lineno(1))
-                cuadcount += 1
-                pilaoperand.append(address)
-                ptipo.append(vartipo)
 
 
     elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]): # ---------------------------- IDS ---------------------------------------------
@@ -3157,12 +3179,14 @@ def p_LLAMADAFUNC(p):
     #Cuadruplos y su contador
     global cuadruplos
     global cuadcount
+    global cubosem
 
 
     funcallcurr = p[2]
     vartipo = None
     funcstart = ''
     isSpecial = False
+    vmtypeconv = {'entero' : '0','flotante' : '1','char' : '2', 'bool' : '3'}
 
     #Generar el nuevo espacio de memoria
     cuadruplos.append(('ERA',p[2],'',''))
@@ -3175,10 +3199,12 @@ def p_LLAMADAFUNC(p):
             vartipo = dirfunc[p[2]]['params']
         funcstart = dirfunc[p[2]]['inicio']
 
+
     elif (p[2] in special.keys()):
-        if 'params' in dirfunc[p[2]].keys():
-            vartipo = dirfunc[p[2]]['params']
+        if 'params' in special[p[2]].keys():
+            vartipo = special[p[2]]['params']
         isSpecial = True
+        funcstart = special[p[2]]['address']
     else:
 
         printerror('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
@@ -3189,6 +3215,10 @@ def p_LLAMADAFUNC(p):
 
         #Checar si los parametros estan vacios
         dprint('Params leídos: ', p[4], '\nParams de la func: ', vartipo)
+
+
+
+
         if len(p[4])  != len(vartipo):
 
             printerror('La funcion %r en la linea %r no tiene la cantidad de parametros correctos, se esperaban %r y se recibieron %r' % (p[2], p.lineno(2),len(vartipo),len(p[4])))
@@ -3196,11 +3226,14 @@ def p_LLAMADAFUNC(p):
         else:
 
             i = 0
-
+            sparr = None
             for param in vartipo.values():
                 #dprint('⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄','\nacpapapapa',param ,p[4])
+                # Checar si se puede hacer casting a la variable/temporal del parametro
 
-                if param['tipo'] != p[4][i]['tipo']:
+                canBeCasted = cubosem['='][param['tipo']][p[4][i]['tipo']] != 'error'
+
+                if not canBeCasted: #param['tipo'] != p[4][i]['tipo']:
 
                     printerror('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden. %r es diferente a %r' % (p[2], p.lineno(2),i+1,param['tipo'],p[4][i]['tipo']))
                 else:
@@ -3232,20 +3265,30 @@ def p_LLAMADAFUNC(p):
                         if hasNotTheSameDims:
                             printerror("Error Semántico: La llamada de la función {} en la linea {} esperaba el argumento {} tuviera {} dimensiones. Se recibio un arreglo con {} dimensiones".format(
                                     p[2], p.lineno(2),i,param['dims'],p[4][i]['dims']))
+                        # Manejo de los tamaños de arreglo cuando si especial
+                        paramsDimsAreNotEqual = False
+                        if isSpecial:
+                            if sparr == None:
+                                sparr = p[4][i]['dimlen']
 
+                            paramsDimsAreNotEqual = sparr['dimlen'] != p[4][i]['dimlen']
+                        else:
                         #Checar que las dimensiones cuadren
-                        paramsDimsAreNotEqual = param['dimlen'] != p[4][i]['dimlen'] and not isSpecial
+                            paramsDimsAreNotEqual = param['dimlen'] != p[4][i]['dimlen']
                         if paramsDimsAreNotEqual:
                             printerror("Error Semántico: La llamada de la función {} en la linea {} esperaba que el tamaño de cada una de las dimensiones del argumento {} sean las mismas que la funcion".format(
                                     p[2], p.lineno(2),i))
 
-                    cuadruplos.append(('PARAMETER', p[4][i]['address'], isArgArr, 'param#'+str(i)))
+
+
+                    cuadruplos.append(('PARAMETER', p[4][i]['address'], isArgArr, vmtypeconv[param['tipo']]+'#'+str(i)))
                     sclines.append(p.lineno(1))
                     cuadcount += 1
                     i = i+1
             dprint(i)
 
     cmd = 'GOTOSUB'
+
     if isSpecial:
         cmd = 'SPFUNC'
 
@@ -3253,26 +3296,68 @@ def p_LLAMADAFUNC(p):
     sclines.append(p.lineno(1))
     cuadcount += 1
 
-
-
     p[0] = p[1]+p[2]
 
 def p_FID(p):
-    '''FID : ID
-           | FUNID'''
-    p[0] = p[1]
+    '''FID : ID '''
+    #Agregar variable global para las funciones especiales utilizadas
 
-#-------------------------
-# Aquí se van agregando los nombres de las funciones especiales del lenguaje
-def p_FUNID(p):
-    '''FUNID : LEER'''
+    #Funcs especiales
+    global special
+
+    #Dir de funciones
+    global dirfunc
+
+    # Contadores globales
+    global glbintcount
+    global glbfloatcount
+    global glbcharcount
+    global glbboolcount
+    if p[1] in special.keys():
+        sptype = special[p[1]]['tipo']
+        if (sptype == 'entero'):  # Asignar las direcciones enteras
+            if (glbintcount < INTMAX):
+                address = globalint + glbintcount
+                glbintcount += 1
+            else:
+
+                printerror("Error de Semantica: sobrepaso el limite de funciones con retorno declaradas en la linea %r" % (p.lineno(1)))
+
+
+        elif (sptype == 'flotante'):  # Asignar las direcciones flotantes
+            if (glbfloatcount < FLOATMAX):
+                address = globalfloat + glbfloatcount
+                glbfloatcount += 1
+            else:
+
+                printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+
+
+        elif (sptype == 'char'):  # Asignar las direcciones char
+            if (glbcharcount < CHARMAX):
+                address = globalchar + glbcharcount
+                glbcharcount += 1
+            else:
+
+                printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+
+        elif (sptype == 'bool'):  # Asignar las direcciones char
+            if (glbboolcount < BOOLMAX):
+                address = globalbool + glbboolcount
+                glbboolcount += 1
+            else:
+
+                printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
+        special[p[1]].update({'address' : address})
+        dirfunc['global']['vartab'].update({p[1]: {'tipo': sptype,'address':address}})
+
     p[0] = p[1]
 
 #LECTURA DE LOS PARAMETROS
 def p_CALLPARAMS(p):
     '''CALLPARAMS : CPARAM
                   | empty '''
-
+    dprint('Call params fue llamado')
     p[0] = p[1]
 
 def p_CPARAM(p):
@@ -3283,12 +3368,11 @@ def p_CPARAM(p):
 
 
     cfpar = []
-
+    dprint('Pila oper:\n',pilaoperand,' y leyo expresion : ',p[1],' ',pilaoperand[-1:][0] != '?')
     if type(p[1]) is str and p[1] == 'exp':
         if pilaoperand[-1:][0] != '?':
-
             cfpar.append({'tipo':ptipo.pop(),'address':pilaoperand.pop()})
-
+        dprint('paso el if : ',pilaoperand)
     else:
         cfpar.append(p[1])
 
@@ -3300,7 +3384,9 @@ def p_CPARAM(p):
 def p_CPARAMS(p):
     ''' CPARAMS : COMMA EXPRESION CPARAMS
                 | empty'''
+
     if p[1] != None:
+
         global ptipo
         global pilaoperand
         cfpar = []
@@ -3462,8 +3548,6 @@ def p_LLSEGD(p):
             si+= p[4]
         p[0] = si
 
-
-
 def p_LLTERD(p):
     '''LLTERD : OPENSQU EXPRESION CLOSESQU
               | empty'''
@@ -3479,7 +3563,6 @@ def p_LLTERD(p):
                 'Error Semantico : Se esperaba que las expresiones de los subindices sean enteras en la linea %r' % (
                     p.lineno(1)))
         p[0] = si
-
 
 ########## ARREGLO TEXTUAL
 def p_ARR_TEX(p):
@@ -3499,39 +3582,6 @@ def p_ARR_TEX(p):
     pilaoperand.append('arr')
     dprint('\n\nArrdim final: ',arrdim,'\n\n\n')
     p[0] = arrdim
-
-#def p_ATSEGDIME(p):
-#    '''ATSEGDIME : ATELEM
-#                | ATSEGDIM'''
-#
-#def p_ATSEGDIM(p):
-#    '''ATSEGDIM : [ATELEM] ATSEGDIMS'''
-#
-#def p_ATSEGDIMS(p):
-#    '''ATSEGDIMS : COMMA ATSEGDIM
-#                | empty'''
-#
-#def p_ATTERDIME(p):
-#    '''ATTERDIME : ATELEM
-#                | ATTERDIM'''
-#
-#def p_ATTERDIM(p):
-#    '''ATTERDIM : [ATELEM] ATTERDIMS
-#                | empty'''
-#
-#def p_ATTERDIMS(p):
-#    '''ATTERDIMS : COMMA ATTERDIM
-#                | empty'''
-#
-#
-#def p_ATELEM(p):
-#    '''ATELEM : EXPRESION ATELEMS'''
-#
-#
-#def p_ATELEMS(p):
-#    '''ATELEMS : COMMA ATELEM
-#                    | empty'''
-#
 
 def p_ATPRIC(p):
     ''' ATPRIC : ATPRE ATPRISIG
@@ -3749,7 +3799,6 @@ def p_ATTERC(p):
             p[0] = p[1]
     else:
         p[0] = None
-
 
 def p_ATTERE(p):
     '''ATTERE : EXPRESION'''

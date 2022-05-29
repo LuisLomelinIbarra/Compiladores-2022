@@ -1,6 +1,8 @@
 import sys
 import json
 import re
+import numpy as np
+import math
 from Memory import Memory
 
 inobjfn = sys.argv[1]
@@ -941,8 +943,14 @@ def exeExpresion(op,ladd,radd,resadd):
 #########Funciones Especiales del lenguaje
 
 def spfuncs(fname):
+    # Cada funcion va a sacar la info de la memoria
+    # En el caso de recibir un arreglo se va a hacer una fila con los tamaños de cada arreglo recibido por el cuadruplo param
+
+
+    # Leer el primier caracter o núm de consola
     if fname == 'leer':
         pass
+    # Funciones de matemáticas
     elif fname == 'modulo':
         pass
     elif fname == 'suma':
@@ -979,6 +987,8 @@ def spfuncs(fname):
             pass
     elif fname == 'productoPunto':
             pass
+    
+    #Funciones de estadítica
     elif fname == 'media':
             pass
     elif fname == 'mediana':
@@ -1012,6 +1022,7 @@ def spfuncs(fname):
     elif fname == 'grafDispersion':
         pass
 
+    memstack.pop()
 
 
 
@@ -1141,22 +1152,44 @@ while runcode:
         ip += 1
     elif currcuad[0] == 'PARAMETER':
         lop, lt = getexpoper(currcuad[1])
+        lop = valtonum(lop,lt)
+        et = int(currcuad[3].split('#')[0]) # Obtener el tipo del parametro
+        res = cubosem['='][et][lt]
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        # Asegurar que se este guardando con el tipo correcto
+        if res != lt:
+            if res == 0 and type(lop) is not int:
+                lop = int(lop)
+            elif res == 1 and type(lop) is not float:
+                lop = float(lop)
+            elif res == 2 and type(lop) is not chr:
+                lop = chr(lop)
+            elif res == 3 and type(lop) is not bool:
+                lop = lop != 0
+        
+        #Checar si los temporales fueron transformados apropiadamente
+        if lt == et and lt == 2 and type(lop) is not chr:
+            lop = chr(lop)
+        elif lt == et and lt == 3 and type(lop) is not bool:
+            lop = lop != 0
+
         addr = 0
         if currcuad[2] != '':#Es array
             
             base = 0
             basep = currcuad[1]
             count = 0
-            if lt == 0:
+            if et == 0:
                 base = localint
                 count = intc
-            elif lt == 2:
+            elif et == 1:
                 base = localfloat 
                 count = floatc
-            elif lt == 3:
+            elif et == 2:
                 base = localchar
                 count = charc 
-            elif lt == 4:
+            elif et == 3:
                 base = localbool
                 count = boolc 
             for i in range(currcuad[2]):
@@ -1168,16 +1201,16 @@ while runcode:
             
         else:
         # Es Solo un elemento
-            if lt == 0:
+            if et == 0:
                 addr = localint + intc
                 intc += 1
-            elif lt == 2:
+            elif et == 2:
                 addr = localfloat + floatc
                 floatc += 1
-            elif lt == 3:
+            elif et == 3:
                 addr = localchar + charc
                 charc += 1
-            elif lt == 4:
+            elif et == 4:
                 addr = localbool + boolc
                 boolc += 1
             storeinmem(addr,lop,True)

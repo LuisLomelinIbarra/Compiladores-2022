@@ -22,8 +22,8 @@ programa helloworld {
 
 	}
 	{
-		n = $factorial(10);
-		imprimir("Factorial de n");
+		n = $factorial(' ');
+		imprimir("Factorial de n \n");
 		imprimir(n);
 		aka = 10-n;
 		10 / (-aka) ;
@@ -31,7 +31,7 @@ programa helloworld {
 			aka = aka - 1;
 		}
 		por(aka = 10; aka > 1; aka = aka - 1;){
-			imprimir("hola");
+			imprimir("------\n hola aka =",aka);
 		}
 	} 
 
