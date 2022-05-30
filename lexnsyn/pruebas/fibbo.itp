@@ -8,7 +8,22 @@ programa fibbo {
 		}
 		regresar $fibbo(n-1) + $fibbo(n-2);
 	}
-	principal funcion {} {	
-		imprimir("fibbo ",$fibbo(8));
+	principal funcion {
+		entero pri,seg,ter,obj,aux;
+	} {	
+		obj = 8;
+		imprimir("fibbo ",$fibbo(obj));
+
+		pri = 0;
+		seg = 1;
+		aux = 1;
+		mientras( aux < obj){
+			ter = pri + seg;
+			pri = seg;
+			seg = ter;
+			aux = aux + 1;
+		}
+		imprimir("Fibbo secuencial : ",ter);
+
 	} 
 }

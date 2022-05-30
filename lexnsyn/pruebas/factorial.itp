@@ -17,19 +17,28 @@ programa helloworld {
 
 	principal funcion
 	{
-		entero aka;
+		entero aka,aux,aux2;
 		
 
 	}
 	{
-		n = $factorial(' ');
+		n = $factorial(5);
 		imprimir("Factorial de n \n");
 		imprimir(n);
 		aka = 10-n;
 		10 / (-aka) ;
-		mientras(aka > 1){
-			aka = aka - 1;
+		aka = 5;
+		aux2 = aka;
+		aux = 1;
+		mientras(aux <= aux2){
+			si (aux2 - aux > 0 ){ 
+				aka = aka * (aux2-aux);
+			}sino{
+				aka = aka * 1;
+			}
+			aux = aux + 1;
 		}
+		imprimir("Factorial Secuencial : ",aka);
 		por(aka = 10; aka > 1; aka = aka - 1;){
 			imprimir("------\n hola aka =",aka);
 		}

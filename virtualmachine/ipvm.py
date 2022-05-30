@@ -3,6 +3,9 @@ import json
 import re
 import numpy as np
 import math
+import random
+from statistics import mode
+from scipy.stats import wilcoxon
 from Memory import Memory
 
 inobjfn = sys.argv[1]
@@ -556,6 +559,7 @@ FLOATMAX = 2000
 CHARMAX = 1000
 BOOLMAX = 1000
 POINTMAX = 2000
+STRINGMAX = 1000
 
 
 #Global
@@ -613,6 +617,7 @@ scline = obj['sclines']
 #Flag de correr el código
 runcode = True
 ipstack = []
+sparrstack = [] # Un stack para mantener los tamaños de cada parametro definido en funcion especial
 isNextPrintable = False
 printall = ''
 ip = 0
@@ -630,17 +635,22 @@ print(pdirfunc)
 # Parar ejecución e imprimir error
 def printerr(msg,cn):
     runcode = False
-    
-    print("Error en la linea {} : ".format(scline[cn])+msg)
+    if cn < 0:
+        print("\n*******************\n\nError : "+msg)
+    else:
+        print("\n*******************\n\nError en la linea {} : ".format(scline[cn])+msg)
     raise SystemExit
 
 ##############FUNCIONES######################################
 
 #generar una memoria
-def genNewMem(funcname):
+def genNewMem(funcname,splc = []):
     if funcname == 'global':
         ints, floats, chars, bools = dirfunc['global']['varres'].values()
         return Memory(ints, floats, chars, bools)
+    elif funcname == 'special':
+        ints, floats, chars, bools = splc
+        return [Memory(ints, floats, chars, bools),Memory()]
     else:
         ints, floats, chars, bools = dirfunc[funcname]['varres'].values()
         auxmem = [Memory(ints, floats, chars, bools)]
@@ -942,86 +952,343 @@ def exeExpresion(op,ladd,radd,resadd):
 
 #########Funciones Especiales del lenguaje
 
-def spfuncs(fname):
+def spfuncs(fname, raddres):
     # Cada funcion va a sacar la info de la memoria
     # En el caso de recibir un arreglo se va a hacer una fila con los tamaños de cada arreglo recibido por el cuadruplo param
-
+    global sparrstack
 
     # Leer el primier caracter o núm de consola
     if fname == 'leer':
-        pass
+        cin = input()
+        #Primero checar si es un float
+        if re.match("([+-])?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?",cin):
+            cin = float(cin)
+        #Despues checo si es un int
+        elif re.match("([+-])?[0-9]+",cin):
+            cin = int(cin)
+        #Checo si es un char
+        elif len(cin) == 1:
+            cin = ord(cin)
+        elif re.match("\'.\'",cin):
+            cin = ord(cin[1])
+        #Finalmente checo si escribieron verdadero o falso
+        elif re.match("[vV][eE][rR][dD][aA][dD][eE][rR][oO]",cin):
+            cin = 1
+        elif re.match("[fF][Aa][Ll][Ss][Oo]",cin):
+            cin = 0
+        else:
+            printerr(" Recuerda que leer solo puede leer los datos primitivos del lenguaje. Es decir tienes que dar un número entero o flotante, o un caracter o escribir verdadero o falso.",-1)
+        #Si llego a este punto sin hacer match a alguno de los anteriores levanto error
+
+        #Paso el resultado a un float si los encontro
+
+        # Guardar
+        storeinmem(raddres,cin)
     # Funciones de matemáticas
     elif fname == 'modulo':
-        pass
+        # Recive dos argumentos a,b ambos float
+        ladd = localfloat
+        radd = localfloat + 1
+        lop,lt = getexpoper(ladd)
+        rop,rt = getexpoper(radd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        rop = valtonum(rop,rt)
+        storeinmem(raddres,lop%rop)
     elif fname == 'suma':
-        pass
+        # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.sum(arr))
     elif fname == 'raiz':
-        pass
+        # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.sqrt(lop))
     elif fname == 'exp':
-        pass
+        # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.exp(lop))
     elif fname == 'elevar':
-        pass
+        # Recive dos argumentos a,b ambos float
+        ladd = localfloat
+        radd = localfloat + 1
+        lop,lt = getexpoper(ladd)
+        rop,rt = getexpoper(radd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        rop = valtonum(rop,rt)
+        storeinmem(raddres,lop**rop)
     elif fname == 'techo':
-        pass
+        # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.ceil(lop))
     elif fname == 'piso':
-        pass
+        # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.floor(lop))
     elif fname == 'cos':
-        pass
+        # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.cos(lop))
     elif fname == 'sen':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.sin(lop))
     elif fname == 'tan':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.tan(lop))
     elif fname == 'cotan':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,1.0/math.tan(lop))
     elif fname == 'sec':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,1.0/math.cos(lop))
     elif fname == 'cosec':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,1.0/math.sin(lop))
     elif fname == 'log':
-            pass
+            # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,math.log(lop))
     elif fname == 'minimo':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.min(arr))
     elif fname == 'maximo':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.max(arr))
     elif fname == 'redondear':
-            pass
+                # Solo recive un arg float a
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,round(lop))
     elif fname == 'productoPunto':
-            pass
+            # Recive un arrglo de floats a y un arreglo de floats b
+        addr = localfloat
+        arr = []
+        arr2 = []
+        # Obtener los valores del primer arreglo
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+
+        # Sacar el address del segundo arreglo y sacarlo a una variable
+        addr = localfloat + sparrstack[0]
+        sparrstack = sparrstack[1:]
+        for i in range(sparrstack[0]):
+            arr2.append(getexpoper(addr+i)[0])
+        
+        storeinmem(raddres, np.dot(arr,arr2))
     
     #Funciones de estadítica
     elif fname == 'media':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.mean(arr))
     elif fname == 'mediana':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.median(arr))
     elif fname == 'moda':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, mode(arr))
     elif fname == 'varianza':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        storeinmem(raddres, np.var(arr))
     elif fname == 'percentil':
-            pass
+            # Recive un arrglo de floats a y un porciento q
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        addr = localfloat + sparrstack[0]
+        q = getexpoper(addr)[0]
+        print('Q : ',q)
+        storeinmem(raddres, np.percentile(arr,q))
     elif fname == 'aleatorio':
-            pass
+            # Recive dos argumentos min,max ambos float
+        ladd = localfloat
+        radd = localfloat + 1
+        lop,lt = getexpoper(ladd)
+        rop,rt = getexpoper(radd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        rop = valtonum(rop,rt)
+        storeinmem(raddres,random.uniform(lop,rop))
     elif fname == 'wilcoxon':
-            pass
+            # Recive un arrglo de floats a
+        addr = localfloat
+        arr = []
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+        w, p = wilcoxon(arr)
+        storeinmem(raddres, p)
     elif fname == 'wilcoxonComp':
-            pass
+            # Recive un arrglo de floats a y un arreglo de floats b
+        addr = localfloat
+        arr = []
+        arr2 = []
+        # Obtener los valores del primer arreglo
+        for i in range(sparrstack[0]):
+            arr.append(getexpoper(addr+i)[0])
+
+        # Sacar el address del segundo arreglo y sacarlo a una variable
+        addr = localfloat + sparrstack[0]
+        sparrstack = sparrstack[1:]
+        for i in range(sparrstack[0]):
+            arr2.append(getexpoper(addr+i)[0])
+        w, p = wilcoxon(arr,arr2)
+        storeinmem(raddres, p)
+        
     elif fname == 'regresionSimple':
-            pass
+            # Recive x y y que son arreglos de floats y una xi que se va aproximar
+            addr = localfloat
+            x = []
+            y = []
+            n = sparrstack[0]
+            # Obtener los valores del primer arreglo
+            for i in range(sparrstack[0]):
+                x.append(getexpoper(addr+i)[0])
+            x = np.array(x)
+            # Sacar el address del segundo arreglo y sacarlo a una variable
+            addr = localfloat + sparrstack[0]
+            sparrstack = sparrstack[1:]
+            for i in range(sparrstack[0]):
+                y.append(getexpoper(addr+i)[0])
+            y = np.array(y)
+            addr = localfloat + sparrstack[0]
+            #Obtener la x a estimar
+            xi = getexpoper(addr)[0]
+            #Calcular la función de regresion lineal simple h(x) = b_0 + b_1 * x
+            mean_x = np.mean(x)
+            mean_y = np.mean(y)
+
+            SS_xy = np.sum(y*x) - n * mean_y * mean_x
+            SS_xx = np.sum(x*x) - n * mean_x * mean_x
+
+            b_1 = SS_xy / SS_xx
+            b_0 = mean_y - b_1 * mean_x
+
+            storeinmem(raddres, b_0 + b_1*xi)
+
     elif fname == 'normal':
-            pass
+            # Recive dos argumentos media,desv ambos float
+        ladd = localfloat
+        radd = localfloat + 1
+        lop,lt = getexpoper(ladd)
+        rop,rt = getexpoper(radd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        rop = valtonum(rop,rt)
+        storeinmem(raddres,np.random.normal(lop,rop))
     elif fname == 'poisson':
-            pass
+            # Recive lambda que es float
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,np.random.poisson(lop))
     elif fname == 'dexponencial':
-            pass
+            # Recive beta que es float
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,np.random.exponential(lop))
     elif fname == 'dgeometrica':
-            pass
+            # Recive pexito que es float
+        ladd = localfloat
+        lop,lt = getexpoper(ladd)
+        if lop == None or rop == None:
+            printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
+        lop = valtonum(lop,lt)
+        storeinmem(raddres,np.random.geometric(lop))
     elif fname == 'histograma':
             pass
     elif fname == 'diagramaDeCaja':
         pass
     elif fname == 'grafDispersion':
         pass
-
+    sparrstack = [] # Limpiar el stack para la siguiente llamada
     memstack.pop()
 
 
@@ -1097,7 +1364,7 @@ while runcode:
 
     elif currcuad[0] == 'imprimir': #imprimir
         lop, lt = getexpoper(currcuad[1])
-        
+
         if lop == None:
             lop = 'indefinido'
         elif type(lop) is bool:
@@ -1144,7 +1411,12 @@ while runcode:
 
 #########################MODULOS (FUNCIONES)################################
     elif currcuad[0] == 'ERA':
-        eratemp = genNewMem(currcuad[1])
+        if currcuad[3] != '':
+            res = list(map(int,currcuad[3].split(',')))
+            eratemp = genNewMem('special',res)
+        else:
+            eratemp = genNewMem(currcuad[1])
+        
         intc = 0
         floatc = 0
         charc = 0
@@ -1176,9 +1448,10 @@ while runcode:
 
         addr = 0
         if currcuad[2] != '':#Es array
-            
+            sparrstack.append(currcuad[2])
             base = 0
             basep = currcuad[1]
+            moff = 0
             count = 0
             if et == 0:
                 base = localint
@@ -1192,28 +1465,41 @@ while runcode:
             elif et == 3:
                 base = localbool
                 count = boolc 
+            
+            
             for i in range(currcuad[2]):
                 addr = base + count
-                lop, lt = getexpoper(basep + count)
-                storeinmem(addr,lop,True)
-                count+=1
                 
+                lop, lt = getexpoper(basep + moff)
+                storeinmem(addr,lop,True)
+                moff += 1
+                count+=1
+            
+            if et == 0:
+                intc = count 
+            elif et == 1:
+                floatc = count 
+            elif et == 2:
+                charc  = count 
+            elif et == 3:
+                boolc  = count 
             
         else:
         # Es Solo un elemento
             if et == 0:
                 addr = localint + intc
                 intc += 1
-            elif et == 2:
+            elif et == 1:
                 addr = localfloat + floatc
                 floatc += 1
-            elif et == 3:
+            elif et == 2:
                 addr = localchar + charc
                 charc += 1
-            elif et == 4:
+            elif et == 3:
                 addr = localbool + boolc
                 boolc += 1
             storeinmem(addr,lop,True)
+        
         ip += 1
     elif currcuad[0] == 'GOTOSUB':
         memstack.append(eratemp)
@@ -1243,6 +1529,15 @@ while runcode:
         storeinmem(currcuad[3],lop)
         memstack.pop()
         ip = ipstack.pop()
+    elif currcuad[0] == 'SPFUNC':
+        memstack.append(eratemp)
+        
+        eratemp = None
+        fname = currcuad[1]
+        rt = currcuad[2]
+        resadd = currcuad[3]
+        spfuncs(fname,resadd)
+        ip += 1
     elif currcuad[0] == 'END': #fin del programa
         runcode = False
     

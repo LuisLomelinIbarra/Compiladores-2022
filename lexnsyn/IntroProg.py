@@ -761,15 +761,18 @@ special = {
     'wilcoxon': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'flotante', },
+                'x': { 'tipo': 'flotante', 'dims' : 1,
+                        'dimlen' : []},
 
             }
     },
     'wilcoxonComp': {
         'tipo': 'flotante',
         'params' : {
-                'x': { 'tipo': 'flotante', },
-                'y': { 'tipo': 'flotante', },
+                'x': { 'tipo': 'flotante','dims' : 1,
+                        'dimlen' : [] },
+                'y': { 'tipo': 'flotante','dims' : 1,
+                        'dimlen' : [] },
             }
     },
     'regresionSimple': {
@@ -810,8 +813,8 @@ special = {
     'dgeometrica': {
         'tipo': 'flotante',
         'params' : {
-                'exitos': { 'tipo': 'flotante', },
-                'intentos': { 'tipo': 'flotante', },
+                'pexito': { 'tipo': 'flotante', },
+
 
             }
     },
@@ -3179,6 +3182,7 @@ def p_LLAMADAFUNC(p):
     #Cuadruplos y su contador
     global cuadruplos
     global cuadcount
+    global psaltos
     global cubosem
 
 
@@ -3187,12 +3191,14 @@ def p_LLAMADAFUNC(p):
     funcstart = ''
     isSpecial = False
     vmtypeconv = {'entero' : '0','flotante' : '1','char' : '2', 'bool' : '3'}
+    sptype = ''
+    splint = 0
+    splfloat = 0
+    splchar = 0
+    splbool = 0
 
-    #Generar el nuevo espacio de memoria
-    cuadruplos.append(('ERA',p[2],'',''))
-    global sclines
-    sclines.append(p.lineno(1))
-    cuadcount += 1
+
+
 
     if (p[2] in dirfunc.keys()):
         if 'params' in dirfunc[p[2]].keys():
@@ -3205,10 +3211,20 @@ def p_LLAMADAFUNC(p):
             vartipo = special[p[2]]['params']
         isSpecial = True
         funcstart = special[p[2]]['address']
+        sptype = int(vmtypeconv[special[p[2]]['tipo']])
     else:
 
         printerror('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
+    # Generar el nuevo espacio de memoria
 
+    cuadruplos.append(('ERA', p[2], '',))
+    if isSpecial:
+        psaltos.append(cuadcount)
+    else:
+        cuadruplos[cuadcount] = cuadruplos[cuadcount] + ('',)
+    global sclines
+    sclines.append(p.lineno(1))
+    cuadcount += 1
     dprint(vartipo)
     #Checar los parametros esten bien llamados
     if vartipo != None:
@@ -3241,6 +3257,7 @@ def p_LLAMADAFUNC(p):
 
                     # Pasar el parametro nuevo
                     isArgArr = ''
+                    rcount = 1
                     if 'dims' in param.keys():
                         # Si es arreglo checar si se pasa un arreglo, y que las dimensiones son correctas
 
@@ -3252,12 +3269,17 @@ def p_LLAMADAFUNC(p):
                         if paramsIsArrayAndArgIsNot:
                             printerror(
                                 "Error Semántico: La llamada de la función {} en la linea {} esperaba un arreglo, mátriz o cubo y recibio un expresión o constante en el argumento {}".format(
-                                    (p[2], p.lineno(2))))
+                                    p[2], p.lineno(2),i))
                         if paramsIsNotArrayAndArgIs:
                             printerror(
                                 "Error Semántico: La llamada de la función {} en la linea {} esperaba una expresión o constante y recibio un arreglo, mátriz o cubo en el argumento {}".format(
                                     (p[2], p.lineno(2),i)))
-                        isArgArr = param['size']
+                        if isSpecial:
+                            if isArgArr == '':
+                                isArgArr = 1
+
+                        else:
+                            isArgArr = param['size']
 
                         #Checar que sean de la misma dimension
                         hasNotTheSameDims = param['dims'] != p[4][i]['dims']
@@ -3270,8 +3292,17 @@ def p_LLAMADAFUNC(p):
                         if isSpecial:
                             if sparr == None:
                                 sparr = p[4][i]['dimlen']
+                                dprint('\n\n\n Sparr :' ,sparr,' rcount : ',rcount)
+                            for dl in sparr:
 
-                            paramsDimsAreNotEqual = sparr['dimlen'] != p[4][i]['dimlen']
+                                isArgArr *= dl[0]
+
+                            rcount = isArgArr
+                            dprint(' rcount : ', rcount)
+
+
+                            paramsDimsAreNotEqual = sparr != p[4][i]['dimlen']
+
                         else:
                         #Checar que las dimensiones cuadren
                             paramsDimsAreNotEqual = param['dimlen'] != p[4][i]['dimlen']
@@ -3280,6 +3311,19 @@ def p_LLAMADAFUNC(p):
                                     p[2], p.lineno(2),i))
 
 
+
+                    if isSpecial:
+                        # Agregar al conteo de recursos
+                        tp = vmtypeconv[param['tipo']]
+
+                        if tp == '0':
+                            splint += rcount
+                        elif tp == '1':
+                            splfloat += rcount
+                        elif tp == '2':
+                            splchar += rcount
+                        elif tp == '3':
+                            splbool += rcount
 
                     cuadruplos.append(('PARAMETER', p[4][i]['address'], isArgArr, vmtypeconv[param['tipo']]+'#'+str(i)))
                     sclines.append(p.lineno(1))
@@ -3291,8 +3335,15 @@ def p_LLAMADAFUNC(p):
 
     if isSpecial:
         cmd = 'SPFUNC'
-
-    cuadruplos.append((cmd, p[2], '', funcstart))
+        erac = psaltos.pop()
+        # Agregar los recursos de memoria utilizados para la llamada
+        lres = "{},{},{},{}".format(splint,splfloat,splchar,splbool)
+        cuadruplos[erac] = cuadruplos[erac] + (lres,)
+    # En el caso de ser una llamada a función especial se pasa el tipo de función junto con el address
+    # ej. SPFUNC fname sptype globalAddressOfResult
+    # Si es una función del códgio solo se pasa el nombre de función y el cuadruplo a donde saltar
+    # ej. GOTOSUB fname '' functionStart
+    cuadruplos.append((cmd, p[2], sptype, funcstart))
     sclines.append(p.lineno(1))
     cuadcount += 1
 
@@ -3350,6 +3401,8 @@ def p_FID(p):
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
         special[p[1]].update({'address' : address})
         dirfunc['global']['vartab'].update({p[1]: {'tipo': sptype,'address':address}})
+        dirfunc['global']['varres'].update(
+            {'entero': glbintcount, 'flotante': glbfloatcount, 'char': glbcharcount, 'bool': glbboolcount})
 
     p[0] = p[1]
 
