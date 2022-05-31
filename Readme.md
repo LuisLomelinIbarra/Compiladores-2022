@@ -1,12 +1,16 @@
-# Avance 6
+# Avance 7
 
-Ya se empezo la máquina virtual y ya funciona leyendo los cuadruplos de expresiones, el estatuto de imprimir y con las funciones definidas por el usuario (incluyendo recursion). En esta entrega me di cuenta de varios errores en la generación de cuarduplos, especificamente en el estatuto de return estaba faltando agregar el cuadruplo de enfunc para regresar a la memoria anterior. Igual mi lógica de saltos en mi for me llevaba a contar uno ciclo demás lo cual tuve que arreglar
+Ya esta acabado el compilador. Actualmente el compilador recibe un archivo itp, con el el lenguaje de IntroProg y genera un archivo obj (que es un json disfrasado) el cual es utilizado por la máquina virtual para ejecutar código. Es capas de realizar el calculo de factorial de manera secuencial y por función recursiva. También puede sacar el n-simo elemento de la secuencia fibonnaci de manera secuencial y de manera recusrsiva. Tambien se puede hacer un bubble sort para organizar los elementos de un arreglo y se puede encontrar elementos dentro de los mismos.
+
+También se le metio esfuerzo para que los mensajes de error sean lo más claro posibles.
 
 
 El avance de ahora debe de:
-- El compilador debe de generar un archivo json con los cuadruplos, la tabla de funciones y las constantes.
-- La máquina virtual debe de leer el json y ejecutar el código en el.
+- El compilador debe de generar un archivo obj que puede ser leído por la máquina virtual.
+- La máquina virtual debe de leer el obj y ejecutar el código en el, incluyendo funciones especiales de estadística.
 
 COSAS QUE CAMBIAR/ARREGLAR:
-- Formas de manejar los arreglos como parametros
-- Terminar bien arreglos.
+- Actualizar los diagramas de syntaxis para reflejar los cambios que se hicieron durante la implementacion
+- Actualizar la gramática en la documentación 
+- Acabar la documentación
+

@@ -41,7 +41,7 @@ programa helloworld {
 		imprimir("N = ",n);
 		n = 'a';
 		imprimir("Escriba un numero");
-
+		$leer();
 		imprimir("Se Leyo N = ",n);
 		r = [2 , 6,2,5];
 		arrr = [1,2,3,4];
@@ -55,10 +55,24 @@ programa helloworld {
 		imprimir("Redondear : ",$redondear(1.4));
 		imprimir("Techo : ",$techo(1.4));
 		imprimir("Piso : ",$piso(1.4));
+		imprimir("Seno : ", $sen(1));
+		imprimir("Coseno : ", $cos(1));
+		imprimir("Tangente : ", $tan(1));
+		imprimir("Cosecante : ", $cosec(1));
+		imprimir("Secante : ", $sec(1));
+		imprimir("Cotangente : ", $cotan(1));
+		imprimir("Logaritmo : ",$log(2.71828));
 		imprimir("Wilcoxon : ",$wilcoxon(r));
 		imprimir("Wilcoxon Comp : ",$wilcoxonComp(r,arrr));
 		imprimir("Aleatorio: ",$aleatorio(1.4,100));
 		imprimir("normal ",$normal(1,1));
+		imprimir("poisson ",$poisson(3));
+		imprimir("dexponencial ",$dexponencial(5));
+		imprimir("dgeometrica ",$dgeometrica(0.2));
+		$diagramaDeCaja(r);
+		$diagramaDeCaja(arrr);
+		$grafDispersion(arrr,r);
+		$histograma(r,4);
 		l = [[1,2],[3,4],[5,6]];
 		g = [[[1.0,2.0],[3.0,4.0]],[[5.0,6.0],[7.0,8.0]]];
 		aka = 10-n;

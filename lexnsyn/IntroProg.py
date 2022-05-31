@@ -10,8 +10,15 @@ import ply.yacc as yacc
 import sys
 import re
 import json
+from os.path import exists
 
-debugp = True
+debugp = False
+# Funcion para imprmir errores y parar la ejecución
+def printerror(errmsg):
+    global sem_err
+    sem_err = True
+    print("\n\n\u001b[31m*********************************************************\n\u001b[0m \u001b[33;1m"+errmsg+'\u001b[0m\n\u001b[31m*********************************************************\u001b[0m\n')
+    raise SyntaxError(errmsg)
 #PrintDebug
 def dprint(*args,**kwargs):
     global debugp
@@ -819,17 +826,17 @@ special = {
             }
     },
     'histograma': {
-        'tipo': 'flotante',
+        'tipo': 'vacio',
         'params' : {
                 'x': { 'tipo': 'flotante',
                             'dims' : 1,
                         'dimlen' : [] },
-                'rango': { 'tipo': 'flotante', }, # Bins para matplotlib
+                'rango': { 'tipo': 'entero', }, # Bins para matplotlib
 
             }
     },
     'diagramaDeCaja': {
-        'tipo': 'flotante',
+        'tipo': 'vacio',
         'params' : {
                 'x': { 'tipo': 'flotante',
                             'dims' : 1,
@@ -838,9 +845,12 @@ special = {
             }
     },
     'grafDispersion': {
-        'tipo': 'flotante',
+        'tipo': 'vacio',
         'params' : {
                 'x': { 'tipo': 'flotante',
+                            'dims' : 1,
+                        'dimlen' : [] },
+                'y': { 'tipo': 'flotante',
                             'dims' : 1,
                         'dimlen' : [] },
 
@@ -967,7 +977,7 @@ def t_newline(t):
     t.lexer.lineno += len(t.value) 
 
 def t_error(t):
-     print("Token Invalido '%s' en la linea %r" % (t.value[0],t.lexer.lineno) )
+     printerror("Token Invalido '%s' en la linea %r" % (t.value[0],t.lexer.lineno) )
 
 
 lexer = lex.lex()
@@ -1082,12 +1092,7 @@ atd3 = 0
 # Asociación cuadruplo con linea de código fuente
 sclines = []
 
-# Funcion para imprmir errores y parar la ejecución
-def printerror(errmsg):
-    global sem_err
-    sem_err = True
-    print(errmsg)
-    raise SyntaxError(errmsg)
+
 
 # Funcion par Meter valores constantes a la ctetab
 def addConst(cte,tipo,line):
@@ -2035,7 +2040,8 @@ def p_PRINTARGS(p):
 
 def p_PRINTABLE(p):
     '''PRINTABLE : EXPRESION
-                 | CTE_STRING'''
+                 | CTE_STRING
+                 | empty'''
     global pilaoperand
     global ptipo
     #Tabla de constantes
@@ -2055,8 +2061,14 @@ def p_PRINTABLE(p):
 
 
     else:
-        op = pilaoperand.pop()
-        ptipo.pop()
+        if p[1] == None:
+            op = ''
+        else:
+            if pilaoperand[-1] != '?':
+                op = pilaoperand.pop()
+                ptipo.pop()
+            else:
+                op = ''
         p[0] = op
 
 
@@ -2726,6 +2738,7 @@ def expcuadgen(expopers,linenum):
                 cuadcount += 1
                 pilaoperand.append(address)
                 ptipo.append(restipo)
+
             else:
                 printerror(
                     'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
@@ -2735,6 +2748,7 @@ def expcuadgen(expopers,linenum):
 def p_EXPRESION(p):
     '''EXPRESION :  EXPRESIONR
                 | EXPRLOG '''
+    dprint('\n\nPila de operandos en expresion : ', pilaoperand)
     # Generar cuadruplos
     expcuadgen(['||', '&&'], p.lineno(1))
     p[0] = 'exp'
@@ -3210,8 +3224,11 @@ def p_LLAMADAFUNC(p):
         if 'params' in special[p[2]].keys():
             vartipo = special[p[2]]['params']
         isSpecial = True
-        funcstart = special[p[2]]['address']
-        sptype = int(vmtypeconv[special[p[2]]['tipo']])
+        if special[p[2]]['tipo'] != 'vacio':
+            funcstart = special[p[2]]['address']
+            sptype = int(vmtypeconv[special[p[2]]['tipo']])
+        else:
+            sptype = -1
     else:
 
         printerror('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
@@ -3346,7 +3363,7 @@ def p_LLAMADAFUNC(p):
     cuadruplos.append((cmd, p[2], sptype, funcstart))
     sclines.append(p.lineno(1))
     cuadcount += 1
-
+    dprint('\n\npila oper al final de llamda funcion ',pilaoperand)
     p[0] = p[1]+p[2]
 
 def p_FID(p):
@@ -3399,8 +3416,9 @@ def p_FID(p):
             else:
 
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
-        special[p[1]].update({'address' : address})
-        dirfunc['global']['vartab'].update({p[1]: {'tipo': sptype,'address':address}})
+        if sptype != 'vacio':
+            special[p[1]].update({'address' : address})
+            dirfunc['global']['vartab'].update({p[1]: {'tipo': sptype,'address':address}})
         dirfunc['global']['varres'].update(
             {'entero': glbintcount, 'flotante': glbfloatcount, 'char': glbcharcount, 'bool': glbboolcount})
 
@@ -3896,10 +3914,10 @@ def p_empty(p):
     pass
 
 def p_error(p):
-    dprint("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
+    printerror("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
     raise TypeError("Error de sintaxis con el simbolo %r en la linea %r" % (p.value,p.lexer.lineno))
     
-parser = yacc.yacc( debug=1)
+parser = yacc.yacc( debug=debugp)
 
 
 def cuadToTxt(cuad):
@@ -3918,48 +3936,30 @@ def genobjfile(ctes, funcs, cuad,filename):
 
 
 
-#Prueba imprimir el cubo semantico para ver si esta bien
-#dprint(cubosem['||']['cadena']['cadena'])
-
-'''print('\n\n\n')
-print('Cubo semantico:\n')
-ops =  ['OPER1','OPER2'] + list(cubosem.keys())
-oper1 = list(cubosem['+'].keys())
-oper2 = list(cubosem['+']['entero'].keys())
-
-print(oper1,oper2)
-
-print("{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}".format(*ops))
-print("------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-ops = list(cubosem.keys())
-for op1 in oper1:
-    row = [op1]
-    for op2 in oper2:
-        row = row + [op2]
-        for op in ops:
-            row.append(cubosem[op][op1][op2])
-    print(
-        "{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}".format(
-            *row))
-
-print('\n\n\n')'''
 #Leer de archivo
-myFile = open(sys.argv[1])
-filename = sys.argv[1].split('.')[0]
+if len(sys.argv) != 2:
+    print("\n\u001b[31m+++++++++++++++++++++++++++++++\n\u001b[33;1mAsegura proporsionar solo el nombre del archivo como el unico agrumento del programa\u001b[0m")
+    sys.exit(1)
+if exists(sys.argv[1]):
+    myFile = open(sys.argv[1])
+    filename = sys.argv[1].split('.')[0]
 
-try:
-    parser.parse(myFile.read(),tracking=True)
-except TypeError:
+    try:
+        parser.parse(myFile.read(),tracking=True)
+    except TypeError:
 
-    print("No es lenguaje valido!!!!")
-else:
-    if(sem_err):
-        print('No es lenguaje valido!!!!')
+        print("\n\u001b[31m\n*****************************************\n****\tNo es lenguaje valido!!!!\n*****************************************\u001b[0m")
     else:
-        cuadToTxt(cuadruplos)
-        print(filename)
-        genobjfile(objctetab,dirfunc,cuadruplos,filename)
-        print('aceptado')
+        if(sem_err):
+            print('\n\u001b[31m\n\u001b[31mn*****************************************\n****\tNo es lenguaje valido!!!!\n*****************************************\u001b[0m')
+        else:
+            cuadToTxt(cuadruplos)
+
+            genobjfile(objctetab,dirfunc,cuadruplos,filename)
+            print('\u001b[32;1m\n********************************\n****\taceptado\n********************************\u001b[0m')
+else:
+    print(
+        "\n\u001b[31m+++++++++++++++++++++++++++++++\n\u001b[33;1mNingun archivo encontrado. Asegura que se haya escribido bien la direccion del archivo\u001b[0m")
 
 
 

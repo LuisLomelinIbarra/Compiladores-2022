@@ -1,0 +1,56 @@
+programa arraysearchnsort{
+    entero a[10];
+    funcion vacio imprimirArr(entero a[10]){
+        entero x;
+    }{
+        por(x = 0; x < 10; x = x+1;){
+            imprimir("a[",x,"] = ",a[x]);
+        }
+    }
+
+    funcion vacio encontrar(entero x, entero a[10]){
+        entero i,aux,aux2;
+        bool loEncontre;
+    }{
+        imprimir("\n------------------\nBuscando ",x," en el arreglo :");
+        $imprimirArr(a);
+        imprimir("\n\n");
+        aux = -1;
+        loEncontre = falso;
+        por(i = 0;i < 10;i = i +1;){
+            si(a[i] == x){
+                
+                aux2 = i;
+                i = 10+1;
+                loEncontre = verdadero;
+            }
+        }
+        si (loEncontre){
+            imprimir("Encontro ",x," en a[",aux2,"]");
+        }sino{
+            imprimir("No se encontro el numero");
+        }
+    }
+    principal funcion {
+        entero i, j, aux;
+    } {
+        
+        a = [1,5,4,3,2,-7,9,8,6,10];
+        $encontrar(4,a);
+        $encontrar(-1,a);
+        imprimir("Desordenado:\n");
+        $imprimirArr(a);
+        por(i = 0; i < 10; i = i+1;){
+            por(j = 0; j < 10 -i-1; j = j+1;){
+                si(a[j] > a[j+1]){
+                    aux = a[j];
+                    a[j] = a[j+1];
+                    a[j+1] = aux;
+                }
+            }
+        }
+        imprimir("\n\nOrdenado:\n");
+        $imprimirArr(a);
+        imprimir();
+    }
+}

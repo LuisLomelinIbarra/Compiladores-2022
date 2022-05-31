@@ -7,8 +7,10 @@ import random
 from statistics import mode
 from scipy.stats import wilcoxon
 from Memory import Memory
+import matplotlib.pyplot as plt
 
 inobjfn = sys.argv[1]
+infilename = inobjfn.split('.')[0]
 obj = None
 
 #Cubo semantico para verificar tipado en runtime
@@ -621,6 +623,7 @@ sparrstack = [] # Un stack para mantener los tamaños de cada parametro definido
 isNextPrintable = False
 printall = ''
 ip = 0
+plotcounter = [0,0,0]
 
 #limpiar ctetab
 for k in ctetab.keys():
@@ -636,9 +639,9 @@ print(pdirfunc)
 def printerr(msg,cn):
     runcode = False
     if cn < 0:
-        print("\n*******************\n\nError : "+msg)
+        print("\u001b[31m\n*******************\n\nError : \u001b[0m \u001b[33;1m"+msg+'\u001b[0m')
     else:
-        print("\n*******************\n\nError en la linea {} : ".format(scline[cn])+msg)
+        print("\u001b[31m\n*******************\n\n\u001b[0m\u001b[31;1mError en la linea {} : \u001b[0m \u001b[33;1m".format(scline[cn])+msg+'\u001b[0m')
     raise SystemExit
 
 ##############FUNCIONES######################################
@@ -956,25 +959,26 @@ def spfuncs(fname, raddres):
     # Cada funcion va a sacar la info de la memoria
     # En el caso de recibir un arreglo se va a hacer una fila con los tamaños de cada arreglo recibido por el cuadruplo param
     global sparrstack
+    global plotcounter
 
     # Leer el primier caracter o núm de consola
     if fname == 'leer':
         cin = input()
         #Primero checar si es un float
-        if re.match("([+-])?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?",cin):
+        if re.fullmatch("([+-])?[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?",cin):
             cin = float(cin)
         #Despues checo si es un int
-        elif re.match("([+-])?[0-9]+",cin):
+        elif re.fullmatch("([+-])?[0-9]+",cin):
             cin = int(cin)
         #Checo si es un char
         elif len(cin) == 1:
             cin = ord(cin)
-        elif re.match("\'.\'",cin):
+        elif re.fullmatch("\'.\'",cin):
             cin = ord(cin[1])
         #Finalmente checo si escribieron verdadero o falso
-        elif re.match("[vV][eE][rR][dD][aA][dD][eE][rR][oO]",cin):
+        elif re.fullmatch("[vV][eE][rR][dD][aA][dD][eE][rR][oO]",cin):
             cin = 1
-        elif re.match("[fF][Aa][Ll][Ss][Oo]",cin):
+        elif re.fullmatch("[fF][Aa][Ll][Ss][Oo]",cin):
             cin = 0
         else:
             printerr(" Recuerda que leer solo puede leer los datos primitivos del lenguaje. Es decir tienes que dar un número entero o flotante, o un caracter o escribir verdadero o falso.",-1)
@@ -1262,7 +1266,7 @@ def spfuncs(fname, raddres):
             # Recive lambda que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
-        if lop == None or rop == None:
+        if lop == None:
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,np.random.poisson(lop))
@@ -1270,24 +1274,69 @@ def spfuncs(fname, raddres):
             # Recive beta que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
-        if lop == None or rop == None:
+        if lop == None :
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
+        
         storeinmem(raddres,np.random.exponential(lop))
     elif fname == 'dgeometrica':
             # Recive pexito que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
-        if lop == None or rop == None:
+        if lop == None :
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,np.random.geometric(lop))
     elif fname == 'histograma':
-            pass
+        # Recive un arreglo a de floats y una x con la cantidad de barras para las gráficas
+        addr = localfloat
+        a = []
+        # Obtener los valores del arreglo
+        for i in range(sparrstack[0]):
+            a.append(getexpoper(addr+i)[0])
+        a = np.array(a)
+        addr = localint
+        x = getexpoper(addr)[0]
+        plt.hist(a,x)
+        plt.savefig('{}_grafico_{}{}.png'.format(infilename,'hist_',plotcounter[0]))
+        plotcounter[0] += 1
+        plt.clf()
+
+
     elif fname == 'diagramaDeCaja':
-        pass
+        
+        # Recive un arreglo a de floats
+        addr = localfloat
+        a = []
+        # Obtener los valores del arreglo
+        for i in range(sparrstack[0]):
+            a.append(getexpoper(addr+i)[0])
+        a = np.array(a)
+
+        plt.boxplot(a)
+        plt.savefig('{}_grafico_{}{}.png'.format(infilename,'caja_',plotcounter[1]))
+        plotcounter[1] += 1
+        plt.clf()
     elif fname == 'grafDispersion':
-        pass
+        # Recive x y y que son arreglos de floats
+        addr = localfloat
+        x = []
+        y = []
+        n = sparrstack[0]
+        # Obtener los valores del primer arreglo
+        for i in range(sparrstack[0]):
+            x.append(getexpoper(addr+i)[0])
+        x = np.array(x)
+        # Sacar el address del segundo arreglo y sacarlo a una variable
+        addr = localfloat + sparrstack[0]
+        sparrstack = sparrstack[1:]
+        for i in range(sparrstack[0]):
+            y.append(getexpoper(addr+i)[0])
+        y = np.array(y)
+        plt.scatter(x,y)
+        plt.savefig('{}_grafico_{}{}.png'.format(infilename,'disp_',plotcounter[2]))
+        plotcounter[2] += 1
+        plt.clf()
     sparrstack = [] # Limpiar el stack para la siguiente llamada
     memstack.pop()
 
@@ -1363,8 +1412,12 @@ while runcode:
         ip+=1
 
     elif currcuad[0] == 'imprimir': #imprimir
-        lop, lt = getexpoper(currcuad[1])
-
+        
+        if currcuad[1] != '':
+            lop, lt = getexpoper(currcuad[1])
+        else:
+            lop = ''
+            
         if lop == None:
             lop = 'indefinido'
         elif type(lop) is bool:
@@ -1375,6 +1428,7 @@ while runcode:
             elif lop == False:
                 
                 lop = 'falso'
+
         elif type(lop) is not str:
             lop = str(lop)
         
