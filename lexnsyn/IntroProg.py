@@ -1,10 +1,8 @@
-
 #    Nombre: IntroProg.py
 #    Descripción: Una implementación del lexer y parser usando python y ply para el compliador
 #    Por: Luis Fernando Lomelín Ibarra
 
-#importar las herramientas de lex y yacc de ply
-
+#importar las herramientas de ply y otras librerías necesarias para el compilador
 from ply import lex
 import ply.yacc as yacc
 import sys
@@ -12,22 +10,32 @@ import re
 import json
 from os.path import exists
 
+# Flag para imprimir los mensajes de debug
 debugp = False
-# Funcion para imprmir errores y parar la ejecución
+
+# Func : printerror
+# params : Un mensaje de error errmsg
+# Desc : Funcion para imprmir errores en el formato correcto y parar 
+# la ejecución del compilador.
 def printerror(errmsg):
     global sem_err
     sem_err = True
     print("\n\n\u001b[31m*********************************************************\n\u001b[0m \u001b[33;1m"+errmsg+'\u001b[0m\n\u001b[31m*********************************************************\u001b[0m\n')
     raise SyntaxError(errmsg)
-#PrintDebug
+
+# Func : dprint
+# Desc : Un wrapper de print para que solo imprima mensajes si el flag de debug esta activado. 
 def dprint(*args,**kwargs):
     global debugp
     if debugp:
         print(*args,**kwargs)
 
-# Variables importantes
+#-------------------------------------- Variables importantes -----------------------------------------------
+
 sem_err = False # Evitar imprmir aceptado cuando se detectan errores
-#entero, bool flotante char cadena vacio nulo error
+
+# Los tipos con los que trata el cubo son:
+# entero, bool, flotante, char, cadena, vacio, nulo, error
 cubosem = {
            '=':{'entero':{
                           'entero':'entero',
@@ -574,7 +582,9 @@ pilaoperand = ['?']
 ptipo = ['?']
 
 
-#funciones especiales
+# Definición de funciones especiales. Se indican los tipos que son y los parametros que reciben.
+# 
+# Las funciones especiales son :
 # ['leer', 'modulo', 'suma', 'raiz', 'exp', 'elevar', 'techo', 'piso', 'cos', 'sen', 'tan', 'cotan', 'sec', 'cosec',
 # 'log', 'minimo', 'maximo', 'redondear', 'productoPunto', 'media', 'mediana', 'moda', 'varianza', 'percentil',
 # 'aleatorio', 'wilcoxon', 'wilcoxonComp', 'regresionSimple', 'normal', 'poisson', 'dexponencial', 'dgeometrica',
@@ -862,7 +872,8 @@ special = {
 
 }
 
-#Definir los tokens de la gramática
+#-------------------- Definir los tokens de la gramática
+# Palabras reservadas
 reserved = {'programa' :"PROGRAM",
     'funcion':"FUNCION",
     'si':"SI",
@@ -872,26 +883,23 @@ reserved = {'programa' :"PROGRAM",
     'entero':"ENTERO",
     'flotante':"FLOTANTE",
     'char':"CHAR",
-    #'cadena':"CADENA",
     'bool':"BOOL",
     'vacio':"VACIO",
     'nulo':"NULO",
     'verdadero':"CTE_BOOL",
     'falso':"CTE_BOOL",
     'principal':"PRINCIPAL",
-    #'leer':"LEER",
     'imprimir':"IMPRIMIR",
     'regresar' : "REGRESAR",
 
 }
-
+# Nombre de los tokens
 tokens=[
 "CTE_INT",
 "CTE_FLOAT",
 "CTE_CHAR",
 "CTE_STRING",
 "ID",
-"COLON",
 "SEMICOLON",
 "COMMA",
 "EQ",
@@ -912,15 +920,7 @@ tokens=[
 "OR",
 "DLR"] + list(reserved.values())
 
-#Aplicar regex
-#t_PROGRAM = (r"[pP][rR][oO][gG][rR][aA][mM]")
-#t_IF = (r"[iI][fF]")
-#t_ELSE = (r"[eE][lL][sS][eE]")
-#t_PRINT = (r"[pP][rR][iI][nN][tT]")
-#t_INT = (r"[iI][nN][tT]")
-#t_VAR = (r"[vV][aA][rR]")
-#t_FLOAT = (r"[fF][lL][oO][aA][tT]")
-
+#Aplicar regex a cada token
 
 #t_CTE_FLOAT = (r"[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?")
 def t_CTE_FLOAT(t):
@@ -937,20 +937,18 @@ def t_CTE_INT(t):
 
 
 t_CTE_CHAR = ("\'[^\']\'")
-#t_CTE_STRING = ("\"[^\"]+\"")
 
+#t_CTE_STRING = ("\"[^\"]+\"")
 def t_CTE_STRING(t):
     "\"[^\"]+\""
-    #print(t.value)
     return t
 
+# t_ID = "[a-zA-Z]([a-zA-Z]|[0-9]|[_])*"
 def t_ID(t): 
     r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*"
-
     t.type = reserved.get(t.value,'ID')
-    #print("Recognized as ID : " + t.value + " as type "+t.type)
     return t
-t_COLON = (":")
+
 t_SEMICOLON = (";")
 t_COMMA = (",")
 t_EQ = ("=")
@@ -985,7 +983,7 @@ lexer = lex.lex()
 
 
 
-#precedencia
+# Indicarle a yacc la precedencia de los operadores
 precedence = (
     ('right','EQ' ),
     ('right', 'EQS'),
@@ -994,32 +992,31 @@ precedence = (
     ('nonassoc', 'REL'),
     ( 'left', 'PLUSMINUS' ),
     ( 'left', 'MULDIV' ),
-    #('right', 'RRULE')
     )
 
 ########################################################################################################
 #### Variables globales de interes para expresiones y addresses
 #########################################################################################################
-#Dir de func
+
+# Directorio de func
 dirfunc = {}
-#Current scope
+# Variable global que indica el Current scope
 currscope = None
-#para saber cuales parametros evualuar en llamada de funcion
+# Flag para saber cuales parametros evualuar en llamada de funcion
 funcallcurr = None
 
-#Pila de Saltos
+# Pila de Saltos
 psaltos = []
+# Contador de cuadruplos
 cuadcount = 0
 
-#Para generar los cuadruplos temporalmente asignar un registro de manera acendente al cuadruplo
-regcount = 0
 
 #Cuadruplos
 cuadruplos = []
 
-#Tabla constantes
+# Tabla constantes
 ctetab = {}
-objctetab = {} #Una copia para guardarlo en el obj
+objctetab = {} # Una copia para guardarlo en el obj
 
 #Contadores de variables
 tmpintcount = 0
@@ -1041,9 +1038,9 @@ ctestringcount = 0
 #Contadores de arreglos
 tmppointcount = 0
 
-#Offsets de direcciones
+#-------------------------Offsets de direcciones----------------------------------
 
-#MAXIMOS POR VARIABLE
+# MAXIMOS POR VARIABLE
 INTMAX = 2000
 FLOATMAX = 2000
 CHARMAX = 1000
@@ -1052,14 +1049,14 @@ POINTMAX = 2000
 STRINGMAX = 1000
 
 
-#Global
+# Direciones Globales
 globalint = 1000
 globalfloat = globalint + INTMAX
 globalchar = globalfloat + FLOATMAX
 globalbool = globalchar + CHARMAX
 globalpoint = globalbool + BOOLMAX
 
-#Local
+# Direcciones Locales
 localint = globalpoint + POINTMAX
 localfloat = localint + INTMAX
 localchar = localfloat + FLOATMAX
@@ -1067,7 +1064,7 @@ localbool = localchar + CHARMAX
 localpoint = localbool + BOOLMAX
 
 
-#Temporal
+# Direcciones Temporales
 tempint = localpoint + POINTMAX
 tempfloat = tempint + INTMAX
 tempchar = tempfloat + FLOATMAX
@@ -1075,7 +1072,7 @@ tempbool = tempchar + CHARMAX
 temppoint = tempbool + BOOLMAX
 
 
-#Constantes
+# Dirreciones Constantes
 constint = temppoint + POINTMAX
 constfloat = constint + INTMAX
 constchar = constfloat + FLOATMAX
@@ -1084,17 +1081,20 @@ conststring = constbool + BOOLMAX
 
 #Variables pertinentes para arreglos
 R = 0
-atarrsize = 0
-atd1 = 0
-atd2 = 0
-atd3 = 0
+atarrsize = 0 #Tamaño del arreglo textual
+atd1 = 0 # Contador de la primera dimensión
+atd2 = 0 # Contador de la segunda dimensión
+atd3 = 0 # Contador de la tercera dimensión
 
 # Asociación cuadruplo con linea de código fuente
 sclines = []
 
 
+# Func : addConst
+# Param : Una constante cte, un tipo tipo y la linea del token line
+# Desc : Agrega una constante a la tabla de constante y le asigna una dirección 
+# virtual de acuerdo al tipo de la constante.
 
-# Funcion par Meter valores constantes a la ctetab
 def addConst(cte,tipo,line):
     # Rango de memoria constantes
     global constint
@@ -1117,10 +1117,13 @@ def addConst(cte,tipo,line):
     #Tabla const
     global ctetab
     global objctetab
+
+    # Si la llave no es un string hacer una llave string
     if type(cte) is not str:
         ctkey = str(cte)
     else:
         ctkey = cte
+    # Agregarla de acuerdo al tipo y con su dirección de memoria adecuada
     if tipo == 'entero':
         if cteintcount < INTMAX:
             ctetab[ctkey] = constint + cteintcount
@@ -1172,7 +1175,10 @@ def addConst(cte,tipo,line):
             printerror(
                 "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
 
-#Asignar direcciones virtuales a la tabla de variables
+# Func : assignvirtualaddress
+# Params : Una tabla de variables vartab, un scope addresscope y el número del linea de los tokens linenum
+# Ret : Una tabla de variables actualizada con las direcciones de cada variable
+# Desc : Asigna las direcciones virtuales a la tabla de variables
 def assignvirtualaddress(vartab,addressscope,linenum):
     # Rangos globales de memoria
     global globalint
@@ -1296,9 +1302,9 @@ def assignvirtualaddress(vartab,addressscope,linenum):
     return vartab, intcount, floatcount, charcount, boolcount
 
 
+# ------------------------------ GRAMATICA Y PUNTOS NEURALIGCOS -------------------------------------
 
-
-#Estructura del programa
+# Estructura general del programa
 def p_PROGRAMA(p):
     '''PROGRAMA : INITPROG ID OPENCUR DECGLOB DECTODASFUNC PRINCIPAL FUNCION PRINSCOPE BLOQUE CLOSECUR '''
 
@@ -1306,42 +1312,14 @@ def p_PROGRAMA(p):
     global cuadcount
     global dirfunc
 
-
-
-    #1.- Crear el directorio de funciones
-    #dirfunc['global'] = {'vartab':{}}
-    #2.- Si se encuentran declaraciones globales se debe de crear una tabla de symbolos a nivel global
-    # Este es encapsulado en la regla decglob
-    #if p[4] != None:
-    #    dirfunc['global'].update(p[4])
-
-
-    #3.- Si se encuentran funciones darlas de alta en el dir de funciones
-
+    # Si se encuentran funciones darlas de alta en el dir de funciones
     if(p[5] != None):
-        # 4.- Checar que no se repitan los nombres de variables globales en las funciones locales
-        #dprint("Funciones : %r" % p[5])
-        #for kfun in p[5].keys():
-        #    funvars = p[5][kfun]['vartab']
-        #    for varnam in funvars:
-        #        if varnam in dirfunc['global']['vartab'].keys():
-        #            print("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5)))
-        #
-        #            sem_err = True
-        #            raise (SyntaxError(
-        #                "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varnam, p.lineno(5))))
-
         dirfunc.update(p[5])
 
-
-    #Guardar los temporales utilizadoes en prinicpal
-
+    # Guardar los temporales utilizadoes en prinicpal
     dirfunc[currscope]['tmpres'] = {'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount, 'pointer' : tmppointcount}
 
-
-
-
-    #4.- Borrar si se llega al final del programa.
+    # Borrar si se llega al final del programa.
     for key in dirfunc.keys():
         if 'vartab' in dirfunc[key]:
             del dirfunc[key]['vartab']
@@ -1356,6 +1334,7 @@ def p_PROGRAMA(p):
     pctetab = json.dumps(ctetab,indent=4)
     dprint('+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-\n',pctetab)
 
+# Punto neuralgico que genera el primer cuadruplo
 def p_INITPROG(p):
     ''' INITPROG : PROGRAM'''
     global cuadruplos
@@ -1369,6 +1348,7 @@ def p_INITPROG(p):
     psaltos.append(cuadcount)
     cuadcount += 1
 
+# Punto neuralgico que genera la declaración de las variables globales
 def p_PRINSCOPE(p):
     '''PRINSCOPE : OPENCUR DECLARACIONES CLOSECUR'''
     #Scope en el que se encuentra
@@ -1403,29 +1383,14 @@ def p_PRINSCOPE(p):
 
     if (p[2] != None):
         ks = p[2].keys()
-        #if dirfunc['global']['vartab'] != None:
-        #    if len(dirfunc['global']['vartab']) > 0 :
-        #        dprint('a', p[2], dirfunc['global']['vartab'])
-        #        for k in ks:
-        #            if k in dirfunc['global']['vartab'].keys():
-        #                print(
-        #                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
-        #                    k, p.lineno(2)))
-        #
-        #                sem_err = True
-        #                raise (SyntaxError(
-        #                    "Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
-        #                    k, p.lineno(2))))
-
-        # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
+        # Llamada a la función de asignación de direcciones y verificación de que no se definan variables demás
 
         if (p[2] != None and len(p[2]) > 0):
 
             p[2],intcount, floatcount, charcount, boolcount = assignvirtualaddress(p[2],'local',p.lineno(1))
 
-
+    # Actualizar el directorio de funciones
     dirfunc['principal'] = {'tipo': 'vacio', 'params:': None,'vartab':p[2], 'varres':{'entero': intcount, 'flotante':floatcount, 'char':charcount, 'bool': boolcount}}
-    #dirfunc['global']['vartab'].update(p[2])
 
     p[0] = p[2]
 
@@ -1434,6 +1399,7 @@ def p_PRINSCOPE(p):
 # Declaraciones Arreglos y variables
 ##########
 
+# Punto neuralgico de la declaración global de variables
 def p_DECGLOB(p):
     '''DECGLOB : DECLARACIONES'''
     #Directorio de funciones
@@ -1444,8 +1410,6 @@ def p_DECGLOB(p):
     global glbfloatcount
     global glbcharcount
     global glbboolcount
-
-
 
     # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
     # Contadores de variables
@@ -1458,8 +1422,6 @@ def p_DECGLOB(p):
     pointcount = 0
 
     #Agregar las variables globales para las funciones especiales
-
-    #dprint(p[1])
     if (p[1] != None):
         p[1], intcount, floatcount, charcount, boolcount = assignvirtualaddress(p[1],'global',p.lineno(1))
 
@@ -1471,7 +1433,7 @@ def p_DECGLOB(p):
         p[1] = {}
     dirfunc['global'] = {'tipo': 'vacio', 'params:': None, 'vartab': p[1],'varres' : {'entero': intcount, 'flotante': floatcount, 'char':charcount, 'bool': boolcount}}
 
-
+# Manejo de declaraciones
 def p_DECLARACIONES(p):
     '''DECLARACIONES : DECLARACION DECLARACIONES
                      | empty'''
@@ -1484,25 +1446,20 @@ def p_DECLARACIONES(p):
         if(p[2] != None):
             checkexistance = p[1].keys()
             for k in checkexistance:
-                #dprint(p[2].keys())
-                #dprint(k)
                 if(k in p[2].keys()):
-                    #dprint(p[2].keys())
                     printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (k, p.lineno(2)))
-            #dprint( "P[1] contiene %r y p[2] contiene %r" % (p[1].keys(),p[2].keys()))
-
-
             vartab.update(p[2])
-        #knownvars.update(vartab)
+        # Generar y regresar una tabla de variables
         p[0] = vartab
 
-    #Generar y regresar una tabla de variables que va  a ser ligada a una
+    
 
 def p_DECLARACION(p):
     '''DECLARACION : DECVAR
                    | DECARR '''
     p[0] = p[1]
 
+# Punto neuralgico de variables individuales
 def p_DECVAR(p):
     '''DECVAR : TIPO ID DVNID SEMICOLON'''
     newvars = {p[2] : {'tipo': p[1]}}
@@ -1511,11 +1468,9 @@ def p_DECVAR(p):
             if(varid in newvars):
                 printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (varid, p.lineno(3)))
             newvars[varid] = {'tipo': p[1]}
-
-
-
     p[0] = newvars
-# Declaración de variables simples
+
+# Punto neuralgico de Declaración de multiples variables simples
 def p_DVNID(p):
     '''DVNID : COMMA ID DVNID
              | empty'''
@@ -1534,7 +1489,7 @@ def p_DVNID(p):
             #dprint(vars)
         p[0] = vars
 
-#Declaración de arreglos
+# Declaración de arreglos
 def p_DECARR(p):
     '''DECARR : TIPO DECARRID DPRIM DSEG SEMICOLON'''
     global R
@@ -1560,6 +1515,7 @@ def p_DECARR(p):
     dprint('\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+\n',vararr,'\n*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+')
     p[0] = vararr
 
+# Punto neuralgico de la primera dimension de la declaración de un arreglo
 def p_DPRIM(p):
     '''DPRIM : OPENSQU CTE_INT CLOSESQU '''
     global R
@@ -1573,12 +1529,14 @@ def p_DPRIM(p):
         addConst(p[2], 'entero', p.lineno(1))
     p[0] = {'dims': 1, 'dimlen': [[p[2],0]]}
 
+# Punto neuralgico de la inicialización de R para los calculos de m
 def p_DECARRID(p):
     '''DECARRID : ID'''
     global R
     R = 1
     p[0] = p[1]
 
+# Punto neuralgico de la segunda dimension de la declaración de un arreglo
 def p_DSEG(p):
     '''DSEG : OPENSQU CTE_INT CLOSESQU DTER
             | empty'''
@@ -1599,19 +1557,17 @@ def p_DSEG(p):
             decdims.append(p[4])
         p[0] = decdims
 
+# Punto neuralgico de la tercera dimension de la declaración de un arreglo
 def p_DTER(p):
     '''DTER : OPENSQU CTE_INT CLOSESQU
             | empty'''
-
     global R
-
     if (p[1] == None):
         p[0] = None
     else:
         if (p[2] < 0):
             printerror(
                 'Error Semantico: No se pueden asignar tamaños negativos a los arreglos en la linea %r' % (p.lineno(1)))
-
         decdims = [p[2],0]
         global ctetab
         if str(p[2]) not in ctetab.keys():
@@ -1620,7 +1576,7 @@ def p_DTER(p):
         p[0] = decdims
         dprint('DTER: ',p[0])
 
-
+# Definición del tipo de la variable
 def p_TIPO(p):
     '''TIPO : ENTERO
             | FLOTANTE
@@ -1628,33 +1584,29 @@ def p_TIPO(p):
             | BOOL''' 
     p[0] = p[1]
 
-#######
+###########################################
 # Declaracion Funciones
-#######
+###################################
 
+# Punto neuralgico para agregar funciones a el directorio de funciones
 def p_DECTODASFUNC(p):
     '''DECTODASFUNC : DECFUNC DECTODASFUNC
                     | empty'''
-    #dprint('decfuns')
-
     if(p[1] == None):
         p[0] = p[1]
     else:
         entfuncs = {}
         entfuncs.update(p[1])
-
         #Checar que las funciones no se repitan
         if (p[2] != None):
             for fu in p[1].keys():
                 if fu in p[2].keys():
                     printerror("Error de Semantica la funcion %r tiene una o más definiciones en la linea %r" % (fu, p.lineno(2)))
-
             entfuncs.update(p[2])
-
         p[0] = entfuncs
 
 
-
+# Punto neuralgico para guardar los recursos utilizados por la función y la addición del cuadruplo de ENDFUNC
 def p_DECFUNC(p):
     '''DECFUNC :  ALTADECFUN BLOQUE '''
     # Dir. de Funciones
@@ -1671,8 +1623,6 @@ def p_DECFUNC(p):
     #Scope actual
     global currscope
 
-    #dprint('\n\n\t\t----------------------------TEMPS DE FUNC..........................\n',{'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount})
-
     # Guardar los recursos temporales
     p[1][currscope]['tmpres'] = {'entero': tmpintcount, 'flotante':tmpfloatcount, 'char':tmpcharcount, 'bool': tmpboolcount, 'pointer' : tmppointcount}
     dirfunc.update(p[1])
@@ -1683,27 +1633,23 @@ def p_DECFUNC(p):
     cuadcount += 1
     p[0] = p[1]
 
+# Punto neuralgico para agregar los parametros, la tabla de variables y la variable global (si es funcion de retorno)
 def p_ALTADECFUN(p):
     ''' ALTADECFUN : FUNCQUAD TIPOFUN DECFUNCID OPENPAR FUNPARAM CLOSEPAR OPENCUR DECLARACIONES CLOSECUR'''
-    # dprint('Lee una dec funcion')
     #Dir. de funciones
     global dirfunc
-
     # Rangos globales de memoria
     global globalint
     global globalfloat
     global globalchar
     global globalbool
     global globalpoint
-
     # Cant. Maximas de variables
     global INTMAX
     global FLOATMAX
     global CHARMAX
     global BOOLMAX
     global POINTAYMAX
-
-
     # Contadores globales
     global glbintcount
     global glbfloatcount
@@ -1714,44 +1660,31 @@ def p_ALTADECFUN(p):
     address = 'res'
     #Si es de retorno generar su variable global
     if p[2] != 'vacio':
-
         if (p[2] == 'entero'):  # Asignar las direcciones enteras
             if (glbintcount < INTMAX):
                 address = globalint + glbintcount
                 glbintcount += 1
             else:
-
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno declaradas en la linea %r" % (p.lineno(1)))
-
-
         elif (p[2] == 'flotante'):  # Asignar las direcciones flotantes
             if (glbfloatcount < FLOATMAX):
                 address = globalfloat + glbfloatcount
                 glbfloatcount += 1
             else:
-
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
-
-
         elif (p[2] == 'char'):  # Asignar las direcciones char
             if (glbcharcount < CHARMAX):
                 address = globalchar + glbcharcount
                 glbcharcount += 1
             else:
-
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
-
         elif (p[2] == 'bool'):  # Asignar las direcciones char
             if (glbboolcount < BOOLMAX):
                 address = globalbool + glbboolcount
                 glbboolcount += 1
             else:
-
                 printerror("Error de Semantica: sobrepaso el limite de funciones con retorno en la linea %r" % (p.lineno(1)))
-
         dirfunc['global']['vartab'].update({p[3]: {'tipo': p[2],'address':address}})
-
-
         dirfunc['global']['varres'].update({'entero': glbintcount, 'flotante':glbfloatcount, 'char':glbcharcount, 'bool': glbboolcount})
 
     dirfunc.update({p[3]: {'tipo': p[2]},'params':{}})
@@ -1759,60 +1692,37 @@ def p_ALTADECFUN(p):
     if address != 'res':
         entradafun[p[3]].update({'address':address})
     vartabloc = {}
-
     # Si hay parametros agregarlos a la entrada de la tabla y a la tabla de variables local
     if (p[5] != None):
         aux = {}
         aux.update(p[5])
         aux.update(vartabloc)
         vartabloc = aux
-
-
-
-        #dprint('Add params to vartab')
         entradafun[p[3]].update({'vartab': vartabloc})
         entradafun[p[3]].update({'params': p[5]})
-
-    # Switch para aumentar el contador correcto y verificación de que no se definan variables demás
     # Contadores de variables
     intcount = 0
     floatcount = 0
     charcount = 0
     boolcount = 0
-
     # Contadores de arreglos
     pointcount = 0
-
-
-
     dirfunc.update(entradafun)
     # Checar que los id de parametros no sean declarados localmente (doble def)
-    #dprint(p[3])
-
     if (p[8] != None):
-        # dprint(p[8])
-        # if(len(vartabloc) > 0):
         for var in vartabloc.keys():
             if (var in p[8].keys()):
                 printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (
                 var, p.lineno(8)))
-
-
-
         vartabloc.update(p[8])
     if (vartabloc != None and len(vartabloc) > 0):
         vartabloc, intcount, floatcount, charcount, boolcount = assignvirtualaddress(vartabloc,'local',p.lineno(1))
-
-
-    #dprint('\n\n\n() () () () () () () () () ()\n\n', vartabloc)
     entradafun[p[3]].update({'vartab': vartabloc, 'varres':{'entero': intcount, 'flotante':floatcount, 'char':charcount, 'bool': boolcount}})
-
     dirfunc.update(entradafun)
-
     dprint('dirfunc',dirfunc)
     p[0] = entradafun
-    # dprint(p[0])
 
+# Punto neuralgico para inicializar los contadores temporales y checar que la función no haya sido previamente definida
 def p_DECFUNCID(p):
     '''DECFUNCID : ID'''
 
@@ -1828,48 +1738,43 @@ def p_DECFUNCID(p):
     global tmppointcount
 
     if p[1] in dirfunc.keys():
-
         printerror("Error de Semantica: El nombre de la función %r  en la linea %r ya fue declarado previamente" % (p[1],p.lineno(1)))
-
     elif p[1] in special.keys():
         printerror("Error de Semantica: El nombre de la función %r en la linea %r pertenece a una funcion especial" % (p[1], p.lineno(1)))
-
-
     tmpintcount = 0
     tmpfloatcount = 0
     tmpcharcount = 0
     tmpboolcount = 0
     tmppointcount = 0
     currscope = p[1]
-
-
     p[0] = p[1]
 
+# Punto neuralgico para obtener el número del cuadruplo en donde empieza
 def p_FUNCQUAD(p):
     '''FUNCQUAD : FUNCION'''
-    #dprint('inicio func')
     global cuadcount
-
     p[0] = cuadcount
 
+# Punto neuralgico para obtener el tipo de la función
 def p_TIPOFUN(p):
     '''TIPOFUN : TIPO
                | VACIO'''
-    #dprint('Llego a tipo')
     p[0] = p[1]
+
 
 def p_FUNPARAM(p):
     '''FUNPARAM : PARAM
                 | empty'''
     p[0] = p[1]
 
+# Punto Neuralgico para manejar la definición de los parametros
 def p_PARAM(p):
     '''PARAM : TIPO DFID PARAMD PARAMS '''
     global R
 
     funpar = {p[2] : {'tipo' : p[1]}}
-    #Si tiene dims
-    if(p[3] != None): # si tiene dimensiones
+    #Si tiene dims, es decir es un arreglo
+    if(p[3] != None): # Si no es None, si tiene dimensiones
         darrsize = R
         mi = 0
         dprint('Antes de poner las m',p[3], mi,p[3]['dims'])
@@ -1888,7 +1793,7 @@ def p_PARAM(p):
         p[3]['size'] = darrsize
         dprint(p[3])
         funpar[p[2]].update(p[3])
-    # hay más parametros despues de esta
+    # checar si hay más parametros despues de esta
     if(p[4]!=None):
         if(p[2] in p[4].keys()):
             printerror("Error de Semantica la variable %r tiene una o más definiciones en la linea %r" % (p[2], p.lineno(4)))
@@ -1897,6 +1802,7 @@ def p_PARAM(p):
             funpar.update(p[4])
     p[0] = funpar
 
+# Punto neuralgico para Inicializar R por si es arreglo
 def p_DFID(p):
     '''DFID : ID'''
     global R
@@ -1911,6 +1817,7 @@ def p_PARAMS(p):
     else:
         p[0] = p[1]
 
+# Punto neuralgico para meter a un queue la información de las dimensiones de un parametro
 def p_PARAMD(p):
     '''PARAMD : OPENSQU CTE_INT CLOSESQU PDSEG
               | empty'''
@@ -1932,7 +1839,7 @@ def p_PARAMD(p):
             pdim['dims'] = p[4]['dims']
 
         p[0] = pdim
-
+# Punto Neuralgico para meter la información de la segunda y tercera dimension a un parametro
 def p_PDSEG(p):
     '''PDSEG : OPENSQU CTE_INT CLOSESQU PDTER
               | empty'''
@@ -1954,7 +1861,7 @@ def p_PDSEG(p):
             pdim['dims'] = p[4]['dims']
         dprint(pdim)
         p[0] = pdim
-
+# Punto Neuralgico para meter la información de la tercera dimensión a un queue
 def p_PDTER(p):
     '''PDTER : OPENSQU CTE_INT CLOSESQU
              | empty'''
@@ -1974,9 +1881,9 @@ def p_PDTER(p):
         p[0] = pdim
 
 
-######
+############################################
 # Declaración Bloque
-######
+###########################################
 
 def p_BLOQUE(p):
     '''BLOQUE : OPENCUR ESTATUTOS CLOSECUR'''
@@ -1986,10 +1893,11 @@ def p_ESTATUTOS(p):
                  | empty'''
 
 
-#######
+###############################################
 # Declaración Estatutos
-#######
+################################################
 
+# En estatuo se metio un punto neuralgico para darle pop a la pila de operandos si se hizo una expresión libremente
 def p_ESTATUTO(p):
     '''ESTATUTO : IMPRESION
                 | ASIGNACION
@@ -2010,12 +1918,12 @@ def p_ESTATUTO(p):
                 pilaoperand.pop()
                 ptipo.pop()
 
-# Impresion -------------------------  
+#------------------------------------------------- Impresion -------------------------
+# Punto Neuralgico para generar un cuadruplo de imprimir  
 def p_IMPRESION(p):
     '''IMPRESION : IMPRIMIR OPENPAR PRINTABLE PRINTARGS CLOSEPAR SEMICOLON'''
     global cuadcount
     global cuadruplos
-
     pargs = [p[3]]
     if(p[4] != None):
         pargs = pargs + p[4]
@@ -2024,11 +1932,10 @@ def p_IMPRESION(p):
         global sclines
         sclines.append(p.lineno(1))
         cuadcount+=1
-
+# Punto neuralgico para definir más elementos de impresión
 def p_PRINTARGS(p):
     '''PRINTARGS : COMMA PRINTABLE PRINTARGS
                  | empty'''
-
     if (p[1] != None):
 
         pargs = [p[2]]
@@ -2037,7 +1944,8 @@ def p_PRINTARGS(p):
         p[0] = pargs
     else:
         p[0] = None
-
+# Punto neuralgico para agregar constantes a la tabla de constantes (si hay) 
+# y hacer pop a resultados de expresiones de la pila de operandos
 def p_PRINTABLE(p):
     '''PRINTABLE : EXPRESION
                  | CTE_STRING
@@ -2050,16 +1958,12 @@ def p_PRINTABLE(p):
     #Rango de constantes string y su contador
     global STRINGMAX
     global ctestringcount
-
-
     if type(p[1]) == str and p[1] != 'exp':
         ctkey = p[1]
         if ctkey in ctetab.keys():
             p[0] = ctetab[p[1]]
         else:
             p[0] = addConst(p[1],'cadena',p.lineno(1))
-
-
     else:
         if p[1] == None:
             op = ''
@@ -2072,14 +1976,13 @@ def p_PRINTABLE(p):
         p[0] = op
 
 
-# Asignacion -------------------
-
+#------------------------------------------ Asignacion -------------------
+# Punto neuralgico para la generación del cuadruplo de asignación
 def p_ASIGNACION(p):
     '''ASIGNACION : ID EQ ARR_TEX SEMICOLON %prec EQS
         | ID EQ EXPRESION SEMICOLON %prec EQS
         | ID ADIMS EQ EXPRESION SEMICOLON %prec EQS
  '''
-    #dprint('Lee asignacion')
     #Evaluar que la asignación sea correcta
     #Cubo Semántico
     global cubosem
@@ -2101,7 +2004,6 @@ def p_ASIGNACION(p):
     global tempint
     global temppoint
     global sclines
-
     #Se checa que el id a asignar exista
     vartipo = None
     addresses = None
@@ -2109,14 +2011,11 @@ def p_ASIGNACION(p):
     dprint(ptipo)
     dprint(p[3])
     if p[2] == '=':
-        #Asignación a un id por medio de una expresión o arreglo textual
-        if (p[1] in dirfunc[currscope]['vartab'].keys()):
+        # Validación del id para la asignación simple o de arreglos textuales
+        if (p[1] in dirfunc[currscope]['vartab'].keys()): # Checar si existe en el scope local
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
-
             if ('address' in dirfunc[currscope]['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
-
                 addresses = dirfunc[currscope]['vartab'][p[1]]['address']
-
             if (type(p[3]) is dict):
                 dprint(p[3])
                 if 'dims' not in dirfunc[currscope]['vartab'][p[1]].keys():
@@ -2125,15 +2024,10 @@ def p_ASIGNACION(p):
                 if (dirfunc[currscope]['vartab'][p[1]]['dims'] != p[3]['dims']):
                     printerror(
                         'Error Semántico : La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
-
-
-        elif (p[1] in dirfunc['global']['vartab'].keys()):
+        elif (p[1] in dirfunc['global']['vartab'].keys()): # Checar si existe en el scope global
             vartipo = dirfunc['global']['vartab'][p[1]]['tipo']
-
             if ('address' in dirfunc['global']['vartab'][p[1]].keys()):  # Checar si se le ha asignado una address
-
                 addresses = dirfunc['global']['vartab'][p[1]]['address']
-
             if (type(p[3]) is dict):
                 dprint(p[3])
                 if 'dims' not in dirfunc['global']['vartab'][p[1]].keys():
@@ -2141,75 +2035,48 @@ def p_ASIGNACION(p):
                 arrsize = dirfunc['global']['vartab'][p[1]]['size']
                 if (dirfunc['global']['vartab'][p[1]]['dims'] != p[3]['dims']):
                     printerror('La asignacion de variable %r en la linea %r no tiene las dimensiones de lo que se le esta asignando' % (p[1], p.lineno(1)))
-
         else:
             printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
 
-        ############################### Asignación por id #############################
+        ############################### Asignación por id (Asignación de un elemento) #############################
 
         if type(p[3]) is str and p[3] == 'exp':
-
-
-
             asig = pilaoperand.pop()
             asigt = ptipo.pop()
-
             dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
             # Detectar si algun operador es una llamada de una funcion vacia
             if asigt == 'vacio':
                 printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
                     p.lineno(1)))
-
             if (cubosem['='][vartipo][asigt] != 'error'):
                 dprint('Cubo dice: ', cubosem['='][vartipo][asigt])
                 # Generación de cuadruplo de asignación
                 if (addresses != None):
                     cuadruplos.append(('=', asig, '', addresses))
-
                     sclines.append(p.lineno(1))
                     cuadcount += 1
                 else:
                     cuadruplos.append(('=', asig, '', p[1]))
-
                     sclines.append(p.lineno(1))
                     cuadcount += 1
                 p[0] = vartipo  # Se regresa al token el valor del id asignado
             else:
-
                 printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
                     vartipo, asigt, p.lineno(1)))
 
         #----------------------------ASIGNACION POR ARREGLO TEXTUAL------------------------------------------------
         else:
             dprint('\nasginación de arr\n')
-
             addr = addresses
-
             asig = pilaoperand.pop()
-
             asigt = ptipo.pop()
-
             dprint('Asignando', p[1], ' = ', asig, ' tipo ', asigt)
             # Detectar si algun operador es una llamada de una funcion vacia
             if asigt == 'vacio':
-
                 printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
                     p.lineno(1)))
-
-
             if (cubosem['='][vartipo][asigt] != 'error'):
                 dprint('Cubo dice: ', cubosem['='][vartipo][asigt])
-                #Generación de cuadruplo de asignación
-                #if (addresses != None):
-                #    cuadruplos.append(('=', asig, '', addresses))
-#
-                #    sclines.append(p.lineno(1))
-                #    cuadcount += 1
-                #else:
-                #    cuadruplos.append(('=', asig, '', p[1]))
-#
-                #    sclines.append(p.lineno(1))
-                #    cuadcount += 1
                 addr += arrsize-1
                 for i in range(arrsize):
                     asig = pilaoperand.pop()
@@ -2220,16 +2087,12 @@ def p_ASIGNACION(p):
                     addr -= 1
                 p[0] = vartipo # Se regresa al token el valor del id asignado
             else:
-
-
                 printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (
                 vartipo, asigt, p.lineno(1)))
 
-
-
     else:
-        #Asignación a la llamada de un arreglo ej. N[1] = 2
-
+        #----------------------------------------------------------------------------------------------
+        # Asignación a la llamada de un arreglo ej. N[1] = 2
         if (p[1] in dirfunc[currscope]['vartab'].keys()):
             var = dirfunc[currscope]['vartab'][p[1]]
             vartipo = dirfunc[currscope]['vartab'][p[1]]['tipo']
@@ -2252,18 +2115,14 @@ def p_ASIGNACION(p):
             DIMS = 1
             for i in range(len(si)):
                 # Verificar que el sub indice sea correcto
-
                 cuadruplos.append(('VERIF', si[i], ctetab[str(var['dimlen'][i][0])], ''))
-
                 sclines.append(p.lineno(1))
                 cuadcount += 1
-
                 if DIMS == len(si):
                     m = 1
                     pilaoperand.append(si[i])
                 else:
                     m = var['dimlen'][i][1]
-
                     address = None
                     if tmpintcount < INTMAX:
                         address = tmpintcount + tempint
@@ -2330,18 +2189,11 @@ def p_ASIGNACION(p):
         else:
             printerror('Error de Semantica, el no se puede asignar %r a %r  en la linea %r' % (vartipo, asigt, p.lineno(1)))
 
-
-#def p_ASIGNARR(p):
-#    '''ASIGNARR : ARR_TEX SEMICOLON'''
-#
-#    #dprint( "⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄ ")
-#    pass
-
+# Punto Neuralgicos para la indexación de arreglos
 def p_ADIMS(p):
     '''ADIMS : OPENSQU EXPRESION CLOSESQU ASEGD
              | empty'''
     if p[1] != None:
-
         global pilaoperand
         global ptipo
         etipo = ptipo.pop()
@@ -2387,17 +2239,14 @@ def p_ATERD(p):
                     p.lineno(1)))
         p[0] = si
     
-# Condicion ----------------------------
+#-------------------------------- Condicion ----------------------------
 
 def p_CONDICION(p):
     'CONDICION : SI IFGTO BLOQUE IFELSE'
     global cuadruplos
     global cuadcount
     global psaltos
-
-
     endState = psaltos.pop()
-    #dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState,'\ncount: ', cuadcount)
     cuadruplos[endState] = cuadruplos[endState] + (cuadcount,)
 
 def p_IFGTO(p):
@@ -2434,19 +2283,16 @@ def p_BLOQIF(p):
         global cuadruplos
         global cuadcount
         global psaltos
-        # dprint('\tELSE\nlength cuad: ', len(cuadruplos),  '\ncount: ', cuadcount)
         cuadruplos.append(('GOTO', '', ''))
         global sclines
         sclines.append(p.lineno(1))
         cuadcount += 1
         falseState = psaltos.pop()
         cuadruplos[falseState] = cuadruplos[falseState] + (cuadcount,)
-        # dprint('\tAFTERCUAD\nlength cuad: ', len(cuadruplos), '\npopsaltos: ', falseState, '\ncount: ', cuadcount)
-
         psaltos.append(cuadcount - 1)
 
 
-# Bucles --------------------------------------------------------------------------------------------------------------
+#---------- Bucles --------------------------------------------------------------------------------------------------------------
 
 def p_BUCLE(p):
     '''BUCLE : WHILE
@@ -2463,8 +2309,6 @@ def p_WHILE(p):
     global sclines
     sclines.append(p.lineno(1))
     cuadcount += 1
-    #dprint("\t\tWHILE\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
-    #dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
     cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_NWHILE(p):
@@ -2472,7 +2316,6 @@ def p_NWHILE(p):
     global cuadcount
     global psaltos
     global cuadruplos
-
     psaltos.append(cuadcount)
 
 def p_WCOND(p):
@@ -2482,7 +2325,6 @@ def p_WCOND(p):
     global psaltos
     global pilaoperand
     global ptipo
-
     tip = ptipo.pop()
     if(tip != 'bool'):
         printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tip, p.lineno(2)))
@@ -2505,8 +2347,6 @@ def p_FOR(p):
     global sclines
     sclines.append(p.lineno(1))
     cuadcount += 1
-    # dprint("\t\tFOR\nCuadcuant: ", cuadcount, '\ncuadruplo:', cuadruplos[cuadcount-1],'\n\tcondState: ',cuadruplos[condState])
-    # dprint('length cuad: ', len(cuadruplos), '\npopsaltos: ', endState, '\ncount: ', cuadcount)
     cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_FORINIT(p):
@@ -2517,13 +2357,12 @@ def p_FORINIT(p):
     global cuadruplos
 
     if(p[1] != None):
-        # 1.- Checar que sea una variable numeríca a utilizar
+        # Checar que sea una variable numeríca a utilizar
         if(p[1] not in  ['entero','flotante']):
 
             printerror('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
         else:
-            #2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
-
+            # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
             psaltos.append(cuadcount)
 
 def p_FOREXP(p):
@@ -2532,26 +2371,25 @@ def p_FOREXP(p):
     global cuadruplos
     global psaltos
     global sclines
-
+    # Checar que la condición si sea bool
     tipexp = ptipo.pop()
-    # dprint('\t\t\t\tChecar la expresion del bool:', tipexp, '\n', pilaoperand, '\n', ptipo, '\n')
-    # dprint('\t\t\tChecar la asignación: ',  tipas, '\n')
     if (tipexp not in ['bool']):
         printerror('Error de Semantica, %r no es una expresion booleana en la linea %r' % (tipexp, p.lineno(2)))
-
+    # Hacer el cuadruplo de gotof para cada vez que se cheque la condición
     res = pilaoperand.pop()
     cuadruplos.append(('GOTOF', res, ''))
-
+    # Hacer un goto para evitar hacer el paso del for antes de tiempo
     sclines.append(p.lineno(1))
     psaltos.append(cuadcount)
     cuadcount += 1
     cuadruplos.append(('GOTO','',''))
-
+    # Agregar el cuadruplo donde empieza el salto
     sclines.append(p.lineno(1))
     psaltos.append(cuadcount)
     cuadcount+=1
     psaltos.append(cuadcount)
 
+# Punto neuralgico para el manejo de el step del for
 def p_FORSTEP(p):
     '''FORSTEP : FOREXP  ASIGNACION'''
     global cuadcount
@@ -2559,22 +2397,16 @@ def p_FORSTEP(p):
     global psaltos
     global pilaoperand
     global ptipo
-
-    #dprint('\n', pilaoperand, '\n', ptipo, '\n')
     tipas = p[2]
-
-
-
     if (tipas not in ['entero', 'flotante']):
-
         printerror('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
     else:
-        # 2.- Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+        # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
 
-        salasig = psaltos.pop()
-        salacod = psaltos.pop()
-        gtf = psaltos.pop()
-        cond = psaltos.pop()
+        salasig = psaltos.pop() 
+        salacod = psaltos.pop() 
+        gtf = psaltos.pop() 
+        cond = psaltos.pop() 
 
         cuadruplos.append(('GOTO','','',cond))
         global sclines
@@ -2603,15 +2435,11 @@ def p_RETURNF(p):
     global cuadruplos
     #Cubo semantico
     global cubosem
-
     # Obtener el tipo de la funcion
     functipo = dirfunc[currscope]['tipo']
-
     #Evitar el retorno en funciones vacias
     if functipo == 'vacio':
-
         printerror('Error Semantico: se llamo return en una funcion vacia en la linea %r' % (p.lineno(1)))
-
     else:
         rettype = ptipo.pop();
         if (cubosem['='][functipo][rettype] != 'error'):
@@ -2624,22 +2452,19 @@ def p_RETURNF(p):
             global sclines
             sclines.append(p.lineno(1))
             cuadcount += 1
-
             p[0] = functipo # Se regresa al token el valor del id asignado
         else:
             printerror('Error de Semantica, el no se puede retornar %r en la funcion de tipo %r  en la linea %r' % (functipo, rettype, p.lineno(1)))
 
 
-
-
-
-#####
+##########################################################################
 # Expresion
-#####
+#########################################################################
+# Func : expcuadgen
+# Params : Los operadores que tiene que revisar y la linea del token leído
+# Desc : Genera un cuadruplo de expresión en relación a los operaciones que recivio
 
-# Funcion para manejar la generación de cuadruplos
 def expcuadgen(expopers,linenum):
-
     # Pila de operandos y tipos
     global poper
     global pilaoperand
@@ -2670,20 +2495,15 @@ def expcuadgen(expopers,linenum):
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
             dprint(lop, ' ' + poper[-1:].pop() + ' ',rop)
-            #dprint('\nPila de oper en expresion: ',pilaoperand,'\n')
             # Detectar si algun operador es una llamada de una funcion vacia
             if lopt == 'vacio' or ropt == 'vacio':
-
                 printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
                     linenum))
-
             if lop == 'arr' or rop == 'arr':
                 printerror('Error Semantico: Se esta intentando hacer una operación de expresion sobre un arreglo textual en la linea %r, lo cual no se puede hacer' % (p.lineno(1)))
-
             oper = poper.pop()
             if (cubosem[oper][ropt][lopt] != 'error'):
                 restipo = cubosem[oper][ropt][lopt]
-                #dprint('La operacion de ', lop, oper, rop, 'resulta en ' + restipo)
                 # Asegurar de guardar en el espacio temporal correspondiente
                 address = 'res'
                 if restipo == 'entero':
@@ -2691,46 +2511,33 @@ def expcuadgen(expopers,linenum):
                         address = tmpintcount + tempint
                         tmpintcount += 1
                     else:
-
                         printerror(
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 linenum))
-
-
                 elif restipo == 'flotante':
-                    #dprint('\t\tFloat', tmpfloatcount, FLOATMAX)
                     if tmpfloatcount < FLOATMAX:
                         address = tmpfloatcount + tempfloat
                         tmpfloatcount += 1
                     else:
-
                         printerror(
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 linenum))
-
-
                 elif restipo == 'char':
                     if tmpcharcount < CHARMAX:
                         address = tmpcharcount + tempchar
                         tmpcharcount += 1
                     else:
-
                         printerror(
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 linenum))
-
-
                 elif restipo == 'bool':
                     if tmpboolcount < BOOLMAX:
                         address = tmpboolcount + tempbool
                         tmpboolcount += 1
                     else:
-
                         printerror(
                             'Error de Semantica, se han hecho demasiadas variables temporales en la operación en la linea %r' % (
                                 linenum))
-
-
                 # generar cuadruplo
                 cuadruplos.append((oper, lop, rop, address))
                 global sclines
@@ -2738,7 +2545,6 @@ def expcuadgen(expopers,linenum):
                 cuadcount += 1
                 pilaoperand.append(address)
                 ptipo.append(restipo)
-
             else:
                 printerror(
                     'Error de Semantica, el no se puede operacion relacional %r con %r  en la linea %r' % (
@@ -2753,14 +2559,6 @@ def p_EXPRESION(p):
     expcuadgen(['||', '&&'], p.lineno(1))
     p[0] = 'exp'
 
-#def p_EXPERLOGS(p):
-#    '''EXPRLOGS : EXPRESIONR
-#                | EXPRLOG'''
-#    # ['||','&&']
-#
-#    #Generar cuadruplos
-#    expcuadgen(['||', '&&'], p.lineno(1))
-
 def p_EXPRLOG(p):
     '''EXPRLOG : EXPRESION AND EXPRESION %prec LOG
                | EXPRESION OR EXPRESION %prec LOG
@@ -2769,19 +2567,12 @@ def p_EXPRLOG(p):
     if(p[1] != None):
         poper.append(p[2])
     p[0] = 'expLOG'
-    #dprint(poper)
 
 def p_EXPRESIONR(p):
     '''EXPRESIONR : EXP
                 | EXPR'''
     expcuadgen(['>', '<', '<=', '>=', '==', '!='], p.lineno(1))
     p[0] = 'EXPR'
-
-#def p_EXPRS(p):
-#    '''EXPRS : EXPR'''
-#    # Generar cuadruplos
-#    expcuadgen(['>', '<', '<=', '>=', '==', '!='], p.lineno(1))
-#    p[0] = 'EXPR'
 
 def p_EXPR(p):
     '''EXPR : EXP GT EXP %prec REL
@@ -2807,7 +2598,6 @@ def p_EXP(p):
             '''
     # Generar cuadruplos
     expcuadgen(['+', '-'], p.lineno(1))
-
     p[0] = 'EXP'
 
 def p_TERMINOSS(p):
@@ -2818,7 +2608,6 @@ def p_TERMINOSS(p):
     if p[1] != None:
         if p[2] == '+' or p[2] == '-':
             poper.append(p[2])
-    #dprint(poper)
     
 def p_TERMINO(p):
     '''TERMINO : FACTOR
@@ -2826,7 +2615,6 @@ def p_TERMINO(p):
                '''
     # Generar cuadruplos
     expcuadgen(['*', '/'], p.lineno(1))
-
     p[0] = 'Termino'
 
 def p_FACTORESS(p):
@@ -2837,7 +2625,6 @@ def p_FACTORESS(p):
     if p[1] != None:
         if p[2] == '*' or p[2] == '/':
             poper.append(p[2])
-    #dprint(poper)
     
 def p_FACTOR(p):
     '''FACTOR : SIGNOVAR VARCTE
@@ -2869,23 +2656,17 @@ def p_FACTOR(p):
             global FLOATMAX
             global CHARMAX
             global BOOLMAX
-
-
             lop = pilaoperand.pop()
             lopt = ptipo.pop()
             if(cubosem[p[1]]['none'][lopt] != 'error'):
                 oper = p[1]
                 rop = ''
-                #lop = p[2]
                 restipo = cubosem[oper]['none'][lopt]
-
                 #Detectar si algun operador es una llamada de una funcion vacia
                 if lop == 'vacio' or rop == 'vacio':
 
                     printerror('Error Semantico: se llamo una funcion vacia como operador en la linea %r' % (
                                 p.lineno(1)))
-
-
                 address = 'res'
                 if restipo == 'entero':
                     if tmpintcount < INTMAX:
@@ -2946,12 +2727,7 @@ def p_SIGNOVAR(p):
 # LLAMADAS
 #####    
 
-
-
-
 def p_VARCTE(p):
-    #'''VARCTE : ID| CTE_INT| CTE_FLOAT| CTE_STRING| CTE_BOOL| CTE_CHAR| LLAMADAFUNC| LLAMADAARR| ARR_TEX| NULO'''
-
     '''VARCTE : ID
                 | CTE_INT
                 | CTE_FLOAT
@@ -3127,8 +2903,6 @@ def p_VARCTE(p):
 
 
     elif re.match(r"[a-zA-Z]([a-zA-Z]|[0-9]|[_])*",p[1]): # ---------------------------- IDS ---------------------------------------------
-        #dprint('Para el elemento', p[1], 'En el scope ' + currscope + ' Se encuentra la dir func así:')
-        #dprint('dirfunc', dirfunc, '\n\n')
         #llamada vars
         vartipo = None
         address = None
@@ -3155,12 +2929,12 @@ def p_VARCTE(p):
         dprint('Llamada arr', pilaoperand[-1],ptipo[-1])
 
         pass
-
-   # dprint('Pila tipos       ',ptipo,'\n----------------------------------------------------------------------------------------------------------------------------------------------\n')
-
     p[0] = p[1]
 
-
+# Func : getArrayData
+# Params : Una dirección Virtual addr
+# ret : La información de las dimensiones de un arreglo
+# Desc : Regresa la información de las dimensiones de un arreglo
 def getArrayData(addr):
     global dirfunc
     global currscope
@@ -3188,7 +2962,6 @@ def p_LLAMADAFUNC(p):
     '''LLAMADAFUNC :  DLR FID OPENPAR CALLPARAMS CLOSEPAR '''
 
     #llamada a funcion
-
     #Dir de funcion
     global dirfunc
     #La llamada actual
@@ -3198,8 +2971,6 @@ def p_LLAMADAFUNC(p):
     global cuadcount
     global psaltos
     global cubosem
-
-
     funcallcurr = p[2]
     vartipo = None
     funcstart = ''
@@ -3211,15 +2982,10 @@ def p_LLAMADAFUNC(p):
     splchar = 0
     splbool = 0
 
-
-
-
     if (p[2] in dirfunc.keys()):
         if 'params' in dirfunc[p[2]].keys():
             vartipo = dirfunc[p[2]]['params']
         funcstart = dirfunc[p[2]]['inicio']
-
-
     elif (p[2] in special.keys()):
         if 'params' in special[p[2]].keys():
             vartipo = special[p[2]]['params']
@@ -3230,10 +2996,8 @@ def p_LLAMADAFUNC(p):
         else:
             sptype = -1
     else:
-
         printerror('La funcion %r en la linea %r no ha sido declarada' % (p[2], p.lineno(1)))
     # Generar el nuevo espacio de memoria
-
     cuadruplos.append(('ERA', p[2], '',))
     if isSpecial:
         psaltos.append(cuadcount)
@@ -3245,44 +3009,28 @@ def p_LLAMADAFUNC(p):
     dprint(vartipo)
     #Checar los parametros esten bien llamados
     if vartipo != None:
-
         #Checar si los parametros estan vacios
         dprint('Params leídos: ', p[4], '\nParams de la func: ', vartipo)
-
-
-
-
         if len(p[4])  != len(vartipo):
-
             printerror('La funcion %r en la linea %r no tiene la cantidad de parametros correctos, se esperaban %r y se recibieron %r' % (p[2], p.lineno(2),len(vartipo),len(p[4])))
-
         else:
-
             i = 0
             sparr = None
             for param in vartipo.values():
-                #dprint('⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄\n⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄\n⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄\n⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄\n⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄\n⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄\n⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄\n⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄\n⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.\n⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄\n⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄','\nacpapapapa',param ,p[4])
                 # Checar si se puede hacer casting a la variable/temporal del parametro
-
                 canBeCasted = cubosem['='][param['tipo']][p[4][i]['tipo']] != 'error'
-
                 if not canBeCasted: #param['tipo'] != p[4][i]['tipo']:
 
                     printerror('La funcion %r en la linea %r no tiene los parametros correctos, los tipos del argumento %r no coinciden. %r es diferente a %r' % (p[2], p.lineno(2),i+1,param['tipo'],p[4][i]['tipo']))
                 else:
-
-
                     # Pasar el parametro nuevo
                     isArgArr = ''
                     rcount = 1
                     if 'dims' in param.keys():
                         # Si es arreglo checar si se pasa un arreglo, y que las dimensiones son correctas
-
                         p[4][i].update(getArrayData(p[4][i]))
-
                         paramsIsArrayAndArgIsNot = ('dims' in param.keys() and 'dims' not in p[4][i].keys())
                         paramsIsNotArrayAndArgIs = ('dims' not in param.keys() and 'dims' in p[4][i].keys())
-
                         if paramsIsArrayAndArgIsNot:
                             printerror(
                                 "Error Semántico: La llamada de la función {} en la linea {} esperaba un arreglo, mátriz o cubo y recibio un expresión o constante en el argumento {}".format(
@@ -3326,9 +3074,6 @@ def p_LLAMADAFUNC(p):
                         if paramsDimsAreNotEqual:
                             printerror("Error Semántico: La llamada de la función {} en la linea {} esperaba que el tamaño de cada una de las dimensiones del argumento {} sean las mismas que la funcion".format(
                                     p[2], p.lineno(2),i))
-
-
-
                     if isSpecial:
                         # Agregar al conteo de recursos
                         tp = vmtypeconv[param['tipo']]
@@ -3347,9 +3092,7 @@ def p_LLAMADAFUNC(p):
                     cuadcount += 1
                     i = i+1
             dprint(i)
-
     cmd = 'GOTOSUB'
-
     if isSpecial:
         cmd = 'SPFUNC'
         erac = psaltos.pop()
@@ -3369,13 +3112,10 @@ def p_LLAMADAFUNC(p):
 def p_FID(p):
     '''FID : ID '''
     #Agregar variable global para las funciones especiales utilizadas
-
     #Funcs especiales
     global special
-
     #Dir de funciones
     global dirfunc
-
     # Contadores globales
     global glbintcount
     global glbfloatcount
@@ -3436,8 +3176,6 @@ def p_CPARAM(p):
     #hay que cambiar como identifica si es un arr_tex
     global ptipo
     global pilaoperand
-
-
     cfpar = []
     dprint('Pila oper:\n',pilaoperand,' y leyo expresion : ',p[1],' ',pilaoperand[-1:][0] != '?')
     if type(p[1]) is str and p[1] == 'exp':
@@ -3455,18 +3193,13 @@ def p_CPARAM(p):
 def p_CPARAMS(p):
     ''' CPARAMS : COMMA EXPRESION CPARAMS
                 | empty'''
-
     if p[1] != None:
-
         global ptipo
         global pilaoperand
         cfpar = []
         #Checar si es una expresion
-
         if type(p[2]) is str and p[2] == 'exp':
-
             if pilaoperand[-1:][0] != '?':
-
                 cfpar.append({'tipo':ptipo.pop(),'address':pilaoperand.pop()})
         else:
             cfpar.append(p[2])
@@ -3498,27 +3231,19 @@ def p_LLAMADAARR(p):
     global POINTMAX
     global tempint
     global temppoint
-
     var = None
-
     if (p[1] in dirfunc[currscope]['vartab'].keys()):
         if not ('dims' in dirfunc[currscope]['vartab'][p[1]].keys()):
-
             printerror('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
         else:
             var = dirfunc[currscope]['vartab'][p[1]]
-
     elif (p[1] in dirfunc['global']['vartab'].keys()):
         if not ('dims' in dirfunc['global']['vartab'][p[1]].keys()):
-
             printerror('La variable %r en la linea %r no es un arreglo' % (p[1], p.lineno(1)))
         else:
             var = dirfunc['global']['vartab'][p[1]]
-
     else:
-
         printerror('La variable %r en la linea %r no ha sido declarada' % (p[1], p.lineno(1)))
-
     etipo = ptipo.pop()
     si = []
     if etipo == 'entero':
@@ -3526,7 +3251,6 @@ def p_LLAMADAARR(p):
     else:
         printerror('Error Semantico : Se esperaba que las expresiones de los subindices sean enteras en la linea %r' % (
             p.lineno(1)))
-
     if p[5] != None:
         si+=(p[5])
     dprint('subindices : ',si)
@@ -3537,12 +3261,10 @@ def p_LLAMADAARR(p):
         DIMS = 1
         for i in range(len(si)):
             #Verificar que el sub indice sea correcto
-
             cuadruplos.append(('VERIF',si[i],ctetab[str(var['dimlen'][i][0])],''))
             global sclines
             sclines.append(p.lineno(1))
             cuadcount+=1
-
             if DIMS == len(si):
                 m = 1
                 pilaoperand.append(si[i])
@@ -3928,8 +3650,6 @@ def cuadToTxt(cuad):
 
 def genobjfile(ctes, funcs, cuad,filename):
     obj = {'ctetab':ctes,'dirfunc':funcs,'cuadruplos':cuad,'sclines':sclines}
-    #wobj = json.dumps(obj)
-    #open(filename + '.json', 'w').close()
     with open(filename+'.obj','w') as opfile:
         json.dump(obj,opfile)
 
@@ -3953,14 +3673,11 @@ if exists(sys.argv[1]):
         if(sem_err):
             print('\n\u001b[31m\n\u001b[31mn*****************************************\n****\tNo es lenguaje valido!!!!\n*****************************************\u001b[0m')
         else:
-            cuadToTxt(cuadruplos)
+            if debugp:
+                cuadToTxt(cuadruplos)
 
             genobjfile(objctetab,dirfunc,cuadruplos,filename)
             print('\u001b[32;1m\n********************************\n****\taceptado\n********************************\u001b[0m')
 else:
     print(
         "\n\u001b[31m+++++++++++++++++++++++++++++++\n\u001b[33;1mNingun archivo encontrado. Asegura que se haya escribido bien la direccion del archivo\u001b[0m")
-
-
-
-

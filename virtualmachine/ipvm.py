@@ -1,3 +1,8 @@
+# Programa: ipvm
+# Descripción : Una máquina virtual para leer el objeto obj generado por el compilador IntroProg.py
+# Por : Luis Fernando Lomelín Ibarra
+
+# Importar las librerías necesarias para la ejecución
 import sys
 import json
 import re
@@ -14,6 +19,11 @@ infilename = inobjfn.split('.')[0]
 obj = None
 
 #Cubo semantico para verificar tipado en runtime
+# 0 -> entero
+# 1 -> flotante
+# 2 -> char
+# 3 -> bool
+# 6 -> cadena
 cubosem = {
         '=':{0:{
                         0:0,
@@ -553,7 +563,7 @@ cubosem = {
             }
 
 #Las direcciones virtuales usadas por el compilador
-#Offsets de direcciones
+#Se usa para calcular los offsets de direcciones
 
 #MAXIMOS POR VARIABLE
 INTMAX = 2000
@@ -595,8 +605,8 @@ constbool = constchar + CHARMAX
 conststring = constbool + BOOLMAX
 
 #Variables para el manejo de memoria
-memstack = []
-eratemp = None
+memstack = [] # Para manejar las memorías a como van llegando
+eratemp = None # Variable temporal para la creación de espacios de memoria
 
 #Contadores de parametros
 intc = 0
@@ -618,24 +628,33 @@ scline = obj['sclines']
 ##Variables importantes para la ejecución
 #Flag de correr el código
 runcode = True
-ipstack = []
-sparrstack = [] # Un stack para mantener los tamaños de cada parametro definido en funcion especial
-isNextPrintable = False
-printall = ''
-ip = 0
-plotcounter = [0,0,0]
 
-#limpiar ctetab
+ipstack = [] # Stack para manejar el ip cuando se utilizan funciones
+
+sparrstack = [] # Un stack para mantener los tamaños de cada parametro definido en funcion especial
+isNextPrintable = False # Flag para detectar si imprimir todo junto
+printall = '' # Variable auxiliar para imprimir junto la información
+ip = 0 # Instruction pointer
+plotcounter = [0,0,0] # Un contador de gráficos generados
+
+#Limpiar ctetab
+# Cuando se pasa a un archivo los caracteres los transforma a strings
+# Tambien se aprovecha la pasada para codificar bien los strings recividos
 for k in ctetab.keys():
     if type(ctetab[k]) is str:
         if re.match("\'.\'",ctetab[k]):
             ctetab[k] = ctetab[k][1]
         elif re.match("\"[^\"]+\"",ctetab[k]):
             ctetab[k] = ctetab[k].replace('"','').encode('ascii').decode('unicode_escape')
-pdirfunc = json.dumps(ctetab,indent=4)
-print(pdirfunc)
 
-# Parar ejecución e imprimir error
+
+
+
+##############FUNCIONES######################################
+
+# Func: printerr
+# Params: Mensaje de error msg, número del cuaruplo cn
+# Desc: Imprime un mensaje de error con el formato correcto y acaba la ejecución
 def printerr(msg,cn):
     runcode = False
     if cn < 0:
@@ -644,9 +663,10 @@ def printerr(msg,cn):
         print("\u001b[31m\n*******************\n\n\u001b[0m\u001b[31;1mError en la linea {} : \u001b[0m \u001b[33;1m".format(scline[cn])+msg+'\u001b[0m')
     raise SystemExit
 
-##############FUNCIONES######################################
-
-#generar una memoria
+# Func: genNewMem
+# params: Nombre de funcion funcname, opcionalmente recursos locales de las funciones especiales
+# returns: Regresa un nuevo espacio de memoria con los recursos apropiados
+# Desc: Genera un nuevo espacio de memoria
 def genNewMem(funcname,splc = []):
     if funcname == 'global':
         ints, floats, chars, bools = dirfunc['global']['varres'].values()
@@ -661,8 +681,12 @@ def genNewMem(funcname,splc = []):
         auxmem.append(Memory(ints, floats, chars, bools, pointers))
         return auxmem
 
+# Func: getTypeAndOffset
+# Params: la dirección virtual a convertir a espacio en memoria
+# Returns: El scope de la variable, el tipo de la variable y el offset en la memoria
+# Desc: La función busca obtener el tipo, offset y scope de la dirección virtual recivida y regresa
+# el scope, el tipo y el offset en la memoria de la máquina virtual.
 
-#obtener el tipo, offeset y scope de la dirección
 def getTypeAndOffset(addr):
     #regresa el scope, tipo y offset
     atype = None
@@ -725,7 +749,12 @@ def getTypeAndOffset(addr):
     
     return ascope,atype,aoffset
 
-#Funcion para obtener los operandos para expresiones
+
+# Func: getexpoper
+# Params: La dirección de memoria virtual
+# Ret: El valor de la dirección y el tipo de la variable
+# Desc: Funcion para obtener los valores de los operandos para expresiones 
+# y operaciones de la máquina virtual
 def getexpoper(addrs):
     if addrs == '':
         return '',None
@@ -791,7 +820,10 @@ def getexpoper(addrs):
                     val, atype = getexpoper(memstack[-1][1].mpoint[aoff])
                     return val, atype
 
-#Guardar en memoria el res
+# Func: storeinmem
+# Param: Una direccion virtual addrs, un valor val, y opcionalmente un flag indicando 
+# si guardar en la variable temporal era
+# Desc: Guardar en memoria el valor dado.
 def storeinmem(addrs,val, isera = False):
     scop, atype, aoff = getTypeAndOffset(addrs)
     if scop == 'global':
@@ -870,8 +902,10 @@ def storeinmem(addrs,val, isera = False):
                     storeinmem(memstack[-1][1].mpoint[aoff],val)
                     
                     
-
-#Cambiar valor a numero si es necesario
+# Func: valtonum
+# params: Un valor val, y un tipo t
+# ret: Regresa el valor de v como el tipo t
+# Desc: Cambiar valor a numero si es necesario
 def valtonum(val,t):
     if t == 2:
         val = ord(val)
@@ -882,10 +916,18 @@ def valtonum(val,t):
             val = 0
     return val
 
+
+# Func: reusePointer
+# Params: Una dirección virtual addrs y un valor 
+# Reescribir el valor del apuntador cuando es necesario
 def reusePointer(addrs,val):
     scop, atype, aoff = getTypeAndOffset(addrs)
     memstack[-1][1].mpoint[aoff] = val
 
+
+# Func : exeExpresion
+# Params : Un operador op, tres direcciones virtuals ladd, radd resadd
+# Desc : Ejecuta la acción del cuadruplo y la guarda en memoria
 def exeExpresion(op,ladd,radd,resadd):
     lop,lt = getexpoper(ladd)
     rop,rt = getexpoper(radd)
@@ -948,12 +990,16 @@ def exeExpresion(op,ladd,radd,resadd):
     elif op == '||': 
         # or
         aux = lop or rop
-    if type(resadd) is str:
+    if type(resadd) is str: # Reescribir el pointer en caso de ser necesaria
         reusePointer(int(resadd[1:]),aux)
     else:
         storeinmem(resadd,aux)
 
-#########Funciones Especiales del lenguaje
+######### Funciones Especiales del lenguaje
+
+# Func : spfuncs
+# Params : Nombre de función especial fname, y una función resultante raddress
+# Desc : Ejecuta la lógica de las funciones especiales. Al acabar libera la memoria que estaba utilizaba
 
 def spfuncs(fname, raddres):
     # Cada funcion va a sacar la info de la memoria
@@ -989,7 +1035,8 @@ def spfuncs(fname, raddres):
         # Guardar
         storeinmem(raddres,cin)
     # Funciones de matemáticas
-    elif fname == 'modulo':
+
+    elif fname == 'modulo': # Función Modulo
         # Recive dos argumentos a,b ambos float
         ladd = localfloat
         radd = localfloat + 1
@@ -1000,14 +1047,15 @@ def spfuncs(fname, raddres):
         lop = valtonum(lop,lt)
         rop = valtonum(rop,rt)
         storeinmem(raddres,lop%rop)
-    elif fname == 'suma':
+    
+    elif fname == 'suma': # Función de suma de todos los elementos de un arreglo
         # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.sum(arr))
-    elif fname == 'raiz':
+    elif fname == 'raiz': # función de raíz cuadrada
         # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1015,7 +1063,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.sqrt(lop))
-    elif fname == 'exp':
+    elif fname == 'exp': # Función exponencial
         # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1023,7 +1071,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.exp(lop))
-    elif fname == 'elevar':
+    elif fname == 'elevar': # Función de elevar a ^ b
         # Recive dos argumentos a,b ambos float
         ladd = localfloat
         radd = localfloat + 1
@@ -1034,7 +1082,7 @@ def spfuncs(fname, raddres):
         lop = valtonum(lop,lt)
         rop = valtonum(rop,rt)
         storeinmem(raddres,lop**rop)
-    elif fname == 'techo':
+    elif fname == 'techo': # Función ceil
         # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1042,7 +1090,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.ceil(lop))
-    elif fname == 'piso':
+    elif fname == 'piso': # Función floor
         # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1050,7 +1098,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.floor(lop))
-    elif fname == 'cos':
+    elif fname == 'cos': # Función trigonométrica cos
         # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1058,7 +1106,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.cos(lop))
-    elif fname == 'sen':
+    elif fname == 'sen': # Función trigonométrica sen
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1066,7 +1114,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.sin(lop))
-    elif fname == 'tan':
+    elif fname == 'tan': # Función trigonométrica tan
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1074,7 +1122,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.tan(lop))
-    elif fname == 'cotan':
+    elif fname == 'cotan': # Función trigonométrica cotangente
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1082,7 +1130,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,1.0/math.tan(lop))
-    elif fname == 'sec':
+    elif fname == 'sec': # Función trigonométrica secante
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1090,7 +1138,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,1.0/math.cos(lop))
-    elif fname == 'cosec':
+    elif fname == 'cosec': # Función trigonométrica cosecante
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1098,7 +1146,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,1.0/math.sin(lop))
-    elif fname == 'log':
+    elif fname == 'log': # Función logaritmo
             # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1106,21 +1154,21 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,math.log(lop))
-    elif fname == 'minimo':
+    elif fname == 'minimo': # Función minimo, Regresa el minimo de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.min(arr))
-    elif fname == 'maximo':
+    elif fname == 'maximo': # Función máximo, Regresa el máximo de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.max(arr))
-    elif fname == 'redondear':
+    elif fname == 'redondear': # Función de redondear
                 # Solo recive un arg float a
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1128,7 +1176,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,round(lop))
-    elif fname == 'productoPunto':
+    elif fname == 'productoPunto': # Función de producto punto
             # Recive un arrglo de floats a y un arreglo de floats b
         addr = localfloat
         arr = []
@@ -1145,36 +1193,36 @@ def spfuncs(fname, raddres):
         
         storeinmem(raddres, np.dot(arr,arr2))
     
-    #Funciones de estadítica
-    elif fname == 'media':
+    #--------------------------------- Funciones de estadítica
+    elif fname == 'media': #Función media, Calcula de media de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.mean(arr))
-    elif fname == 'mediana':
+    elif fname == 'mediana': #Función mediana, Calcula de mediana de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.median(arr))
-    elif fname == 'moda':
+    elif fname == 'moda': #Función moda, Calcula de moda de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, mode(arr))
-    elif fname == 'varianza':
+    elif fname == 'varianza': #Función media, Calcula de varianza de un arreglo
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
         for i in range(sparrstack[0]):
             arr.append(getexpoper(addr+i)[0])
         storeinmem(raddres, np.var(arr))
-    elif fname == 'percentil':
+    elif fname == 'percentil': # función percentil, Regresa el valor del percentil q con los datos a
             # Recive un arrglo de floats a y un porciento q
         addr = localfloat
         arr = []
@@ -1184,7 +1232,7 @@ def spfuncs(fname, raddres):
         q = getexpoper(addr)[0]
         print('Q : ',q)
         storeinmem(raddres, np.percentile(arr,q))
-    elif fname == 'aleatorio':
+    elif fname == 'aleatorio': # Función aleatorio Genera un número aleatoria en los rangos min,max
             # Recive dos argumentos min,max ambos float
         ladd = localfloat
         radd = localfloat + 1
@@ -1195,7 +1243,7 @@ def spfuncs(fname, raddres):
         lop = valtonum(lop,lt)
         rop = valtonum(rop,rt)
         storeinmem(raddres,random.uniform(lop,rop))
-    elif fname == 'wilcoxon':
+    elif fname == 'wilcoxon': # Función wilcoxon, Esta función recive un set de datos a y realiza la prueba de wilcoxon, regresando el valor de p
             # Recive un arrglo de floats a
         addr = localfloat
         arr = []
@@ -1203,7 +1251,7 @@ def spfuncs(fname, raddres):
             arr.append(getexpoper(addr+i)[0])
         w, p = wilcoxon(arr)
         storeinmem(raddres, p)
-    elif fname == 'wilcoxonComp':
+    elif fname == 'wilcoxonComp': # Función wilcoxon Comparativa, Esta función recive dos sets de datos a y b, y realiza la prueba de wilcoxon, regresando el valor de p
             # Recive un arrglo de floats a y un arreglo de floats b
         addr = localfloat
         arr = []
@@ -1220,7 +1268,7 @@ def spfuncs(fname, raddres):
         w, p = wilcoxon(arr,arr2)
         storeinmem(raddres, p)
         
-    elif fname == 'regresionSimple':
+    elif fname == 'regresionSimple': # Función regresión simple. Realiza regresión simple con los datos proporcionados y aproxima una xi
             # Recive x y y que son arreglos de floats y una xi que se va aproximar
             addr = localfloat
             x = []
@@ -1251,7 +1299,7 @@ def spfuncs(fname, raddres):
 
             storeinmem(raddres, b_0 + b_1*xi)
 
-    elif fname == 'normal':
+    elif fname == 'normal': # Función normal:  Regresa un número aleatorio perteneciente a la distribución normal
             # Recive dos argumentos media,desv ambos float
         ladd = localfloat
         radd = localfloat + 1
@@ -1262,7 +1310,7 @@ def spfuncs(fname, raddres):
         lop = valtonum(lop,lt)
         rop = valtonum(rop,rt)
         storeinmem(raddres,np.random.normal(lop,rop))
-    elif fname == 'poisson':
+    elif fname == 'poisson': # Función Poisson:  Regresa un número aleatorio perteneciente a la distribución Poisson
             # Recive lambda que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1270,7 +1318,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,np.random.poisson(lop))
-    elif fname == 'dexponencial':
+    elif fname == 'dexponencial':# Función Exponencial:  Regresa un número aleatorio perteneciente a la distribución Exponencial
             # Recive beta que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1279,7 +1327,7 @@ def spfuncs(fname, raddres):
         lop = valtonum(lop,lt)
         
         storeinmem(raddres,np.random.exponential(lop))
-    elif fname == 'dgeometrica':
+    elif fname == 'dgeometrica':# Función Geométrica:  Regresa un número aleatorio perteneciente a la distribución Geométrica
             # Recive pexito que es float
         ladd = localfloat
         lop,lt = getexpoper(ladd)
@@ -1287,7 +1335,7 @@ def spfuncs(fname, raddres):
             printerr('Esta intentando realizar operaciónes con variables que no cuentan con un valor. \nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones',ip)
         lop = valtonum(lop,lt)
         storeinmem(raddres,np.random.geometric(lop))
-    elif fname == 'histograma':
+    elif fname == 'histograma': # Función histograma. Genera un histograma con la cantidad de barras x y lo guarda en un png
         # Recive un arreglo a de floats y una x con la cantidad de barras para las gráficas
         addr = localfloat
         a = []
@@ -1303,7 +1351,7 @@ def spfuncs(fname, raddres):
         plt.clf()
 
 
-    elif fname == 'diagramaDeCaja':
+    elif fname == 'diagramaDeCaja': # Función diagrama de Caja y Bigotes. Genera un diagrama de Caja y Bigotes y lo guarda en un png
         
         # Recive un arreglo a de floats
         addr = localfloat
@@ -1317,7 +1365,7 @@ def spfuncs(fname, raddres):
         plt.savefig('{}_grafico_{}{}.png'.format(infilename,'caja_',plotcounter[1]))
         plotcounter[1] += 1
         plt.clf()
-    elif fname == 'grafDispersion':
+    elif fname == 'grafDispersion': # Función gráfico de dispersión. Genera un gráfico de dispersión y lo guarda en un png
         # Recive x y y que son arreglos de floats
         addr = localfloat
         x = []
@@ -1350,23 +1398,23 @@ def spfuncs(fname, raddres):
 ####### Ejecutar las acciones
 #################################################################
 
-#Cargar el espacio global
+#Cargar el espacio global a la variable global de memoria global
 globmem = genNewMem('global')
 
-#Crear el espacio de principal
+#Crear el espacio de memoria principal del código leído
 memstack.append(genNewMem('principal'))
 
 
 
 
-
+# While para iterar por todos los cuadruplos
 while runcode:
     #Cargar cuadruplo
     currcuad = cuad[ip]
-    #print(currcuad)
-
+    
+    # Se checa el primer elemento del cuadruplo para saber que acción tomar
 ########################SALTOS###############################
-    #Checar por las operaciones
+    # Cuadruplos de saltos
     if currcuad[0] == 'GOTO': #SALTO
         ip = currcuad[3]
 
@@ -1379,11 +1427,18 @@ while runcode:
 
 
 #######################EXPRESIONES############################
+    # Manejo de expresiones el cuadruplo esta estructurado como:
+    # [ oper , operador izq, operador der, dirreción resultante]
     elif currcuad[0] in ['*','/','+','-','>','<','>=','<=','!=','==','||','&&']:
         exeExpresion(currcuad[0],currcuad[1],currcuad[2],currcuad[3])
         ip += 1
 
 #########################ESTATUTOS###############################
+    # Manejo de la lógica de los estatutos
+
+    # Estatuto de asignación. Se checa primero el tipo al que se va a guardar y se asegura que no
+    # se este haciendo operaciones con operadores nulos. Si se puede realizar la operación se hacen
+    # las conversiones necesarias segun el cubo semántico 
     elif currcuad[0] == '=':
         lop,lt = getexpoper(currcuad[1])
         lop = valtonum(lop,lt)
@@ -1411,6 +1466,9 @@ while runcode:
         storeinmem(currcuad[3],lop)
         ip+=1
 
+    # Estatuto de imprimir. Este estatuto imprime a pantalla lo que recive. En el caso de que se haya escrito
+    # Multiples imprimir seguidos o imprimir separado por comas (ej. imprimir(x);imprimir(y); ó imprimir(x,y);)
+    # Los imprime todos en la misma linea, sino hace salto de linea. 
     elif currcuad[0] == 'imprimir': #imprimir
         
         if currcuad[1] != '':
@@ -1449,6 +1507,10 @@ while runcode:
 
 
 #########################ARREGLOS###########################################
+    # Cuadruplo para verificar si el arreglo esta dentro del indice. Como la indexación en el lenguaje 
+    # empieza en 0 Solo se recive el tamaño de la dimensión y se checa que el resultdo del expresión. 
+    # Con eso revisa que la expresion no sea un valor menor a 0 ó un valor mayor al tamaño N de 
+    # la dimensión. El cuadruplo se lee como : [VERIF , EXPRESION, SIZE, '']
     elif currcuad[0] == 'VERIF':
         lop,lt = getexpoper(currcuad[1])
         rop,rt = getexpoper(currcuad[2])
@@ -1464,6 +1526,11 @@ while runcode:
         
 
 #########################MODULOS (FUNCIONES)################################
+    # Cuadruplo de generación de memoria. Este cuadruplo indica a la máquina virtual a que
+    # genere un nuevo espacio de memoria al cual se le van a copiar los parametros y el cual
+    # al llegar al GOTOSUB se va a agregar al stack de memorias. 
+    # El cuadruplo se lee como [ERA, nombre_funcion, '' ,'']. En caso de ser función especial
+    # Se lee como : [ERA, nombre_funcion, '', recursos_locales]
     elif currcuad[0] == 'ERA':
         if currcuad[3] != '':
             res = list(map(int,currcuad[3].split(',')))
@@ -1476,6 +1543,9 @@ while runcode:
         charc = 0
         boolc = 0
         ip += 1
+    # Cuadruplo de PARAMETER. Este cuadruplo indica que hay que pasar esta información como una
+    # variable local al nuevo espacio de memoria. El cuadruplo se lee: [PARAMETER, expresion, '', tipoparam#NumParam]
+    # En caso de que el parametro es arreglo se lee : [PARAMETER, expresion, size, tipoparam#NumParam]
     elif currcuad[0] == 'PARAMETER':
         lop, lt = getexpoper(currcuad[1])
         lop = valtonum(lop,lt)
@@ -1555,6 +1625,10 @@ while runcode:
             storeinmem(addr,lop,True)
         
         ip += 1
+    
+    # Cuadruplo de GOTOSUB. Este cuadruplo indica a la máquina saltar al código de una función.
+    # A su vez mete la memoria temporal a donde se copio los parametros al stack de memorias.
+    # El cuadruplo se lee: [GOTOSUB, nombre_funcion, '', NewIp] 
     elif currcuad[0] == 'GOTOSUB':
         memstack.append(eratemp)
         eratemp = None
@@ -1583,6 +1657,8 @@ while runcode:
         storeinmem(currcuad[3],lop)
         memstack.pop()
         ip = ipstack.pop()
+    # Cuadruplo de función especial. Llama a la función spfuncs para ejecutar las funciones especial.
+    # El cuadruplo se lee [SPFUNC, nombre_funcion, tipoReturn, Direccion_del_resultado] 
     elif currcuad[0] == 'SPFUNC':
         memstack.append(eratemp)
         
@@ -1592,6 +1668,7 @@ while runcode:
         resadd = currcuad[3]
         spfuncs(fname,resadd)
         ip += 1
+    # Cuadruplo de Fin. Indica el fin del programa.
     elif currcuad[0] == 'END': #fin del programa
         runcode = False
     
