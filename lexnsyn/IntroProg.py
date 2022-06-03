@@ -29,542 +29,542 @@ def dprint(*args,**kwargs):
 sem_err = False # Evitar imprmir aceptado cuando se detectan errores
 #entero, bool flotante char cadena vacio nulo error
 cubosem = {
-           '=':{'entero':{
-                          'entero':'entero',
-                          'flotante': 'entero',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'flotante',
-                          'flotante': 'flotante',
-                          'char':'flotante',
-                          'bool': 'flotante',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'char',
-                          'flotante': 'char',
-                          'char':'char',
-                          'bool': 'char',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'cadena'
-                        },
+        '=':{'entero':{
+                        'entero':'entero',
+                        'flotante': 'entero',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'flotante',
+                        'flotante': 'flotante',
+                        'char':'flotante',
+                        'bool': 'flotante',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'char',
+                        'flotante': 'char',
+                        'char':'char',
+                        'bool': 'char',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'cadena'
+                    },
 
-                },
-           '||':{
-               'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '&&':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '<':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '>':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '<=':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '>=':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '!=':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '==':{
-                'entero':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'bool',
-                          'flotante': 'bool',
-                          'char':'bool',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'bool'
-                        },
-           },
-           '+':{
-                'entero':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'flotante',
-                          'flotante': 'flotante',
-                          'char':'flotante',
-                          'bool': 'flotante',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'cadena'
-                        },
-                'none' : {
-                    'entero' : 'entero',
-                    'flotante' : 'flotante',
-                    'char' : 'error',
-                    'bool' : 'error',
-                    'cadena' : 'error'
-                }
-           },
-           '-':{
-                'entero':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error',
-                        },
-                'flotante':{
-                          'entero':'flotante',
-                          'flotante': 'flotante',
-                          'char':'flotante',
-                          'bool': 'flotante',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'error'
-                        },
-                'none' : {
-                    'entero' : 'entero',
-                    'flotante' : 'flotante',
-                    'char' : 'error',
-                    'bool' : 'error',
-                    'cadena' : 'error'
-                }
-
-           },
-           '*':{
-                'entero':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'flotante',
-                          'flotante': 'flotante',
-                          'char':'flotante',
-                          'bool': 'flotante',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'error'
-                        },
-           },
-           '/':{
-               'entero': {
-                   'entero': 'entero',
-                   'flotante': 'flotante',
-                   'char': 'entero',
-                   'bool': 'entero',
-                   'cadena': 'error'
-               },
-               'flotante': {
-                   'entero': 'flotante',
-                   'flotante': 'flotante',
-                   'char': 'flotante',
-                   'bool': 'flotante',
-                   'cadena': 'error'
-               },
-               'char': {
-                   'entero': 'entero',
-                   'flotante': 'flotante',
-                   'char': 'entero',
-                   'bool': 'entero',
-                   'cadena': 'error'
-               },
-               'bool': {
-                   'entero': 'entero',
-                   'flotante': 'flotante',
-                   'char': 'entero',
-                   'bool': 'entero',
-                   'cadena': 'error'
-               },
-               'cadena': {
-                   'entero': 'error',
-                   'flotante': 'error',
-                   'char': 'error',
-                   'bool': 'error',
-                   'cadena': 'error'
-               },
-
-           },
-            'arr':{'entero':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'flotante':{
-                          'entero':'flotante',
-                          'flotante': 'flotante',
-                          'char':'flotante',
-                          'bool': 'flotante',
-                          'cadena':'error'
-                        },
-                'char':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'char',
-                          'bool': 'entero',
-                          'cadena':'error'
-                        },
-                'bool':{
-                          'entero':'entero',
-                          'flotante': 'flotante',
-                          'char':'entero',
-                          'bool': 'bool',
-                          'cadena':'error'
-                        },
-                'cadena':{
-                          'entero':'error',
-                          'flotante': 'error',
-                          'char':'error',
-                          'bool': 'error',
-                          'cadena':'cadena'
-                        },
+            },
+        '||':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '&&':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '<':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '>':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '<=':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '>=':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '!=':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '==':{
+            'entero':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'bool',
+                        'flotante': 'bool',
+                        'char':'bool',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'bool'
+                    },
+        },
+        '+':{
+            'entero':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'flotante',
+                        'flotante': 'flotante',
+                        'char':'flotante',
+                        'bool': 'flotante',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'cadena'
+                    },
+            'none' : {
+                'entero' : 'entero',
+                'flotante' : 'flotante',
+                'char' : 'error',
+                'bool' : 'error',
+                'cadena' : 'error'
+            }
+        },
+        '-':{
+            'entero':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error',
+                    },
+            'flotante':{
+                        'entero':'flotante',
+                        'flotante': 'flotante',
+                        'char':'flotante',
+                        'bool': 'flotante',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'error'
+                    },
+            'none' : {
+                'entero' : 'entero',
+                'flotante' : 'flotante',
+                'char' : 'error',
+                'bool' : 'error',
+                'cadena' : 'error'
             }
 
+        },
+        '*':{
+            'entero':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'flotante',
+                        'flotante': 'flotante',
+                        'char':'flotante',
+                        'bool': 'flotante',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'error'
+                    },
+        },
+        '/':{
+            'entero': {
+                'entero': 'entero',
+                'flotante': 'flotante',
+                'char': 'entero',
+                'bool': 'entero',
+                'cadena': 'error'
+            },
+            'flotante': {
+                'entero': 'flotante',
+                'flotante': 'flotante',
+                'char': 'flotante',
+                'bool': 'flotante',
+                'cadena': 'error'
+            },
+            'char': {
+                'entero': 'entero',
+                'flotante': 'flotante',
+                'char': 'entero',
+                'bool': 'entero',
+                'cadena': 'error'
+            },
+            'bool': {
+                'entero': 'entero',
+                'flotante': 'flotante',
+                'char': 'entero',
+                'bool': 'entero',
+                'cadena': 'error'
+            },
+            'cadena': {
+                'entero': 'error',
+                'flotante': 'error',
+                'char': 'error',
+                'bool': 'error',
+                'cadena': 'error'
+            },
 
-           }
+        },
+        'arr':{'entero':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'flotante':{
+                        'entero':'flotante',
+                        'flotante': 'flotante',
+                        'char':'flotante',
+                        'bool': 'flotante',
+                        'cadena':'error'
+                    },
+            'char':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'char',
+                        'bool': 'entero',
+                        'cadena':'error'
+                    },
+            'bool':{
+                        'entero':'entero',
+                        'flotante': 'flotante',
+                        'char':'entero',
+                        'bool': 'bool',
+                        'cadena':'error'
+                    },
+            'cadena':{
+                        'entero':'error',
+                        'flotante': 'error',
+                        'char':'error',
+                        'bool': 'error',
+                        'cadena':'cadena'
+                    },
+        }
+
+
+        }
 
 #Pila de Operadores
 poper = ['?']
@@ -581,281 +581,281 @@ ptipo = ['?']
 # 'histograma', 'diagramaDeCaja', 'grafDispersion']
 
 special = {
-    'leer': {
-            'tipo':'flotante',
-            'params' : {}
-    },
+'leer': {
+        'tipo':'flotante',
+        'params' : {}
+},
 
-    'modulo': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-                'b': { 'tipo': 'flotante', },
-            }
-    },
+'modulo': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+            'b': { 'tipo': 'flotante', },
+        }
+},
 
-    'suma': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': {  'tipo': 'flotante',
+'suma': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': {  'tipo': 'flotante',
+                    'dims' : 1,
+                    'dimlen' : [] },
+        }
+},
+
+'raiz': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'exp': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'elevar': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+            'b': { 'tipo': 'flotante', },
+        }
+},
+'techo': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'piso': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'cos': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'sen': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'tan': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'cotan': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'sec': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'cosec': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'log': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'minimo': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'maximo': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'exp': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'redondear': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante', },
+        }
+},
+'productoPunto': { # Para estas funciones hay que hacer un cheque especial
+    # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
+    # de esta funcion
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims' : 1,
+                    'dimlen' : [] },
+            'b': { 'tipo': 'flotante',
+                    'dims' : 1,
+                    'dimlen' : [] },
+        }
+},
+'media': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims': 1,
+                    'dimlen': []
+                    },
+        }
+},
+'mediana': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims' : 1,
+                    'dimlen' : [] },
+        }
+},
+'moda': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims': 1,
+                    'dimlen': []
+                    },
+        }
+},
+'varianza': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims': 1,
+                    'dimlen': []
+                    },
+        }
+},
+'percentil': {
+    'tipo': 'flotante',
+    'params' : {
+            'a': { 'tipo': 'flotante',
+                    'dims': 1,
+                    'dimlen': []
+                    },
+            'q': { 'tipo': 'flotante', },
+        }
+},
+'aleatorio': {
+    'tipo': 'flotante',
+    'params' : {
+            'min': { 'tipo': 'flotante', },
+            'max': { 'tipo': 'flotante', },
+        }
+},
+'wilcoxon': {
+    'tipo': 'flotante',
+    'params' : {
+            'x': { 'tipo': 'flotante', 'dims' : 1,
+                    'dimlen' : []},
+
+        }
+},
+'wilcoxonComp': {
+    'tipo': 'flotante',
+    'params' : {
+            'x': { 'tipo': 'flotante','dims' : 1,
+                    'dimlen' : [] },
+            'y': { 'tipo': 'flotante','dims' : 1,
+                    'dimlen' : [] },
+        }
+},
+'regresionSimple': {
+    'tipo': 'flotante',
+    'params' : {
+            'x': { 'tipo': 'flotante',# Para estas funciones hay que hacer un cheque especial
+    # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
+    # de esta funcion
+                    'dims' : 1,
+                    'dimlen' : [] },
+            'y': { 'tipo': 'flotante',
+                    'dims' : 1,
+                    'dimlen' : []},
+            'xi': { 'tipo': 'flotante', },
+        }
+},
+'normal': {
+    'tipo': 'flotante',
+    'params' : {
+            'media': { 'tipo': 'flotante', },
+            'desv': { 'tipo': 'flotante', },
+        }
+},
+'poisson': {
+    'tipo': 'flotante',
+    'params' : {
+            'lambda': { 'tipo': 'flotante', },
+
+        }
+},
+'dexponencial': {
+    'tipo': 'flotante',
+    'params' : {
+            'beta': { 'tipo': 'flotante', },
+
+        }
+},
+'dgeometrica': {
+    'tipo': 'flotante',
+    'params' : {
+            'pexito': { 'tipo': 'flotante', },
+
+
+        }
+},
+'histograma': {
+    'tipo': 'vacio',
+    'params' : {
+            'x': { 'tipo': 'flotante',
                         'dims' : 1,
-                        'dimlen' : [] },
-            }
-    },
+                    'dimlen' : [] },
+            'rango': { 'tipo': 'entero', }, # Bins para matplotlib
 
-    'raiz': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'exp': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'elevar': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-                'b': { 'tipo': 'flotante', },
-            }
-    },
-    'techo': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'piso': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'cos': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'sen': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'tan': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'cotan': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'sec': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'cosec': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'log': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'minimo': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'maximo': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'exp': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'redondear': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante', },
-            }
-    },
-    'productoPunto': { # Para estas funciones hay que hacer un cheque especial
-        # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
-        # de esta funcion
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
+        }
+},
+'diagramaDeCaja': {
+    'tipo': 'vacio',
+    'params' : {
+            'x': { 'tipo': 'flotante',
                         'dims' : 1,
-                        'dimlen' : [] },
-                'b': { 'tipo': 'flotante',
+                    'dimlen' : [] },
+
+        }
+},
+'grafDispersion': {
+    'tipo': 'vacio',
+    'params' : {
+            'x': { 'tipo': 'flotante',
                         'dims' : 1,
-                        'dimlen' : [] },
-            }
-    },
-    'media': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
-                       'dims': 1,
-                       'dimlen': []
-                       },
-            }
-    },
-    'mediana': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
-                       'dims' : 1,
-                        'dimlen' : [] },
-            }
-    },
-    'moda': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
-                       'dims': 1,
-                       'dimlen': []
-                       },
-            }
-    },
-    'varianza': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
-                       'dims': 1,
-                       'dimlen': []
-                       },
-            }
-    },
-    'percentil': {
-        'tipo': 'flotante',
-        'params' : {
-                'a': { 'tipo': 'flotante',
-                       'dims': 1,
-                       'dimlen': []
-                       },
-                'q': { 'tipo': 'flotante', },
-            }
-    },
-    'aleatorio': {
-        'tipo': 'flotante',
-        'params' : {
-                'min': { 'tipo': 'flotante', },
-                'max': { 'tipo': 'flotante', },
-            }
-    },
-    'wilcoxon': {
-        'tipo': 'flotante',
-        'params' : {
-                'x': { 'tipo': 'flotante', 'dims' : 1,
-                        'dimlen' : []},
+                    'dimlen' : [] },
+            'y': { 'tipo': 'flotante',
+                        'dims' : 1,
+                    'dimlen' : [] },
 
-            }
-    },
-    'wilcoxonComp': {
-        'tipo': 'flotante',
-        'params' : {
-                'x': { 'tipo': 'flotante','dims' : 1,
-                        'dimlen' : [] },
-                'y': { 'tipo': 'flotante','dims' : 1,
-                        'dimlen' : [] },
-            }
-    },
-    'regresionSimple': {
-        'tipo': 'flotante',
-        'params' : {
-                'x': { 'tipo': 'flotante',# Para estas funciones hay que hacer un cheque especial
-        # En el caso de producto punto y similares puedo copiar dimlen del primer argumento y pasarlo al parametro
-        # de esta funcion
-                       'dims' : 1,
-                        'dimlen' : [] },
-                'y': { 'tipo': 'flotante',
-                       'dims' : 1,
-                        'dimlen' : []},
-                'xi': { 'tipo': 'flotante', },
-            }
-    },
-    'normal': {
-        'tipo': 'flotante',
-        'params' : {
-                'media': { 'tipo': 'flotante', },
-                'desv': { 'tipo': 'flotante', },
-            }
-    },
-    'poisson': {
-        'tipo': 'flotante',
-        'params' : {
-                'lambda': { 'tipo': 'flotante', },
-
-            }
-    },
-    'dexponencial': {
-        'tipo': 'flotante',
-        'params' : {
-                'beta': { 'tipo': 'flotante', },
-
-            }
-    },
-    'dgeometrica': {
-        'tipo': 'flotante',
-        'params' : {
-                'pexito': { 'tipo': 'flotante', },
-
-
-            }
-    },
-    'histograma': {
-        'tipo': 'vacio',
-        'params' : {
-                'x': { 'tipo': 'flotante',
-                            'dims' : 1,
-                        'dimlen' : [] },
-                'rango': { 'tipo': 'entero', }, # Bins para matplotlib
-
-            }
-    },
-    'diagramaDeCaja': {
-        'tipo': 'vacio',
-        'params' : {
-                'x': { 'tipo': 'flotante',
-                            'dims' : 1,
-                        'dimlen' : [] },
-
-            }
-    },
-    'grafDispersion': {
-        'tipo': 'vacio',
-        'params' : {
-                'x': { 'tipo': 'flotante',
-                            'dims' : 1,
-                        'dimlen' : [] },
-                'y': { 'tipo': 'flotante',
-                            'dims' : 1,
-                        'dimlen' : [] },
-
-            }
-    },
+        }
+},
 
 
 
@@ -977,7 +977,7 @@ def t_newline(t):
     t.lexer.lineno += len(t.value) 
 
 def t_error(t):
-     printerror("Token Invalido '%s' en la linea %r" % (t.value[0],t.lexer.lineno) )
+    printerror("Token Invalido '%s' en la linea %r" % (t.value[0],t.lexer.lineno) )
 
 
 lexer = lex.lex()
