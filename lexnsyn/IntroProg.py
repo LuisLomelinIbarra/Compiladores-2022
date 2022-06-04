@@ -918,7 +918,8 @@ tokens=[
 "CLOSESQU",
 "AND",
 "OR",
-"DLR"] + list(reserved.values())
+"DLR",
+"COMMENT"] + list(reserved.values())
 
 #Aplicar regex a cada token
 
@@ -934,7 +935,9 @@ def t_CTE_INT(t):
     t.value = int(t.value)
     return t
 
-
+def t_ignore_COMMENT(p):
+    r'\/\/.*'
+    pass
 
 t_CTE_CHAR = ("\'[^\']\'")
 
@@ -2361,9 +2364,9 @@ def p_FORINIT(p):
         if(p[1] not in  ['entero','flotante']):
 
             printerror('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
-        else:
-            # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
-            psaltos.append(cuadcount)
+
+    # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
+    psaltos.append(cuadcount)
 
 def p_FOREXP(p):
     '''FOREXP : EXPRESION SEMICOLON'''
@@ -2403,12 +2406,12 @@ def p_FORSTEP(p):
     else:
         # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
 
-        salasig = psaltos.pop() 
-        salacod = psaltos.pop() 
-        gtf = psaltos.pop() 
-        cond = psaltos.pop() 
+        salasig = psaltos.pop() # Salto al inicio de la asignación del paso
+        salacod = psaltos.pop()  # Salto a donde empieza el bloque del for
+        gtf = psaltos.pop()  # Salto al gotof
+        cond = psaltos.pop()  # Punto donde empieza la condición
 
-        cuadruplos.append(('GOTO','','',cond))
+        cuadruplos.append(('GOTO','','',cond)) #
         global sclines
         sclines.append(p.lineno(1))
 

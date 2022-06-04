@@ -1,0 +1,49 @@
+programa pruebaMsgDeError { 
+	
+	entero n;
+	entero r[ 2 ];
+	entero l[ 3 ][ 2 ];
+	flotante g[1][1][1];
+	
+	funcion entero factorial (entero num){}{
+		si(num > 0){
+			regresar num * $factorial(num-1);
+		}sino{
+			regresar 1;
+		}
+	}
+
+	
+
+	principal funcion
+	{
+		entero aka,aux,aux2,aux3;
+		
+
+	}
+	{
+		n = $factorial(5);
+		// Linea erronea no se puede hacer n*aux3 ya que aux3 no tiene valor
+		aux2 = n * aux3;
+		imprimir("Factorial de n \n");
+		imprimir(n);
+		aka = 10-n;
+		10 / (-aka) ;
+		aka = 5;
+		aux2 = aka;
+		aux = 1;
+		mientras(aux <= aux2){
+			si (aux2 - aux > 0 ){ 
+				aka = aka * (aux2-aux);
+			}sino{
+				aka = aka * 1;
+			}
+			aux = aux + 1;
+		}
+		imprimir("Factorial Secuencial : ",aka);
+		por(aka = 10; aka > 1; aka = aka - 1;){
+			imprimir("------\n hola aka =",aka);
+		}
+	} 
+
+}

@@ -1,0 +1,64 @@
+programa matmul{
+    entero matA[2][3];
+    entero matB[3][4];
+    entero r1, comun ,c2;
+    funcion vacio imprimirMatA(entero a[2][3]){
+        entero x,y;
+    }{
+        por(x = 0; x < 2; x = x+1;){
+            por(y = 0; y < 3; y = y+1;){
+                imprimir("mat[",x ,"][", y,"] = ",a[x][y]);
+            }
+        }
+        
+    }
+    funcion vacio imprimirMatB(entero a[3][4]){
+        entero x,y;
+    }{
+        por(x = 0; x < 3; x = x+1;){
+            por(y = 0; y < 4; y = y+1;){
+                imprimir("mat[",x ,"][", y,"] = ",a[x][y]);
+            }
+        }
+        
+    }
+
+    funcion vacio imprimirMat(entero a[2][4]){
+        entero x,y;
+    }{
+        por(x = 0; x < 2; x = x+1;){
+            por(y = 0; y < 4; y = y+1;){
+                imprimir("mat[",x ,"][", y,"] = ",a[x][y]);
+            }
+        }
+        
+    }
+
+    principal funcion{
+        entero matR[2][4];
+        entero i,j,k;
+    }{
+        r1 = 2;
+        comun = 3;
+        c2 = 4;
+        matA = [[1,2,3],[4,5,6]];
+        imprimir("Matriz A :");
+        $imprimirMatA(matA);
+        matB = [[1,2,3,4],[5,6,7,8],[9,10,11,12]];
+        imprimir("Matriz B :");
+        $imprimirMatB(matB);
+        
+        por (i = 0; i < r1; i = i+1;) { //Iterar sobre los renglones de la primera matriz
+            por(j = 0; j < c2; j = j +1;){ // Iterar sobre las columnas de la segunda matriz
+                matR[i][j] = 0;
+                por(k = 0; k < comun; k = k+1;){ // Recorer la columna/regnlon para  hacer la multiplicación
+                    matR[i][j] = matR[i][j] + matA[i][k] * matB[k][j]; //matR[i][j] + matA[R_i][k] * matB[k][C_j]
+                }
+                 
+            }
+        }
+
+        imprimir("Matriz R :");
+        $imprimirMat(matR);
+    }
+}
