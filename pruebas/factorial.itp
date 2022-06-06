@@ -1,4 +1,4 @@
-programa helloworld { 
+programa factorial { 
 	
 	entero n;
 	entero r[ 2 ];
@@ -39,9 +39,7 @@ programa helloworld {
 			aux = aux + 1;
 		}
 		imprimir("Factorial Secuencial : ",aka);
-		por(aka = 10; aka > 1; aka = aka - 1;){
-			imprimir("------\n hola aka =",aka);
-		}
+		
 	} 
 
 }

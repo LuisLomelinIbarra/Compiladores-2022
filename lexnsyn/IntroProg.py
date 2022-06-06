@@ -37,7 +37,8 @@ sem_err = False # Evitar imprmir aceptado cuando se detectan errores
 # Los tipos con los que trata el cubo son:
 # entero, bool, flotante, char, cadena, vacio, nulo, error
 cubosem = {
-        '=':{'entero':{
+        '=':{
+            'entero':{
                         'entero':'entero',
                         'flotante': 'entero',
                         'char':'entero',
@@ -70,7 +71,7 @@ cubosem = {
                         'flotante': 'error',
                         'char':'error',
                         'bool': 'error',
-                        'cadena':'cadena'
+                        'cadena':'err'
                     },
 
             },
@@ -404,7 +405,7 @@ cubosem = {
                         'flotante': 'error',
                         'char':'error',
                         'bool': 'error',
-                        'cadena':'cadena'
+                        'cadena':'error'
                     },
             'none' : {
                 'entero' : 'entero',
@@ -2353,18 +2354,18 @@ def p_FOR(p):
     cuadruplos[retState] = cuadruplos[retState] + (cuadcount,)
 
 def p_FORINIT(p):
-    '''FORINIT : ASIGNACION
-               | empty '''
+    '''FORINIT : SEMICOLON
+               | ASIGNACION'''
     global psaltos
     global cuadcount
     global cuadruplos
 
-    if(p[1] != None):
+    if(p[1] != None and p[1] != ';'):
         # Checar que sea una variable numeríca a utilizar
         if(p[1] not in  ['entero','flotante']):
 
             printerror('Error de Semantica, %r se esperaba que fuera entero en la linea %r' % (p[1], p.lineno(1)))
-
+    dprint("LLego a for init")
     # Como es un while disfrazado, se mete la "migaja" a la pila antes de la expresion y el paso
     psaltos.append(cuadcount)
 
@@ -2401,6 +2402,7 @@ def p_FORSTEP(p):
     global pilaoperand
     global ptipo
     tipas = p[2]
+    dprint("Llego a forstep")
     if (tipas not in ['entero', 'flotante']):
         printerror('Error de Semantica, %r se esperaba que fuera entero o flotante en la linea %r' % (p[1], p.lineno(1)))
     else:

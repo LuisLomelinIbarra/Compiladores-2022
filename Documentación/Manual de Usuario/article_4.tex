@@ -1,0 +1,269 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Arsclassica Article
+% LaTeX Template
+% Version 1.1 (05/01/2015)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author: Adriano Palombo
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+10pt, % Main document font size
+a4paper, % Paper type, use 'letterpaper' for US Letter paper
+oneside, % One page layout (no page indentation)
+%twoside, % Two page layout (page indentation for binding and different headers)
+headinclude,footinclude, % Extra spacing for the header and footer
+BCOR5mm, % Binding correction
+]{scrartcl}
+\usepackage[spanish]{babel}
+\selectlanguage{spanish}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
+
+\hyphenation{Fortran hy-phen-ation} % Specify custom hyphenation points in words with dashes where you would like hyphenation to occur, or alternatively, don't put any dashes in a word to stop hyphenation altogether
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND AUTHOR(S)
+%----------------------------------------------------------------------------------------
+
+\title{\normalfont\spacedallcaps{IntroProg}} % The article title
+
+\author{Luis Fernando Lomelín} % The article author(s) - author affiliations need to be specified in the AUTHOR AFFILIATIONS block
+
+\date{Junio 2022} % An optional date to appear under the author(s)
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	HEADERS
+%----------------------------------------------------------------------------------------
+
+\renewcommand{\sectionmark}[1]{\markright{\spacedlowsmallcaps{#1}}} % The header for all pages (oneside) or for even pages (twoside)
+%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
+\lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
+
+\pagestyle{scrheadings} % Enable the headers specified in this block
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
+%----------------------------------------------------------------------------------------
+
+\maketitle % Print the title/author/date block
+
+\setcounter{tocdepth}{2} % Set the depth of the table of contents to show sections and subsections only
+
+\tableofcontents % Print the table of contents
+
+%\listoffigures % Print the list of figures
+
+%\listoftables % Print the list of tables
+
+%----------------------------------------------------------------------------------------
+%	AUTHOR AFFILIATIONS
+%----------------------------------------------------------------------------------------
+
+%{\let\thefootnote\relax\footnotetext{* \textit{SireSLA, Lombardia Informatica, Milano, Italia}}}
+
+%{\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Chemistry, University of Examples, London, United Kingdom}}}
+
+%----------------------------------------------------------------------------------------
+
+\newpage % Start the article content on the second page, remove this if you have a longer abstract that goes onto the second page
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section{Introducción}
+
+IntroProg es un lenguaje de programación diseñado para principiantes que quieran aprender a programar con lenguajes estilo C/C++ experimentando con funciones estadísticas.
+
+\section{Herramientas que utiliza}
+IntroProg se logro hacer con la auyda de las siguientes herramientas:
+\begin{itemize}
+\item Python
+\item Ply
+\item SciPy
+\item NumPy
+\item MatPlotLib
+\end{itemize}
+\section{Requerimientos}
+
+Para poder utilizar el lenguaje lo único que se requiere es tener python instalado con las librerías que se mencionaron en las herramientas.
+
+\section{Como correr un programa IntroProg}
+
+Para correr tu programa IntroProg debes de primero compilarlo con el archivo de IntroProg.py que se encuentra dentro de la carpeta lexnsyn
+\begin{lstlisting}
+py IntroProg.py camino/a/tu/archivo
+\end{lstlisting}
+
+Esto generara un archivo obj el cual la máquina virtual que esta en la carpeta de virtualmachine va a usar para ejecutar tu código
+
+\begin{lstlisting}
+py itvm.py camino/a/tu/archivo/obj
+\end{lstlisting}
+
+\section{Como utilizar el lenguaje}
+
+Para poder utilizar el lenguaje lo primero que debes de hacer es crear un archivo itp. Este archivo deberá contener tu código fuente que vayas creando.
+Los archivos itp sigen la siguiente estructura :
+\begin{lstlisting}
+
+programa pelos{
+    //Primero deben de ir la declaracion de variables globales
+    //Luego deben de ir las declaracion de tus funciones
+    //Luego va la función principal
+    principal funcion{}{
+        imprimir("¡¡Hola Mundo!!");
+    }
+
+}
+
+\end{lstlisting}
+
+Los tipos que utiliza IntroProg para sus variables son los siguientes:
+\begin{itemize}
+    \item Enteros
+    \item Flotantes
+    \item Caracteres (char)
+    \item Booleanos (bool)
+\end{itemize}
+
+Para la declaración de una variable basta con escribir el tipo de la variable seguido por el nombre de la variable. Este nombre puede ser cualquier combinación de letras, números y guines bajos (\_) que empiezen con una letra.
+
+\begin{lstlisting}
+    entero num;
+    flotante num2;
+    char letra;
+    bool booleano1;
+\end{lstlisting}
+
+\section{Operaciones}
+
+Para realizar operaciones con IntroProg basta con escribirlas como si fueran operaciones matemáticas.
+\begin{lstlisting}
+    // suma
+    num = 1+1;
+    // resta
+    num = num -1;
+    // multiplicacion
+    num2 = num \item 20;
+    // Division
+    num2 = num /num2;
+    // Tambien se pueden usar parentesis
+    num2 = (1+1)\itemnum - num2 \item num2;
+    // Taqmbién puedes hacer funciones relacionales y lógicas
+    booleano1 = num2 > 1 || (num2 == num && num <> 1); 
+\end{lstlisting}
+
+\section{Funciones}
+
+ Para construir funciones en IntroProg debes de seguir la siguiente estructura:
+
+\begin{lstlisting}
+  funcion tipo nombre(parametros){
+      //Declaraciones
+      // Se puede dejar vacio si no se usan variables locales
+    }{
+        //Tu asmbroso codigo
+    }
+\end{lstlisting}
+
+Recuerda que puedes tener funciones que no tengan parametros y no regresen nada
+
+\begin{lstlisting}
+    funcion vacia hola(){}{
+        imprimir("Hola!!");
+    }
+\end{lstlisting}
+
+O funciones que puedan hacer operaciones y que te regresen un valor
+\begin{lstlisting}
+    funcion entera sumaMagica(entero a, entero b){
+        entero ingredienteSecreto;
+    }{
+        ingredienteSecreto = 1000;
+        regresar a + b\itemingredienteSecreto;
+    }
+\end{lstlisting}
+Y para utilizar tus funciones solo basta con escribir un \$ seguido por le nombre de tu función y sus parametros entre paréntesis
+
+\begin{lstlisting}
+    \$hola();
+    num = \$sumaMagica(1,2);
+\end{lstlisting}
+
+\section{Funciones especiales}
+
+IntroProg también te provee una lista de funciones que puedes utilizar para tu código
+\begin{itemize}
+    \item  \$leer() : Regresa la lectura capturada de consola
+    \item  \$modulo(flotante a, flotante b): Regresa el resultado de a\%b
+    \item  \$suma(flotante a[]): Suma todos los elementos de un arreglo y regresa sus resultados
+    \item  \$raiz(flotante a): Regresa el flotante resultante de la raíz de a
+    \item  \$exp(flotante a): Regresa la exponencial de e\^a
+    \item  \$elevar(flotante a, flotante b): Regresa el resultado de a\^b
+    \item  \$techo(flotante a): Regresa un flotante a redondeado para arriba
+    \item  \$piso(flotante a): Regresa un flotante a redondeado para abajo
+    \item  \$cos(flotante a): Regresa el coseno de a
+    \item  \$sen(flotante a): Regresa el seno de a
+    \item  \$tan(flotante a): Regresa la tangente de a
+    \item  \$cotan(flotante a): Regresa la cotangente de a
+    \item  \$sec(flotante a): Regresa la secante de a
+    \item  \$cosec(flotante a): Regresa la cosecante de a
+    \item  \$log(flotante a): Regresa el logaritmo natural de a
+    \item  \$minimo(flotante a[]): Regresa el valor más chico en el vector a
+    \item  \$maximo(flotante a[]): Regresa el valor máximo de a
+    \item  \$redondear(flotante a): Regresa un flotante a redondeado
+    \item  \$productoPunto(flotante a[], flotante b[]): Regresa el producto punto entre los vectores de entrada a y b
+    \item  \$media(flotante a[]): Regresa la media de a
+    \item  \$mediana(flotante a[]): regresa la mediana de a
+    \item  \$moda(flotante a[]): Regresa el elemento con la moda más alta de a
+    \item  \$varianza(a): Regresa la varianza de a
+    \item  \$percentil(flotante a[], flotante q): Regresa el valor en el que se encuentran q% de los valores en a
+    \item  \$aleatorio(flotante min, flotante max): Regresa un número flotante aleatorio entre los rangos de argumentos mínimos y máximos
+    \item  \$wilcoxon(flotante x[]): Realiza la prueba de Wilcoxon en la serie de datos en x
+    \item  \$wilcoxonComp(flotante x[], flotante y[]):Realiza la prueba de Wilcoxon se realiza la prueba sobre los datos x y y
+    \item  \$regresionSimple(flotante x[], flotante y[], flotante xi): Dado un set de x y y se usará regresión lineal simple para encontrar f(xi) y se regresara ese valor
+    \item  \$normal(flotante media, flotante desv): Regresa un número escalar que pertenezca a la distribución normal dado los parámetros
+    \item  \$poisson(flotante lambda): Regresa un número aleatorio de la distribución Poisson con la lambda dada
+    \item  \$dexponencial(flotante beta): Regresa un número aleatorio de la distribución Exponencial correspondiente a la beta (o 1/Lambda) dada
+    \item  \$dgeometrica(flotante exito): Te regresa un valor con la distribución geométrica con la probabilidad de exito dada
+    \item  \$histograma(flotante x[], flotante rango): Genera un histograma a partir de los datos en el vector de x con un rango entre los datos de rango
+    \item  \$diagramadecaja(flotante x[]): Genera un diagrama de caja y bigotes de los datos en en x
+    \item  \$grafDispersion(flotante x[], flotante y[]): Genera un gráfico de dispersión con los valores de ‘x’ y ‘y’
+
+\end{itemize}
+
+\section{Agradecimientos}
+
+Gracias a mi familia. A mi mamá y a mi hermano por apoyarme mucho durante todo este tiempo. Sin ellos realmente no sabría en donde estaría ahora.\\
+Gracias a mis amigos. Por estar allí en los momentos buenos y malos. Por hacer la vida más interesante\\
+Gracias a mis profesores. Por pasar su conocimiento con paciencia y entusiasmo, y por darme la oportunidad de hacer grandes cosas\\
+
+Gracias
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+%\renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
+
+%\bibliographystyle{unsrt}
+
+%\bibliography{sample.bib} % The file containing the bibliography
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

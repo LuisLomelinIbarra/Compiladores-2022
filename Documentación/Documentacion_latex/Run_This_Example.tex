@@ -1,0 +1,516 @@
+%This file is just a wrapper. Please, edit the files for your chapter in chapters/chapter1/.
+%Don't worry, we will put your chapter in the correct place when assemble the book.
+
+
+
+\documentclass[krantz1,ChapterTOCs, spanish]{krantz}
+\usepackage[spanish]{babel}
+\selectlanguage{spanish}
+\usepackage[utf8]{inputenc}
+
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e,fix-cm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{makeidx}
+\usepackage{multicol}
+\usepackage{listings}
+\usepackage{placeins}
+\usepackage{graphicx}
+\usepackage{minted}
+
+%\usepackage[dvips]{hyperref}
+
+\frenchspacing
+\tolerance=5000
+
+\makeindex
+
+\include{frontmatter/preamble} %place custom commands and macros here
+
+\begin{document}
+
+\frontmatter
+
+\title{IntroProg el lenguaje éstadistico para aprender a programar 
+%in Socio-Environmental Systems, Public Health, and Insurance\\
+%{\Large(Applied Environmental Statistics Series)}
+}
+\author{Luis Fernando Lomelín Ibarra}
+
+\maketitle
+
+\include{frontmatter/dedication}
+\cleardoublepage
+\setcounter{page}{7} %previous pages will be reserved for frontmatter to be added in later.
+\tableofcontents
+%\include{frontmatter/foreword}
+%\include{frontmatter/preface}
+%\listoffigures
+%\listoftables
+%\include{frontmatter/contributor}
+%\include{frontmatter/symbollist}
+
+\mainmatter
+
+\part{Descripción del proyecto y lenguaje}
+\include{chapters/chapter1/ch1}
+\include{chapters/chapter2/ch2}
+
+%\part{Descripción del lenguaje}
+%\include{chapters/chapter2/ch2}
+
+\part{Descripción del compilador y la máquina virtual}
+\include{chapters/chapter3/ch3}
+
+%\part{Descripción de la máquina virtual}
+\include{chapters/chapter4/ch4}
+
+\part{Pruebas del funcionamiento del lenguaje}
+\include{chapters/chapter5/ch5}
+
+\part{Ejemplos de Documentación en código}
+
+Ejemplo de funciones documentadas en el compilador:
+\scriptsize
+\begin{minted}{python}
+    # Func : getArrayData
+    # Params : Una dirección Virtual addr
+    # ret : La información de las dimensiones de un arreglo
+    # Desc : Regresa la información de las dimensiones de un arreglo
+    def getArrayData(addr):
+        global dirfunc
+        global currscope
+        res = {}
+    
+        for var in dirfunc[currscope]['vartab'].values():
+    
+            if addr['address'] == var['address']:
+                res['size'] = var['size']
+                res['dimlen'] = var['dimlen']
+                res['dims'] = var['dims']
+                return res
+        for var in dirfunc['global']['vartab'].values():
+    
+            if addr['address'] == var['address']:
+    
+                res['size'] = var['size']
+                res['dimlen'] = var['dimlen']
+                res['dims'] = var['dims']
+                return res
+        return res
+    
+   
+\end{minted}
+\scriptsize
+\begin{minted}{python}
+# Func : addConst
+# Param : Una constante cte, un tipo tipo y la linea del token line
+# Desc : Agrega una constante a la tabla de constante y le asigna una dirección 
+# virtual de acuerdo al tipo de la constante.
+
+def addConst(cte,tipo,line):
+    # Rango de memoria constantes
+    global constint
+    global constfloat
+    global constchar
+    global constbool
+    global conststring
+    # Contadores constantes
+    global cteintcount
+    global ctefloatcount
+    global ctecharcount
+    global cteboolcount
+    global ctestringcount
+    # Maximos de variables
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global STRINGMAX
+    #Tabla const
+    global ctetab
+    global objctetab
+
+    # Si la llave no es un string hacer una llave string
+    if type(cte) is not str:
+        ctkey = str(cte)
+    else:
+        ctkey = cte
+    # Agregarla de acuerdo al tipo y con su dirección de memoria adecuada
+    if tipo == 'entero':
+        if cteintcount < INTMAX:
+            ctetab[ctkey] = constint + cteintcount
+            objctetab[ctetab[ctkey]] = cte
+            cteintcount += 1
+            return ctetab[ctkey]
+        else:
+            printerror(
+                "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
+    elif tipo == 'flotante':
+        if ctefloatcount < FLOATMAX:
+            ctetab[ctkey] = constfloat + ctefloatcount
+            objctetab[ctetab[ctkey]] = cte
+            ctefloatcount += 1
+            return ctetab[ctkey]
+        else:
+            printerror(
+                "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
+    elif tipo == 'char':
+        if ctecharcount < CHARMAX:
+            ctetab[cte] = constchar + ctecharcount
+            objctetab[ctetab[cte]] = cte
+            ctecharcount += 1
+            return ctetab[ctkey]
+        else:
+
+            printerror(
+                "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
+    elif tipo == 'bool':
+        if cteboolcount < BOOLMAX:
+            ctetab[cte] = constbool + cteboolcount
+            if cte == 'verdadero':
+                objctetab[ctetab[cte]] = True
+            else:
+                objctetab[ctetab[cte]] = False
+            cteboolcount += 1
+            return ctetab[ctkey]
+        else:
+            printerror(
+                "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
+    elif tipo == 'cadena':
+        if ctestringcount < STRINGMAX:
+            ctetab[ctkey] = conststring + ctestringcount
+            objctetab[ctetab[ctkey]] = cte
+            ctestringcount += 1
+            return ctetab[ctkey]
+        else:
+
+            printerror(
+                "Error de Semantica: sobrepaso el limite de constantes declaradas en la linea %r" % (line))
+
+# Func : assignvirtualaddress
+# Params : Una tabla de variables vartab, un scope addresscope y el número del linea de los tokens linenum
+# Ret : Una tabla de variables actualizada con las direcciones de cada variable
+# Desc : Asigna las direcciones virtuales a la tabla de variables
+def assignvirtualaddress(vartab,addressscope,linenum):
+    # Rangos globales de memoria
+    global globalint
+    global globalfloat
+    global globalchar
+    global globalbool
+    global globalpoint
+    # Direcciones locales
+    global localint
+    global localfloat
+    global localchar
+    global localbool
+    global localpoint
+    # Cant. Maximas de variables
+    global INTMAX
+    global FLOATMAX
+    global CHARMAX
+    global BOOLMAX
+    global POINTAYMAX
+
+    # Contadores globales
+    global glbintcount
+    global glbfloatcount
+    global glbcharcount
+    global glbboolcount
+    #
+    # Contadores de variables
+    intcount = 0
+    floatcount = 0
+    charcount = 0
+    boolcount = 0
+
+    # Contadores de arreglos
+    pointcount = 0
+
+    if addressscope == 'global':
+        for k in vartab.keys():
+            if('dims' in vartab[k].keys()): # Asignacion de direcciones de arreglos
+                incr = vartab[k]['size']
+                isArr = True
+            else:
+                incr = 1
+                isArr = False
+
+
+            if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                if (intcount < INTMAX):
+                    vartab[k]['address'] = globalint + intcount
+                    intcount += incr
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                if (floatcount < FLOATMAX):
+                    vartab[k]['address'] = globalfloat + floatcount
+                    floatcount += incr
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
+                if (charcount < CHARMAX):
+                    vartab[k]['address'] = globalchar + charcount
+                    charcount += incr
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
+                if (boolcount < BOOLMAX):
+                    vartab[k]['address'] = globalbool + boolcount
+                    boolcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+    elif addressscope == 'local':
+        for k in vartab.keys():
+            if('dims' in vartab[k].keys()): # Asignacion de direcciones de arreglos
+                incr = vartab[k]['size']
+                isArr = True
+            else:
+                incr = 1
+                isArr = False
+
+            if(vartab[k]['tipo'] == 'entero'): #Asignar las direcciones enteras
+                if (intcount < INTMAX):
+                    vartab[k]['address'] = localint + intcount
+                    intcount += incr
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'flotante'):#Asignar las direcciones flotantes
+                if (floatcount < FLOATMAX):
+                    vartab[k]['address'] = localfloat + floatcount
+                    floatcount += incr
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+
+            elif (vartab[k]['tipo'] == 'char'):#Asignar las direcciones char
+                if (charcount < CHARMAX):
+                    vartab[k]['address'] = localchar + charcount
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                    charcount += incr
+                else:
+                    printerror("Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum))
+            elif (vartab[k]['tipo'] == 'bool'):#Asignar las direcciones char
+                if (boolcount < BOOLMAX):
+                    vartab[k]['address'] = localbool + boolcount
+                    if isArr:
+                        addConst(vartab[k]['address'], 'entero', linenum)
+                    boolcount += incr
+                else:
+                    printerror(
+                    "Error de Semantica: sobrepaso el limite de variables declaradas en la linea %r" % (linenum)
+                    )
+    return vartab, intcount, floatcount, charcount, boolcount
+
+
+\end{minted}
+
+\newpage
+Ejemplos de Documentación en la máquina virtual:
+\scriptsize
+\begin{minted}{python}
+    
+    
+    # Func: storeinmem
+    # Param: Una direccion virtual addrs, un valor val, y opcionalmente un flag indicando 
+    # si guardar en la variable temporal era
+    # Desc: Guardar en memoria el valor dado.
+    def storeinmem(addrs,val, isera = False):
+        scop, atype, aoff = getTypeAndOffset(addrs)
+        if scop == 'global':
+            if atype == 0: #entero
+                globmem.mint[aoff] = val
+            elif atype == 1: #float
+                globmem.mfloat[aoff] = val
+            elif atype == 2: #char
+                globmem.mchar[aoff] = val
+            elif atype == 3: #bool
+                globmem.mbool[aoff] = val
+            elif atype == 4: #pointer
+                globmem.mpoint[aoff] = val
+        elif scop == 'local':
+            if atype == 0: #entero
+                if isera:
+                    eratemp[0].mint[aoff] = val
+                else:
+                    memstack[-1][0].mint[aoff] = val
+            elif atype == 1: #float
+                if isera:
+                    eratemp[0].mfloat[aoff] = val
+                else:
+                    memstack[-1][0].mfloat[aoff] = val
+            elif atype == 2: #char
+                if isera:
+                    eratemp[0].mchar[aoff] = val
+                else:
+                    memstack[-1][0].mchar[aoff] = val
+            elif atype == 3: #bool
+                if isera:
+                    eratemp[0].mbool[aoff] = val
+                else:
+                    memstack[-1][0].mbool[aoff] = val
+            elif atype == 4: #pointer
+                if isera:
+                    eratemp[0].mpoint[aoff] = val
+                else:
+                    memstack[-1][0].mpoint[aoff] = val
+        elif scop == 'temp':
+            if atype == 0: #entero
+                if isera:
+                    eratemp[1].mint[aoff] = val
+                else:
+                    memstack[-1][1].mint[aoff] = val
+            elif atype == 1: #float
+                if isera:
+                    eratemp[1].mfloat[aoff] = val
+                else:
+                    memstack[-1][1].mfloat[aoff] = val
+            elif atype == 2: #char
+                if isera:
+                    eratemp[1].mchar[aoff] = val
+                else:
+                    memstack[-1][1].mchar[aoff] = val
+            elif atype == 3: #bool
+                if isera:
+                    eratemp[1].mbool[aoff] = val
+                else:
+                    memstack[-1][1].mbool[aoff] = val
+            elif atype == 4: #pointer
+                if isera:
+                    if eratemp[1].mpoint[aoff] == None:
+                        eratemp[1].mpoint[aoff] = val
+                    else:
+                        
+                        storeinmem(eratemp[1].mpoint[aoff],val,isera)
+                else:
+                    
+                    if memstack[-1][1].mpoint[aoff] == None:
+                        memstack[-1][1].mpoint[aoff] = val
+                        
+                    else:
+                        #val, _ = getexpoper(memstack[-1][1].mpoint[aoff])
+                        
+                        storeinmem(memstack[-1][1].mpoint[aoff],val)
+                        
+                        
+    # Func: valtonum
+    # params: Un valor val, y un tipo t
+    # ret: Regresa el valor de v como el tipo t
+    # Desc: Cambiar valor a numero si es necesario
+    def valtonum(val,t):
+        if t == 2:
+            val = ord(val)
+        elif t == 3:
+            if val:
+                val = 1
+            else:
+                val = 0
+        return val
+    
+    
+    # Func: reusePointer
+    # Params: Una dirección virtual addrs y un valor 
+    # Reescribir el valor del apuntador cuando es necesario
+    def reusePointer(addrs,val):
+        scop, atype, aoff = getTypeAndOffset(addrs)
+        memstack[-1][1].mpoint[aoff] = val
+    
+    
+    # Func : exeExpresion
+    # Params : Un operador op, tres direcciones virtuals ladd, radd resadd
+    # Desc : Ejecuta la acción del cuadruplo y la guarda en memoria
+    def exeExpresion(op,ladd,radd,resadd):
+        lop,lt = getexpoper(ladd)
+        rop,rt = getexpoper(radd)
+        if lop == None or rop == None:
+            printerr(
+            'Esta intentando realizar operaciónes con variables que no cuentan con un valor.'
+            +
+            '\nRevisa el códgo para asegurar que no haya alguna variable sin valor en alguna de tus operaciones'
+            ,ip)
+        lop = valtonum(lop,lt)
+        rop = valtonum(rop,rt)
+        aux = 0
+        # Operadores ['*','/','+','-','>','<','>=','<=','!=','==','||','&&']
+        if op == '*': 
+            # Multiplicacion
+            aux = lop * rop
+    
+        elif op == '/': 
+            # Division
+            aux = lop / rop
+    
+        elif op == '+': 
+            #Suma 
+            if rop == '':
+                aux = abs(lop)
+            else:
+                aux = lop + rop
+    
+        elif op == '-': 
+            #Resta
+            if rop == '':
+                aux = -1 * abs(lop)
+            else:
+                aux = lop - rop
+    
+        elif op == '>': 
+            #Mayorque
+            aux = lop > rop
+    
+        elif op == '<':
+            #menor que
+            aux = lop < rop
+    
+        elif op == '>=': 
+            # mayor igual
+            aux = lop >= rop
+    
+        elif op == '<=': 
+            #menor igual
+            aux = lop <= rop
+    
+        elif op == '==': 
+            #igual (relacional)
+            aux = lop == rop
+    
+        elif op == '!=': 
+            #diferente
+            aux = lop != rop
+    
+        elif op == '&&': 
+            # and
+            aux = lop and rop
+    
+        elif op == '||': 
+            # or
+            aux = lop or rop
+        if type(resadd) is str: # Reescribir el pointer en caso de ser necesaria
+            reusePointer(int(resadd[1:]),aux)
+        else:
+            storeinmem(resadd,aux)
+\end{minted}
+
+%\bibliographystyle{plain}
+%\bibliography{bibtex_example}
+
+\printindex
+
+\end{document}

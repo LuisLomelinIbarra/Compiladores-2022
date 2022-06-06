@@ -1,0 +1,200 @@
+\chapter{Descripción del proyecto}
+
+Una breve descripción del proyecto, describiendo su alcance al igual que su propósito.
+
+\section{Propósito y Alcance del Proyecto}\label{intro}
+El propósito de este lenguaje es ser un lenguaje introductorio a la lógica de programación para personas que no están muy familiarizadas con la programación y que no tienen una buena comprensión del inglés. Para lograr esto el lenguaje fue diseñado a ser similar a C/C++ en estructura, pero se utilizan palabras clave en español para facilitar el aprendizaje de programación para las personas que no tengan un buen dominio en el lenguaje. El objetivo del lenguaje es que sea un punto de entrada para chicos en prepa o alumnos de universidad a aventurarse a lenguajes con sintaxis similar a C/C++ pero que no tienen una gran comprensión del inglés. \\ \\
+Con esto en mente el lenguaje busca ser una herramienta básica de programación que, aunque sea restrictiva a comparación de otros lenguajes, permita que el usuario experimente con funciones de estadística y con la lógica de programación para crear pequeños programas con los cuales pueden explorar temas de programación, ciencia de datos y estadística.
+
+
+\section{Análisis de Requerimientos y descripción de los principales Test Cases}
+
+Con el objetivo y alcance en definido, se plantearon los siguientes requerimientos que se deben de cumplir con el lenguaje.
+
+
+\begin{itemize}
+    \item Crear palabras clave análogas o similares a las palabras clave del lenguaje de C/C++ en español
+    \item Generar estructuras similares a las de C/C++ para estatutos como if y while, pero que sean legibles en español
+    \item Permite el uso de estructuras de decisión (if, if else)
+    \item Permite el uso de estructuras cíclicas (for, while, do while)
+    \item Realizar operaciones matemáticas aritméticas sencillas como suma, restas, multiplicaciones y divisiones.
+    \item Realizar operaciones lógicas y relacionales
+    \item Poder generar funciones que reciban uno o más parámetros y que puedan regresar un resultado
+    \item Una forma integrada en el lenguaje de programación para leer e imprimir resultados de la consola
+    \item Manejo de variables locales y globales
+    \item Manejo de arreglos integrados al lenguaje de programación
+    \item Creación de números aleatorios en ciertas distribuciones integrados en el lenguaje de programación.
+    \item Funciones integradas de las métricas centrales estadísticas (media,mediana,moda y varianza)
+    \item Funciones de matemáticas integradas al sistema (exp,pow, sqrt entre otras)
+    \item Manejo de vectores y matrices
+\end{itemize}
+
+Con estos requerimientos, también se ponderaron las limitaciones que iban a tener el lenguaje dado el corto tiempo y la falta de experiencia en este tipo de proyectos. Y se definieron las siguientes limitantes:
+
+\begin{itemize}
+    \item Solo se cuentan con un tiempo relativamente corto (Alrededor de 6 semanas)
+    \item Es un proyecto individual, aunque se quiera expandir más el alcance del proyecto se tendrá que limitar y ajustar el trabajo a lo que es posible
+    \item El lenguaje va a ser restrictivo para que sea posible hacerlo en el tiempo dado. Esto quiere decir que la implementación de múltiples scopes dentdo del lenguaje esta fuera del alcance del proyecto
+\end{itemize}
+
+Con estos requerimientos y limitantes en mente, se diseñaron las siguientes pruebas las cuales debería de ser posible hacerse en el lenguaje.
+
+\begin{itemize}
+    \item Se deberá poder programar un Hola Mundo en el lenguaje
+    \item Se deberá poder programar una implementación secuencial y recursiva de la función factorial
+    \item Se deberá poder programar una implementación secuencial y recursiva de la serie de Fibonacci
+    \item Se deberá poder programar una implementación de un Bubble Sort y un Search en un arreglo
+    \item Se deberá poder programar una multiplicación de matrices
+    \item Se deberá poder hacer un programa que genere un arreglo que todos sus elementos pertenezcan a una distribución y que se le pueda hacer un análisis (aunque sea superficial) a los datos generados.
+\end{itemize}
+
+Una vez definido los requerimientos, las limitantes y las pruebas se empezó con el desarrollo del proyecto.
+
+
+\section{Descripción del proceso general de desarrollo}
+
+A lo largo del desarrollo del proyecto se estuvieron haciendo avances semanales en el compilador y la máquina virtual. Como medida de seguridad, se uso la herramienta de Git y Github para mantener un historial de control sobre los cambios hechos al proyecto. El repositorio de IntroProg puede ser encontrado en la liga https://github.com/LuisLomelinIbarra/Compiladores-2022. A pesar de mantener un control de versiones con Git, también se mantuvo una bitácora de desarrollo. A continuación se encuentra una bitácora de dichos avances en orden cronológico.
+
+\subsubsection{Semana 1: Avance del Léxico Sintaxis}
+Por el momento se realizó el lexer y parser con los diagramas en la propuesta. En este avance se realizó un programa de python que puede leer y aceptar (o rechazar) un archivo en el lenguaje de programación propuesto. Se realizaron los primeros dos archivos de prueba que son lenguaje valido. Estos son un helloworld y un archvio con operaciones y una función de factorial. En las pruebas realizadas regresa aceptado para los dos archivos. Faltan hacer más archivos de prueba para ver si se encuentran errores en el programa o si se debe de hacer un cambio a la gramática (en un caso extremo).
+
+Actualmente el programa debe de:
+\begin{itemize}
+    \item Compilar sin errores
+    \item Leer un archivo y decidir si es o no el lenguaje
+    \item Indicar la linea del error si se encontró alguno
+\end{itemize}
+
+\subsection{Semana 2: Generación de la tabla de variables y el cubo semántico}
+Se avanzo con la generación del directorio de funciones y la tabla de variables. Además, se creó el cubo semántico para las operaciones del lenguaje. De igual manera se empezó a implementar el análisis semántico de las operaciones del lenguaje. Al realizar esto se tuvo que reestructurar algunas reglas de gramática para acomodar mejor los puntos neurálgicos. También implementando el análisis se encontraron los siguientes problemas.
+\begin{enumerate}
+    \item Se podía generar arreglos de manera infinita ya que estaban al nivel de varcte. Como los arreglos textuales se pueden generar con expresiones, se podía anidar arreglos textuales en arreglos textuales. Para resolver esto se reestructuro la gramática para que solo se puedan utilizar en las asignaciones, las llamadas a función y las impresiones
+    \item Hay que experimentar más con la verificación de los parámetros en una llamada a función. Esto hay que revisar que no rompa con el orden de las operaciones y probablemente hay que verlo mejor. En este avance no se pudo aplicar.
+    \item No se sabe todavía cómo manejar las funciones de retorno
+\end{enumerate}
+
+Actualmente el programa debe de:
+\begin{itemize}
+    \item Detectar en las asignaciones que se haga la asignación correcta con respecto a el tipo de variable
+    \item Detectar que se hagan las operaciones correctas con respecto a los tipos de los operandos en la mayoría de las operaciones
+    \item Detectar que no haya definición múltiple de variables o arreglos
+    \item Detectar que no haya definiciones múltiples de funciones
+    \item Desplegar mensajes de error adecuados cuando haya errores de semántica
+\end{itemize}
+
+
+
+\subsection{Semana 3: Generar cuadruplos de expresiones}
+En este avance ya se empezó a implementar los puntos neurálgicos de las expresiones. Actualmente, debe de poder generar el código intermedio de las expresiones en un archivo de texto llamado cuadruplos.txt. Falta probar bien todas las expresiones, pero con un archivo de pruebas rápidas con solo operaciones matemáticas parece ser que si genera bien el código. Se resolvieron algunos errores con la semántica para encontrar el tipo de un arreglo textual. También se cambió a que todos los elementos que se declaren en la función principal se declaren como su propia entrada en la entrada de principal en vez de que sea una adicción a la tabla global. También se arregló el error a la hora de declarar precedencia entre los operadores.
+
+El avance de ahora debe de:
+\begin{itemize}
+    \item Generar código intermedio de expresiones en un archivo de cuadruplos
+\end{itemize}
+
+
+COSAS QUE INVESTIGAR:
+\begin{enumerate}
+    \item Hay que manejar bien la asignación de espacios en memoria de los cuadruplos para la generación de código intermedio. Por el momento solo va agregando de manera ascendente a un registro teoréticamente infinito
+\end{enumerate}
+
+
+\subsection{Semana 4: Código Intermedio para Condiciones y Bucles}
+Se implemento la generación de cuádruplos para los ciclos y para las condiciones. Además, también se implementó el uso de direcciones virtuales en los cuádruplos generados. También se solucionaron ligeros errores que surgieron de algunos cambios menores a las expresiones. También ya se implementó la generación de los cuádruplos del estatuto imprimir (por fin). De igual manera se avanzaron con algunos puntos de módulos, principalmente agregar los parámetros correctos en el orden correcto a las funciones y la verificación de los tipos en las llamadas.
+
+El avance de ahora debe de:
+\begin{itemize}
+    \item Generar código intermedio en un archivo de cuádruplos, generando también los cuádruplos pertinentes a los estatutos de condición y de bucle.
+\end{itemize}
+
+
+COSAS QUE INVESTIGAR:
+\begin{enumerate}
+    \item Como manejar los arreglos en memoria y como parámetros/argumentos de funciones.
+\end{enumerate}
+
+
+
+\subsection{Semana 5: Código Intermedio para Modulos (Funciones)}
+
+Se implemento todo lo de módulos. Para cada función ahora se va guardando la cantidad de variables que se están utilizando en ella, el cuádruplo donde inicia y si tiene retorno la dirección de la variable global de retorno. En la llamada de función se verifica que los parámetros llamados sean los correctos, de ser así se genera el cuádruplo para generar la memoria y los cuádruplos para copiar los parámetros a la nueva memoria. Al final se agrega el gosubfunc que apunta al inicio de la función llamada. En caso de ser función especial llama a el cuádruplo SPFUNC, indicando que es función especial.
+
+El avance de ahora debe de:
+
+\begin{itemize}
+    \item En el archivo de cuádruplos ahora ya debe de generar los cuádruplos correspondientes de cada función declarada (ERA y PARAMS). En caso de ser función especial llama al cuádruplo SPFUNC con el nombre de la función en vez de GOSUBFUNC.
+\end{itemize}
+
+
+
+COSAS QUE CAMBIAR/ARREGLAR:
+
+\begin{enumerate}
+    \item Una mejor manera para manejar las constantes String
+    \item Corregir el error de la variable sintáctica que permite que se pueda declarar un arreglo así [1, [1,1]]
+\end{enumerate}
+   
+
+
+
+\subsection{Semana 6: Máquina Virtual, Mapa de Memoria y ejecución de expresiones}
+
+Ya se empezó la máquina virtual y ya funciona leyendo los cuádruplos de expresiones, el estatuto de imprimir y con las funciones definidas por el usuario (incluyendo recursión). Para este avance implemente una clase Memory que representa la memoria. Esta clase se puede utilizar para traducir las memorias virtuales asignadas en la compilación a memoria en la máquina virtual. Para lograr esto cada scope esta representado por un vector de dos instancias de la clase. Una de ellas representa las variables y la otra representa los temporales. En esta entrega me di cuenta de varios errores en la generación de cuádruplos, específicamente en el estatuto de return estaba faltando agregar el cuádruplo de enfunc para regresar a la memoria anterior. Igual mi lógica de saltos en mi for me llevaba a contar uno ciclo demás lo cual tuve que arreglar
+
+
+El avance de ahora debe de:
+
+\begin{itemize}
+    \item El compilador debe de generar un archivo json con los cuádruplos, la tabla de funciones y las constantes.
+    \item La máquina virtual debe de leer el json y ejecutar el código en él.
+\end{itemize}
+
+COSAS QUE CAMBIAR/ARREGLAR:
+
+\begin{enumerate}
+    \item Formas de manejar los arreglos como parametros
+    \item Falta implementar la lógica de las funciones especiales
+    \item Terminar bien arreglos.
+\end{enumerate}
+
+
+\subsection{Semana 7: Arreglos, Matrices y }
+
+Ya está acabado el compilador. Actualmente el compilador recibe un archivo itp, con el lenguaje de IntroProg y genera un archivo obj (que es un json disfrazado) el cual es utilizado por la máquina virtual para ejecutar código. Es capaz de realizar el cálculo de factorial de manera secuencial y por función recursiva. También puede sacar el enésimo elemento de la secuencia Fibonacci de manera secuencial y de manera recursiva. También se puede hacer un Bubble Sort para organizar los elementos de un arreglo y se puede encontrar elementos dentro de los mismos.
+
+También se le metió esfuerzo para que los mensajes de error sean lo más claro posibles.
+
+
+El avance de ahora debe de:
+
+\begin{itemize}
+    \item El compilador debe de generar un archivo obj que puede ser leído por la máquina virtual.
+    \item La máquina virtual debe de leer el obj y ejecutar el código en él, incluyendo funciones especiales de estadística.
+\end{itemize}
+
+COSAS QUE CAMBIAR/ARREGLAR:
+
+\begin{enumerate}
+    \item Actualizar los diagramas de sintaxis para reflejar los cambios que se hicieron durante la implementación
+    \item Actualizar la gramática en la documentación 
+    \item Acabar la documentación
+\end{enumerate}
+
+\subsection{Semana 8: Correciones y Empuje final de documentación}
+
+
+Cambios mínimos al compilador. Se refactorizo lo más que se pudo sin romper lo existente y se agregaron comentarios pertinentes a las funciones. También se agregó un token extra para el manejo de comentarios en el lenguaje.
+
+
+El avance de ahora debe de:
+
+\begin{itemize}
+    \item El compilador debe de generar un archivo obj que puede ser leído por la máquina virtual.
+    \item La máquina virtual debe de leer el obj y ejecutar el código en él, incluyendo funciones especiales de estadística.
+\end{itemize}
+
+COSAS QUE CAMBIAR/ARREGLAR:
+
+\begin{enumerate}
+    \item Acabar la documentación
+\end{enumerate}

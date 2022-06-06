@@ -1,0 +1,63 @@
+programa pruebasDeWilcoxon{
+    // La declaracion de variables
+    flotante muestra1[100];
+    flotante muestra2[100];
+    // Declaracion de funciones
+    funcion vacio imprimirDatos( flotante arr[100] ){
+        flotante prom, mod, med;
+    }{
+        prom = $media(arr);
+        mod = $moda(arr);
+        med = $mediana(arr);
+        imprimir(" La media de esta distribucion es : ", prom);
+        imprimir(" La mediana de esta distribucion es : ", med);
+        imprimir(" La moda de esta distribucion es : ", mod);
+        imprimir(" El cuartil del 50 de los datos : ", $percentil(arr,50));
+    }
+    //Funcion principal
+    principal funcion {
+        flotante muestra3[100];
+        entero i;
+        flotante p;
+    }{
+        por(i = 0; i < 100; i = i+1;){
+            muestra1[i] = $normal(3.5,0.6);
+            muestra2[i] = $dexponencial(4);
+            muestra3[i] = $poisson(2);
+        }
+
+        imprimir("Muestra 1 : Normal");
+        $imprimirDatos(muestra1);
+        imprimir("Muestra 2 : Exponencial");
+        $imprimirDatos(muestra2);
+        imprimir("Muestra 3 : Poisson");
+        $imprimirDatos(muestra3);
+
+        //Pasar una prueba de wilcoxon p > 0.5
+        p = $wilcoxonComp(muestra1,muestra2);
+        imprimir("\n\nMuestra 1 v Muestra 2");
+        si(p > 0.5){
+            imprimir("Muestra 1 es la que mejor representa los datos");
+        }sino{
+            imprimir("Muestra 2 es la que mejor representa los datos");
+        }
+
+        p = $wilcoxonComp(muestra1,muestra3);
+        imprimir("\n\nMuestra 1 v Muestra 3");
+        si(p > 0.5){
+            imprimir("Muestra 1 es la que mejor representa los datos");
+        }sino{
+            imprimir("Muestra 3 es la que mejor representa los datos");
+        }
+
+        p = $wilcoxonComp(muestra3,muestra2);
+        imprimir("\n\nMuestra 3 v Muestra 2");
+        si(p > 0.5){
+            imprimir("Muestra 3 es la que mejor representa los datos");
+        }sino{
+            imprimir("Muestra 2 es la que mejor representa los datos");
+        }
+
+    }
+
+}

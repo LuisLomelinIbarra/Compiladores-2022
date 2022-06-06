@@ -10,13 +10,26 @@ programa cuadtestnctl {
 		x = -1;
 		si (x > 1) {
 			imprimir("X es mayor a 1");
+			si(verdadero){
+				x = 100;
+			}sino{
+				bo = falso;
+			}
 		}sino{
 			imprimir("X es menor a 1");
+			si(bo){
+				x = 100;
+			}sino{
+				bo = falso;
+			}
+			imprimir("Si bo es verdadero imprimes 100; x = ",x);
 		}
 		imprimir("For loop");
-		por(x=1; x <= 10; x = x+1;){
+		x=1;
+		por(; x <= 10; x = x+1;){
 			imprimir(x);
 		}
+		"Operaciones con char y bool"=="\n";
 		imprimir("Operaciones con char y bool");
 		imprimir('a' + 1,verdadero + verdadero);
 		bo = 50;

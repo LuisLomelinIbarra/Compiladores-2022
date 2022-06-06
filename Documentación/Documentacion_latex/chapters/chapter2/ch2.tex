@@ -1,0 +1,542 @@
+\chapter{Descripción de IntroProg}
+
+En esta sección se explica con más detalle lo que es el lenguaje y sus capacidades.
+%---------------------------------------------------------------------------------------
+\section{Introducción a IntroProg}\label{intro}
+
+Es un lenguaje de programación sencillo con un enfoque hacia data science. La idea del lenguaje es permitir a personas interesadas en programar a experimentar con proyectos sencillos de ciencia de datos.
+
+IntroProg permite al usuario aprender sobre la lógica de programación, permitiendo que el usuario pueda utilizar estructuras de decisión y estructuras de repetición. También permite que los usuarios experimenten un poco con funciones estadísticas, como generar números que pertenecen a distintas distribuciones de probabilidad como la función Normal, Exponencial, Poisson y Geométrica. Además, permite que los usuarios puedan crear gráficas de los datos con los que trabajan.
+
+
+%---------------------------------------------------------------------------------------
+\section{Características Principales}
+IntroProg cuenta con múltiples características que la mayoría de los lenguajes de programación cuentan. Estos van de estructuras de control y flujo hasta el manejo de funciones y arreglos.
+Como IntroProg es un lenguaje de aprendizaje puede ser un poco restrictivo, pero en esta sección se va a describir con un poco más de detalle en que consta cada una de las características del lenguaje, incluyendo las funciones especiales.
+
+\FloatBarrier
+
+\subsection{Estructura general de un programa de IntroProg}
+Los archivos del lenguaje son archivos de texto con terminación \emph{itp}. Para empezar a escribir un programa en IntroProg primero se escribe la palabra clave \emph{programa} seguido por el nombre del programa. Después entre corchetas se escribe las declaraciones de variables, seguida por las declaraciones de funciones, seguido por la función principal. La función principal es la parte del código que se ejecuta primero.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        programa pelos{
+            // Primero las variables globales
+            entero x;
+            bool bo;
+            // El codigo principal del programa
+            principal funcion {
+                // Variables locales a principal
+                entero x,y;
+            }{
+                x = 10;
+                y = 2;
+                x = x*y;
+                imprimir(x);
+            }
+        }
+    \end{lstlisting}
+    \caption{Ejemplo de la estructura de un programa de IntroProg}
+\end{figure}
+\FloatBarrier
+
+Es importante mencionar que un programa puede o no tener una declaración de variables globales y declaración de funciones. Esto dependerá de las necesidades del programador cuando construya su código.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        programa holaMundo { 
+	    principal funcion {} {
+		    imprimir("Hola Mundo!!!!");
+	    } 
+    }
+    \end{lstlisting}
+    \caption{Ejemplo de un programa sin declaración de variables ni declaración de funciones}
+\end{figure}
+\FloatBarrier
+
+Aunque parezca un poco confuso al principio, se van a ir explicando parte por parte la estructura y funcionalidades del lenguaje en las siguientes secciones.
+
+\subsection{Variables y la declaración de variables}
+
+Para poder programar primero se necesitan utilizar variables. Las variables son representaciones de información que pueden ser modificadas por el programador para calcular y modelar información. Las variables en IntroProg están representadas por un identificador que es una serie de letras, guiones y números. Los identificadores siempre deben de empezar con una letra.
+
+Para declarar una variable no solo es importante tener un buen identificador sino también hay que indicar el tipo de la variable. En IntroProg se manejan cuatro tipos de variables los cuales son:
+
+\begin{itemize}
+    \item Enteros: Números enteros (ej. 1,2,3).  Estos son representados por la palabra clave \emph{entero}
+    \item Flotantes: Números Flotantes o decimales (ej. 3.1416), representados por la palabra clave \emph{flotante} 
+    \item Caracteres: Letras (ej. 'a', 'b'). Estas estan representadas por la palabra clave \emph{char}
+    \item Booleanos: Valores Booleanos (ej. Verdadero o falso). Esta representados por la palabra clave \emph{bool}
+\end{itemize}
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        entero una_Variable_1;
+    \end{lstlisting}
+    \caption{Ejemplo de una declaración de variable}
+\end{figure}
+\FloatBarrier
+Las declaraciones solo se pueden hacer en los lugares apropiados en el programa para las declaraciones. Estos son el espacio de variables globales que se encuentra directamente después de la primera corcheta del programa, y en las corchetas de declaración de variables locales los cuales se encuentran después de los nombres de funciones.
+
+Los programas cuentan con dos tipos de alcances de variables. Las variables globales, las cuales pueden ser accesados por todas las funciones del programa y las variables locales que solo pueden ser accesados por las funciones en las que fueron declaradas.
+
+\subsection{Expresiones, Imprimir, Asignación y Comentarios}
+
+Solo declarar las variables no es suficiente para hacer programas. Por ello IntroProg cuenta con una serie de estatutos básicos que son utilizados para realizar operaciones con las variables declaradas. Primero para poder asignarles información a las variables se tiene que hacer una asignación. Esto se logra utilizando el símbolo de \emph{\=}. Para asignar valores a variables primero se tiene que escribir el identificador de la variable seguido por el símbolo \emph{\=} seguido del valor que se le quiere asignar.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        una_Variable_1 = 10;
+        // Tambien se le pueden asignar 
+        // el valor de otra variable
+        una_Variable_1 = x; 
+    \end{lstlisting}
+    \caption{Ejemplo de asignación}
+\end{figure}
+\FloatBarrier
+Hay que tomar en consideración que solo se le pueden asignar valores a las variables que sean del tipo de la variable. En caso de que se le intente asignar un valor a la variable que no sea de su tipo, IntroProg va a intentar convertir el valor que va a ser asignado al tipo de la variable. Si no puede hacerlo el compilador va a levantar un error.
+
+Ya con valores definidos se pueden empezar a hacer expresiones. Las expresiones en IntroProg son como las expresiones de matemáticas. Estas hacen una operación sobre las variables y constantes y generan un resultado. Estos resultados pueden ser guardados en otras variables.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        una_Variable_1 = 10 * una_Variable_1 + 1;
+
+    \end{lstlisting}
+    \caption{Ejemplo de asignación con expresiones}
+\end{figure}
+\FloatBarrier
+
+IntroProg sigue la siguiente jerquía de operaciones:
+\begin{itemize}
+    \item Parentesis : Simpre va a hacer primero lo que hay entre parentesis
+    \item Negativos/Positivos: Primero se hace negativo o positivo el valor de la variable o constante (ej. -1, +x)
+    \item Multiplicaciones/Divisiones : Operaciones de multiplicación y División
+    \item Sumas/Restas : Operaciones de sumas y restas
+    \item Relacionales : Operaciones relacionales, las cuales son mayor (\emph{>}), menor (\emph{<}), igual (\emph{==}), mayor o igual (\emph{>=}), menor o igual (\emph{<=}) y diferente (\emph{!=})
+    \item Lógicas : Operaciones Lógicas como \emph{o (||)} e \emph{y (\&\&)}
+\end{itemize}
+
+Es importante mencionar que todos los estatutos o expresiones que se hagan en IntroProg deben de terminar en un punto y coma. De otra manera el compilador va a marcar error.
+
+Pero no solo es necesario hacer operaciones, también es importante saber el resultado de las operaciones. Para poder ver estos resultados es importante poder imprimir a pantalla los valores de las variables. Por eso IntroProg provee el estatuto de \emph{imprimir} el cual permite imprimir a consola el valor de alguna variable o expresión. Para usar este estatuto se tiene que usar la palabra clave \emph{imprimir} seguida por todos los elementos a imprimir separados por comas.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        una_Variable_1 = 10 * una_Variable_1 + 1;
+        imprimir(una_Variable,10);
+
+    \end{lstlisting}
+    \caption{Ejemplo de impresión}
+\end{figure}
+\FloatBarrier
+
+
+
+Este estatuto también puede manejar el uso de constantes de cadenas. Las constantes de cadenas son oraciones o palabras que estan entre comillas. Esto puede ser util para organizar bien la información cuando se despliega en pantalla.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        una_Variable_1 = 10 * una_Variable_1 + 1;
+        imprimir("Esto es una cadena : ",una_Variable,10);
+
+    \end{lstlisting}
+    \caption{Ejemplo del uso de cadenas en impresión}
+\end{figure}
+\FloatBarrier
+
+
+Finalmente IntroProg cuenta con un estatuto especial que puede ayudar a los programadores a organizar su códgio. Este estatuto es el comentario. El comentario se escribe como dos diagonales seguido de lo que el programador quiera escribir. Todo lo que siga después de las diagonales va a ser ignorado por el compilador.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        una_Variable_1 = 10 * una_Variable_1 + 1;
+        imprimir(una_Variable,10); // el comentario puede ser lo que sea
+        // El compilador ignora esta linea
+        // Y no casua errores
+
+    \end{lstlisting}
+    \caption{Ejemplo de Comentarios}
+\end{figure}
+\FloatBarrier
+
+\subsection{Condiciones}
+Las estructuras de control más comúnmente utilizadas. En la mayoría de los lenguajes son reconocido como la instrucción o palabra clave \emph{if}. En IntroProg esta estructura está presente bajo el nombre de \emph{si}, y como su contraparte en C/C++ funciona de manera similar.
+\subsubsection{Estructura si}
+La estructura \emph{si} está compuesta por la palabra clave seguida de una expresión entre paréntesis. Después de este paréntesis se escribe un bloque de código entre corchetas. El comportamiento de si es el siguiente.
+ \emph{Si} recibe una expresión booleana entre paréntesis y si la expresión resulta en verdadero ejecuta el código que se encuentra en los corchetes próximos a la estructura. Si la expresión es falsa se salta a la primera línea de código que sigue después de las corchetas.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        si(expresion){
+            //Codigo a ejecutar en verdadero
+        }
+        //Continua codigo
+    \end{lstlisting}
+    \caption{Ejemplo de \emph{si}}
+\end{figure}
+\FloatBarrier
+\subsubsection{Estructura si-sino}
+Similar a sus contrapartes IntroProg también cuenta con la estructura de \emph{if-else}. En IntroProg esta estructura se escribe con las palabras clave \emph{si} y \emph{sino}. Su funcionamiento es el siguiente. Como un \emph{si} regular, primero se evalúa la expresión que se encuentra entre paréntesis enfrente de la palabra clave, si es verdadero ejecuta el código entre las corchetas seguidas de la expresión. En caso de que la condición sea falsa se salta a ejecutar las corchetas después de la palabra clave \emph{sino}.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        si(expresion){
+            //Codigo a ejecutar en verdadero
+        }sino{
+            //Codigo a ejecutar en falso
+        }
+        //Continua codigo
+    \end{lstlisting}
+    \caption{Ejemplo de \emph{si-sino}}
+\end{figure}
+\FloatBarrier
+
+\FloatBarrier
+\subsection{Bucles}
+
+Los bucles son una de las estructuras de flujo esenciales de los lenguajes de programación. Y como todos los lenguajes, IntroProg también cuenta con formas de representar estas estructuras. En IntroProg hay dos formas de hacer bucles. La primera estructura es \emph{mientras}, el cual es muy similar a su contraparte de C/C++ \emph{while}. La segunda estructura es \emph{por} el cual es similar a su contraparte de C/C++ \emph{for}.
+\\
+\subsubsection{Estructura Mientras}
+La estructura de \emph{mientras} consta de la palabra clave seguida de una expresión entre paréntesis y un bloque de código entre corchetas. Lo que va a hacer es repetir el bloque de código mientras que la expresión que se encuentra entre paréntesis enfrente del \emph{mientras}. Si la expresión resulta en falso se salta a la siguiente línea de código después de la estructura.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        mientras(expresion){
+            //Codigo a repetir mientras sea verdadero
+        }
+        // Codigo continua aqui
+    \end{lstlisting}
+    \caption{Ejemplo de \emph{mientras}}
+\end{figure}
+\FloatBarrier
+
+\subsubsection{Estructura Por}
+La segunda estructura de flujo de IntroProg es la estructura \emph{por}, la cual es similar a su contraparte \emph{for} en el lenguaje C/C++. La estructura consta de la palabra \emph{por} seguida por una asignación, una expresión a evaluar y una segunda asignación indicando el paso a seguir después de cada ciclo encerrado entre un paréntesis. Seguido de este paréntesis sigue un bloque de código entre corchetas el cual va a ser ejecutado mientras que la expresión del \emph{por} sea verdadera.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        por(asignacion; expresion; asignacion;){
+            //Codigo a repetir
+        }
+        //Codigo continua
+    \end{lstlisting}
+    \caption{Ejemplo de \emph{por}}
+\end{figure}
+\FloatBarrier
+
+El \emph{por} también se puede escribir sin la primera asignación, asumiendo que la variables utilizadas en el paso y la expresión estén declaradas.
+
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        por(; expresion; asignacion;){
+            //Codigo a repetir
+        }
+        //Codigo continua
+    \end{lstlisting}
+    \caption{Ejemplo de \emph{por} sin la primera asignación}
+\end{figure}
+
+\FloatBarrier
+\subsection{Funciones}
+
+Otra parte importante de los lenguajes de programación es la posibilidad de poder romper el código en funciones que cumplen un funcionamiento especifico, definido por el programador. IntroProg estructura sus funciones de la siguiente manera.
+
+\subsubsection{Declaración de función}
+
+Antes de utilizar funciones es importante primero que el usuario declare las funciones. Para ello hay que escribir la declaración de las funciones en el espacio apropiado. En la estructura de un programa de IntroProg las funciones se declaran después de las declaraciones de las variables globales, pero antes de la función principal.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        programa pelos{
+            // Primero las variables globales
+            entero x;
+            bool bo;
+            // Aqui van las funciones
+            funcion vacio holaMundo(){}{
+                imprimir("Hola Mundo!!!");
+            }
+            // El codigo principal del programa
+            principal funcion {
+                // Variables locales a principal
+                entero x,y;
+            }{
+                x = 10;
+                y = 2;
+                x = x*y;
+                imprimir(x);
+                $holaMundo();
+            }
+        }
+    \end{lstlisting}
+    \caption{Ejemplo del lugar donde se declaran las funciones}
+\end{figure}
+\FloatBarrier
+
+El programador puede declarar una función usando la palabra clave \emph{funcion} seguida por el tipo de función. Después se escribe los parámetros de la función, escritos entre paréntesis denotando el tipo y el identificador del parámetro. Es importante remarcar que una función puede no tener parámetros. Se pueden definir múltiples parámetros separando con comas cada uno de ellos. Después de definir los parámetros se escribe entre corchetas las declaraciones de variables. Si no se planea usar variables locales en la función se puede dejar vació el espacio entre los corchetes. Después de declarar las variables se escribe el bloque de código que debe de ejecutar la función entre corchetas.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        funcion vacio holaMundo(){}{
+            imprimir("Hola Mundo!!!");
+        }
+    \end{lstlisting}
+    \caption{Ejemplo de función vacia}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        funcion entero suma( entero n, entero m){}{
+            regresa n * m;
+        }
+    \end{lstlisting}
+    \caption{Ejemplo de función con retorno}
+\end{figure}
+\FloatBarrier
+
+En IntroProg hay dos tipos de funciones, las funciones vacías y las funciones con retorno. Las funciones vacías sirven solo para ejecutar código que no se esperan que regresen un valor, esto puede ser imprimir el resultado de ciertas variables o hacer cálculos temporales que no se van a utilizar después. Las funciones con retorno son funciones que realizan operaciones y que regresan un resultado. El valor de retorno de estas funciones están indicadas por la palabra clave \emph{regresar} seguida por una expresión el cual su resultado es el que va a ser utilizado. Cabe recalcar que las funciones vacío no pueden tener el estatuto de \emph{regresar}.
+
+
+\subsubsection{Llamada de función}
+
+Una vez declarada las funciones pueden ser utilizadas como el elemento de una expresión. Esto se logra utilizando el símbolo de dólar (\emph{\$}) seguido por el nombre de la función, seguido por un paréntesis con expresiones separados por comas, representando los argumentos. Si la función no tiene argumentos se dejan los paréntesis vacíos.
+
+\begin{figure}[!htbp]
+    \centering
+   
+    \begin{lstlisting}
+            principal funcion {
+                // Variables locales a principal
+                entero x,y;
+            }{
+                x = 10;
+                y = 2;
+                x = $suma(x, x*y);
+                imprimir(x);
+                $holaMundo();
+            }
+    \end{lstlisting}
+     \caption{Ejemplo del lugar donde se declaran las funciones}
+\end{figure}
+\FloatBarrier
+\subsubsection{Llamadas recursivas en funciones}
+
+IntroProg también soporta el uso de funciones recursivas. Esto se puede lograr haciendo la llamada de la misma función dentro de su declaración. Esto puede ser útil para resolver ciertos problemas de programación.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        funcion entera factorial ( entero  n) {}{
+            regresa n * $factorial(n-1);
+        } 
+    \end{lstlisting}
+    \caption{Ejemplo de función recursiva}
+\end{figure}
+
+
+\FloatBarrier
+\subsection{Arreglos, Matrices y Cubos}
+
+En IntroProg las variables no solo se pueden usar para guardar solo un valor. Se pueden declarar arreglos los cuales pueden tener múltiples valores dependiendo de su declaración. Para declarar un arreglo se usa una sintaxis muy similar a la declaración simple. La declaración de un arreglo se da escribiendo primero el tipo de la variable, seguido por su identificador, seguido del tamaño del arreglo encerrado entre corchetas cuadradas.\\
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        entero arreglo [10]; // Un arreglo de 10 valores
+
+    \end{lstlisting}
+    \caption{Ejemplo de la declaración de un arreglo}
+\end{figure}
+\FloatBarrier
+
+
+Para poder accesar a uno de los valores que tiene el arreglo se puede llamar en una expresión de la siguiente manera. Se escribe el nombre del arreglo seguido de la posición del valor entre corchetas cuadradas. Las posiciones en IntroProg se empiezan a contar desde el 0 hasta el número entero anterior al tamaño.\\
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        arreglo[0] = 10; // primera posicion del arreglo
+        arreglo[9] = 2003; // Ultima posicion del arreglo
+        //Tambien se pueden usar para operaciones
+        arreglo[2] = arreglo[0] * arreglo[9];
+
+    \end{lstlisting}
+    \caption{Ejemplo de la llamada de un arreglo}
+\end{figure}
+\FloatBarrier
+Los arreglos en IntroProg también se les pueden asignar valores de manera directa a todas las casillas del arreglo. Esto se puede lograr listando los valores entre corchetas cuadradas y separando los valores entre comas.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        arreglo = [1,2,3,4,5,6,7,8,9,10]
+
+    \end{lstlisting}
+    \caption{Ejemplo de una asignación textual a un arreglo}
+\end{figure}
+\FloatBarrier
+\subsubsection{Matrices y Cubos}
+IntroProg no solo maneja arreglos sino también maneja matrices y cubos. La forma de interactuar con ellos es muy similar a los arreglos. Solo se necesita hacer lo mismo que se hace con un arreglo solo que en vez de utilizar solo un set de corchetas cuadradas se usan la cantidad de corchetas cuadradas a las dimensiones a utilizar. Es importante mencionar que IntroProg solo maneja hasta cubos y no permite crear variables con más dimensiones.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        entero mat[3][3];
+        entero cubo[2][2][2];
+
+    \end{lstlisting}
+    \caption{Ejemplo de la declaración de una matriz y un cubo}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        mat[0][0] = 10;
+        cubo[0][1][1] = 10;
+
+    \end{lstlisting}
+    \caption{Ejemplo de la llamada de una matriz y un cubo}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+        mat = [[1,2,3],[4,5,6],[7,8,9]];
+        cubo = [[[1,2],[3,4]],[[5,6],[7,8]]];
+
+    \end{lstlisting}
+    \caption{Ejemplo de una asignación textual de una matriz y un cubo}
+\end{figure}
+\FloatBarrier
+
+
+
+
+
+
+\FloatBarrier
+\subsection{Funciones Especiales}
+
+IntroProg también cuenta con una serie de funciones especiales que pueden ser utilizadas en cualquier programa. Estas funciones tienen un enfoque hacia estadística, y le permiten a los usuarios hacer programas más complejos. Estas funciones son:
+
+\begin{itemize}
+    \item \$leer() : Regresa la lectura capturada de consola
+    \item \$modulo(flotante a, flotante b): Regresa el resultado de a\%b
+    \item \$suma(flotante a[]): Suma todos los elementos de un arreglo y regresa sus resultados
+    \item \$raiz(flotante a): Regresa el flotante resultante de la raíz de a
+    \item \$exp(flotante a): Regresa la exponencial de e\^a
+    \item \$elevar(flotante a, flotante b): Regresa el resultado de a\^b
+    \item \$techo(flotante a): Regresa un flotante a redondeado para arriba
+    \item \$piso(flotante a): Regresa un flotante a redondeado para abajo
+    \item \$cos(flotante a): Regresa el coseno de a
+    \item \$sen(flotante a): Regresa el seno de a
+    \item \$tan(flotante a): Regresa la tangente de a
+    \item \$cotan(flotante a): Regresa la cotangente de a
+    \item \$sec(flotante a): Regresa la secante de a
+    \item \$cosec(flotante a): Regresa la cosecante de a
+    \item \$log(flotante a): Regresa el logaritmo natural de a
+    \item \$minimo(flotante a[]): Regresa el valor más chico en el vector a
+    \item \$maximo(flotante a[]): Regresa el valor máximo de a
+    \item \$redondear(flotante a): Regresa un flotante a redondeado 
+    \item \$productoPunto(flotante a[], flotante b[]): Regresa el producto punto entre los vectores de entrada a y b
+    \item \$media(flotante a[]): Regresa la media de a
+    \item \$mediana(flotante a[]): regresa la mediana de a
+    \item \$moda(flotante a[]): Regresa el elemento con la moda más alta de a
+    \item \$varianza(a): Regresa la varianza de a
+    \item \$percentil(flotante a[], flotante q): Regresa el valor en el que se encuentran q% de los valores en a
+    \item \$aleatorio(flotante min, flotante max): Regresa un número flotante aleatorio entre los rangos de argumentos mínimos y máximos
+    \item \$wilcoxon(flotante x[]): Realiza la prueba de Wilcoxon en la serie de datos en x
+    \item \$wilcoxonComp(flotante x[], flotante y[]):Realiza la prueba de Wilcoxon se realiza la prueba sobre los datos x y y.
+    \item \$regresionSimple(flotante x[], flotante y[], flotante xi): Dado un set de x y y se usará regresión lineal simple para encontrar f(xi) y se regresara ese valor
+    \item \$normal(flotante media, flotante desv): Regresa un número escalar que pertenezca a la distribución normal dado los parámetros
+    \item \$poisson(flotante lambda): Regresa un número aleatorio de la distribución Poisson con la lambda dada
+    \item \$dexponencial(flotante beta): Regresa un número aleatorio de la distribución Exponencial correspondiente a la beta (o 1/Lambda) dada.
+    \item \$dgeometrica(flotante exito): Te regresa un valor con la distribución geométrica con la probabilidad de exito dada. 
+    \item \$histograma(flotante x[], flotante rango): Genera un histograma a partir de los datos en el vector de x con un rango entre los datos de rango.
+    \item \$diagramadecaja(flotante x[]): Genera un diagrama de caja y bigotes de los datos en en x
+    \item \$grafDispersion(flotante x[], flotante y[]): Genera un gráfico de dispersión con los valores de ‘x’ y ‘y’
+\end{itemize}
+
+Para llamar a una función especial se usa la misma sintaxis que una función normal.
+
+\begin{figure}[!htbp]
+    \centering
+    
+    \begin{lstlisting}
+            x = $aleatorio(1,100);
+    \end{lstlisting}
+    \caption{Ejemplo del uso de funcinoes especiales}
+\end{figure}
+\FloatBarrier
+
+\FloatBarrier
+
+%---------------------------------------------------------------------------------------
+
+\section{Listado de errores}
+El compilador y la máquina virtual manejan distintos tipos de errores que pueden suceder cuando se hace un programa. Como el lenguaje está diseñado para ser un punto de entrada a la programación se intentó cubrir la mayor cantidad de errores de programación comunes y se agregaron mensajes de error apropiados a la situación del error. Estos mensajes de error tratan de explicar de una manera clara cuál es la situación que causo el error al usuario.\\
+
+Los errores que se pueden detectar durante compilación son los siguientes:
+\begin{itemize}
+    \item Doble declaración de variables
+    \item El uso de variables no declaradas.
+    \item Errores de sintaxis. Esto incluye identificadores y palabras reservadas mal escritas, estatutos mal escritos entre otros errores de sintaxis.
+    \item Número de parámetros incorrectos
+    \item Asignación incorrecta de parámetros, si el valor pasado como parámetro no se puede convertir a al tipo del parámetro el compilador levanta un error.
+    \item Operaciones con funciones vacías, el compilador no permite el uso de funciones vacías en expresiones
+    \item Retornos en funciones vacías, El compilador levanta errores cuando detecta un retorno cuando hay retornos en funciones vacías
+    \item No permitir el nombre de funciones y palabras reservadas como identificadores.
+\end{itemize}
+
+Los errores que puede detectar la máquina virtual son la siguiente:
+\begin{itemize}
+    \item Operaciones con variables sin valor. Si se intenta realizar operaciones con variables las cuales no cuentan con un valor se levanta un error y se le indica al usuario cuál fue el posible error.
+    \item Detectar si los subíndices del arreglo se salen del espacio definido por el arreglo. Similarmente detecta cuando el arreglo se sale de los límites del arreglo e indica al usuario mediante un mensaje de error lo que sucedió.
+    \item Lectura incorrecta. Cuando se utiliza la lectura y se mete un valor que no es válido para lectura.
+\end{itemize}
+
+
