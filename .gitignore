@@ -7,3 +7,6 @@ lexnsyn/cuadruplos.txt
 virtualmachine/*.json
 lexnsyn/pruebas/*.json
 tareas/unfinished/*
+Documentación/DemoIntroProg.mp4
+Documentación/Documentacion_latex-firmado.pdf
+.gitignore
